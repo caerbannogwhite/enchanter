@@ -121,10 +121,24 @@ func generateMakeResultStmt(info BuildInfo) ([]ast.Stmt, string) {
 					nonNullOperand, nonNullOperand, nonNullOperandIsScalar, RESULT_SIZE_VAR_NAME)},
 			},
 		})
+
+		// For the older operations this branch keeps the historical contract
+		// of naOperandNullMask: the mask is copied but the result is marked
+		// not nullable. Coalesce is new and has no history to preserve, so it
+		// keeps the typed operand's nullability flag.
+		if info.OpCode == meta.OP_BINARY_COALESCE {
+			return stmts, fmt.Sprintf("%s.IsNullable_", nonNullOperand)
+		}
 		return stmts, "false"
 	}
 
 	// General case: one call resolves the mask and the nullability flag.
+	// Coalesce is the one operation whose result is null only where both
+	// operands are null, so it uses the AND-combining helper.
+	maskHelper := "binaryNullMask"
+	if info.OpCode == meta.OP_BINARY_COALESCE {
+		maskHelper = "coalesceNullMask"
+	}
 	stmts = append(stmts, &ast.AssignStmt{
 		Lhs: []ast.Expr{
 			&ast.Ident{Name: RESULT_NULL_MASK_VAR_NAME},
@@ -133,8 +147,8 @@ func generateMakeResultStmt(info BuildInfo) ([]ast.Stmt, string) {
 		Tok: token.DEFINE,
 		Rhs: []ast.Expr{
 			&ast.Ident{Name: fmt.Sprintf(
-				"binaryNullMask(%s.IsNullable_, %s.NullMask_, %v, %s.IsNullable_, %s.NullMask_, %v, %s)",
-				info.Op1VarName, info.Op1VarName, info.Op1Scalar,
+				"%s(%s.IsNullable_, %s.NullMask_, %v, %s.IsNullable_, %s.NullMask_, %v, %s)",
+				maskHelper, info.Op1VarName, info.Op1VarName, info.Op1Scalar,
 				info.Op2VarName, info.Op2VarName, info.Op2Scalar, RESULT_SIZE_VAR_NAME)},
 		},
 	})
@@ -550,6 +564,13 @@ func generateOperations() {
 						info.Operations["Ge"], info.SeriesName, info.SeriesType, "s", "other",
 						&ast.ReturnStmt{
 							Results: []ast.Expr{ast.NewIdent(fmt.Sprintf(FINAL_RETURN_FMT, "compare for greater than or equal to"))},
+						})
+
+				case "Coalesce":
+					fast.Decls[i].(*ast.FuncDecl).Body.List = generateSwitchType(
+						info.Operations["Coalesce"], info.SeriesName, info.SeriesType, "s", "other",
+						&ast.ReturnStmt{
+							Results: []ast.Expr{ast.NewIdent(fmt.Sprintf(FINAL_RETURN_FMT, "coalesce"))},
 						})
 				}
 			}

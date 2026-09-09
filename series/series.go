@@ -109,6 +109,10 @@ type Series interface {
 	And(other any) Series
 	Or(other any) Series
 
+	// Coalesce fills the null elements with the corresponding elements of
+	// other. A result element is null only when both operands are null there.
+	Coalesce(other any) Series
+
 	// Arithmetic operations.
 	Mul(other any) Series
 	Div(other any) Series

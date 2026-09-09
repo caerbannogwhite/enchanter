@@ -149,9 +149,10 @@ Not implemented (would be added on demand): narrower integers (`Int8/16/32`),
 
 **Series** carry element-wise arithmetic (`Add`, `Sub`, `Mul`, `Div`, `Mod`,
 `Exp`, `Neg`), comparison (`Eq`, `Ne`, `Lt`, `Le`, `Gt`, `Ge`), and boolean
-(`And`, `Or`, `Not`) operators, plus `Filter` (by a `[]bool` / `[]int` or a
-`Bools` / `Ints` series), null-aware `Group` / `SubGroup` and `Sort` /
-`SortRev`, and `Map`, `Take`, `Cast`, `Append`.
+(`And`, `Or`, `Not`) operators, plus `Coalesce` (fill nulls from another
+series or a scalar), `Filter` (by a `[]bool` / `[]int` or a `Bools` / `Ints`
+series), null-aware `Group` / `SubGroup` and `Sort` / `SortRev`, and `Map`,
+`Take`, `Cast`, `Append`.
 
 **DataFrame**
 
@@ -241,6 +242,9 @@ the [storage measurement](docs/superpowers/specs/2026-08-08-arrow-native-storage
       flattened — nullability is resolved at run time by a shared null-mask
       helper and the length cases are a flat `switch` — shrinking the emitted
       operator code from ~44k to ~13k lines with byte-identical behavior.
+- [x] `Coalesce` on every series type: fill null elements from another series
+      or a scalar; a result element is null only when both operands are null
+      there.
 
 **1.0 — commit** to the stable API.
 

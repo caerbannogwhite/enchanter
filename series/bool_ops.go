@@ -2689,3 +2689,109 @@ func (s Bools) Le(other any) Series {
 	}
 
 }
+
+// Coalesce fills the null elements of the series with the corresponding
+// elements of other: the result takes this series' value where it is not
+// null and the other operand's value where it is. A result element is null
+// only when both operands are null there. The body is produced by the code
+// generator, like every other operator in this file.
+func (s Bools) Coalesce(other any) Series {
+	var otherSeries Series
+	if _, ok := other.(Series); ok {
+		otherSeries = other.(Series)
+	} else {
+		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+	}
+	if s.Ctx_ != otherSeries.GetContext() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	}
+	switch o := otherSeries.(type) {
+	case Bools:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
+			if s.IsNullable_ && s.NullMask_[0]&1 != 0 {
+				result[0] = o.Data_[0]
+			} else {
+				result[0] = s.Data_[0]
+			}
+			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				if s.IsNullable_ && s.NullMask_[0]&1 != 0 {
+					result[i] = o.Data_[i]
+				} else {
+					result[i] = s.Data_[0]
+				}
+			}
+			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				if s.IsNullable_ && s.NullMask_[i>>3]&(1<<uint(i%8)) != 0 {
+					result[i] = o.Data_[0]
+				} else {
+					result[i] = s.Data_[i]
+				}
+			}
+			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				if s.IsNullable_ && s.NullMask_[i>>3]&(1<<uint(i%8)) != 0 {
+					result[i] = o.Data_[i]
+				} else {
+					result[i] = s.Data_[i]
+				}
+			}
+			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+		}
+		return Errors{fmt.Sprintf("Cannot coalesce %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, true, resultSize)
+			result[0] = s.Data_[0]
+			return Bools{IsNullable_: s.IsNullable_, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.Data_[0]
+			}
+			return Bools{IsNullable_: s.IsNullable_, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.Data_[i]
+			}
+			return Bools{IsNullable_: s.IsNullable_, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.Data_[i]
+			}
+			return Bools{IsNullable_: s.IsNullable_, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+		}
+		return Errors{fmt.Sprintf("Cannot coalesce %s and %s", s.Type().String(), o.Type().String())}
+	default:
+		return Errors{fmt.Sprintf("Cannot coalesce %s and %s", s.Type().String(), o.Type().String())}
+	}
+
+}

@@ -247,7 +247,8 @@ func (op OPCODE) IsBinaryOp() bool {
 	switch op {
 	case OP_BINARY_ADD, OP_BINARY_SUB, OP_BINARY_MUL, OP_BINARY_DIV, OP_BINARY_MOD, OP_BINARY_EXP,
 		OP_BINARY_AND, OP_BINARY_OR, OP_BINARY_XOR, OP_BINARY_LSHIFT, OP_BINARY_RSHIFT,
-		OP_BINARY_EQ, OP_BINARY_NE, OP_BINARY_LT, OP_BINARY_LE, OP_BINARY_GT, OP_BINARY_GE:
+		OP_BINARY_EQ, OP_BINARY_NE, OP_BINARY_LT, OP_BINARY_LE, OP_BINARY_GT, OP_BINARY_GE,
+		OP_BINARY_COALESCE:
 		return true
 	}
 	return false
@@ -1210,6 +1211,89 @@ func (op OPCODE) GetBinaryOpResultType(lop, rop Primitive) Primitive {
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	///////////////////				BINARY AND
+	/////////////////////////////////////////////////////////////////////////////////////
+	///////////////////				BINARY COALESCE
+
+	// Coalesce takes the left value where it is not null and the right value
+	// where it is. Both operand orders carry the same result type: the same
+	// type keeps the type, mixed numeric types widen, and an NA operand
+	// yields the other operand's type.
+	case OP_BINARY_COALESCE:
+		switch lop.Base {
+		case NullType:
+			switch rop.Base {
+			case NullType, BoolType, IntType, Int64Type, Float64Type, StringType, TimeType, DurationType:
+				return Primitive{Base: rop.Base, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case BoolType:
+			switch rop.Base {
+			case NullType, BoolType:
+				return Primitive{Base: BoolType, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case IntType:
+			switch rop.Base {
+			case NullType, IntType:
+				return Primitive{Base: IntType, Size: size}
+			case Int64Type:
+				return Primitive{Base: Int64Type, Size: size}
+			case Float64Type:
+				return Primitive{Base: Float64Type, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case Int64Type:
+			switch rop.Base {
+			case NullType, IntType, Int64Type:
+				return Primitive{Base: Int64Type, Size: size}
+			case Float64Type:
+				return Primitive{Base: Float64Type, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case Float64Type:
+			switch rop.Base {
+			case NullType, IntType, Int64Type, Float64Type:
+				return Primitive{Base: Float64Type, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case StringType:
+			switch rop.Base {
+			case NullType, StringType:
+				return Primitive{Base: StringType, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case TimeType:
+			switch rop.Base {
+			case NullType, TimeType:
+				return Primitive{Base: TimeType, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case DurationType:
+			switch rop.Base {
+			case NullType, DurationType:
+				return Primitive{Base: DurationType, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		default:
+			return Primitive{Base: ErrorType}
+		}
+
 	case OP_BINARY_AND:
 		switch lop.Base {
 		case NullType:

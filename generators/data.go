@@ -100,6 +100,37 @@ var DATA_BASE_METHODS = map[string]SeriesFile{
 	},
 }
 
+// coalesceNullTest returns the expression that tests whether the left
+// operand's element is null in a generated Coalesce body. The IsNullable_
+// check keeps the mask access safe when the operand has no mask.
+func coalesceNullTest(op1, op1Index string) string {
+	if op1Index == "0" {
+		return fmt.Sprintf("%s.IsNullable_ && %s.NullMask_[0]&1 != 0", op1, op1)
+	}
+	return fmt.Sprintf("%s.IsNullable_ && %s.NullMask_[%s>>3]&(1<<uint(%s%%8)) != 0", op1, op1, op1Index, op1Index)
+}
+
+// coalesceSelect builds the per-element statement of Coalesce: take the left
+// value where it is not null and the right value where it is. convLeft and
+// convRight are fmt.Sprintf formats that wrap the operand access in a type
+// conversion; "%s" means no conversion.
+func coalesceSelect(convLeft, convRight string) MakeOperationType {
+	return func(res, resIndex, op1, op1Index, op2, op2Index string) ast.Expr {
+		left := fmt.Sprintf(convLeft, fmt.Sprintf("%s.Data_[%s]", op1, op1Index))
+		right := fmt.Sprintf(convRight, fmt.Sprintf("%s.Data_[%s]", op2, op2Index))
+		return &ast.Ident{Name: fmt.Sprintf("if %s {\n%s[%s] = %s\n} else {\n%s[%s] = %s\n}",
+			coalesceNullTest(op1, op1Index), res, resIndex, right, res, resIndex, left)}
+	}
+}
+
+// coalesceTakeLeft builds the per-element statement of Coalesce against an
+// NAs operand: the right side is always null, so the left value is copied.
+func coalesceTakeLeft() MakeOperationType {
+	return func(res, resIndex, op1, op1Index, op2, op2Index string) ast.Expr {
+		return &ast.Ident{Name: fmt.Sprintf("%s[%s] = %s.Data_[%s]", res, resIndex, op1, op1Index)}
+	}
+}
+
 func GenerateOperationsData() map[string]SeriesFile {
 	var data = map[string]SeriesFile{
 		"na_ops.go": {
@@ -2227,6 +2258,78 @@ func GenerateOperationsData() map[string]SeriesFile {
 				}
 			}
 		}
+	}
+
+	// Coalesce: the same type keeps the type, mixed numeric types widen, and
+	// an NAs operand leaves the receiver's values in place. NAs.Coalesce is
+	// hand-written in na.go, so na_ops.go gets no entry here.
+	coalesceEntry := func(seriesName string, seriesType meta.BaseType, convLeft, convRight string) OperationApplyTo {
+		return OperationApplyTo{
+			SeriesName:    seriesName,
+			SeriesType:    seriesType,
+			MakeOperation: coalesceSelect(convLeft, convRight),
+		}
+	}
+	coalesceNAEntry := OperationApplyTo{
+		SeriesName:    "NAs",
+		SeriesType:    meta.NullType,
+		MakeOperation: coalesceTakeLeft(),
+	}
+
+	data["bool_ops.go"].Operations["Coalesce"] = Operation{
+		OpCode: meta.OP_BINARY_COALESCE,
+		ApplyTo: []OperationApplyTo{
+			coalesceEntry("Bools", meta.BoolType, "%s", "%s"),
+			coalesceNAEntry,
+		},
+	}
+	data["int_ops.go"].Operations["Coalesce"] = Operation{
+		OpCode: meta.OP_BINARY_COALESCE,
+		ApplyTo: []OperationApplyTo{
+			coalesceEntry("Ints", meta.IntType, "%s", "%s"),
+			coalesceEntry("Int64s", meta.Int64Type, "int64(%s)", "%s"),
+			coalesceEntry("Float64s", meta.Float64Type, "float64(%s)", "%s"),
+			coalesceNAEntry,
+		},
+	}
+	data["int64_ops.go"].Operations["Coalesce"] = Operation{
+		OpCode: meta.OP_BINARY_COALESCE,
+		ApplyTo: []OperationApplyTo{
+			coalesceEntry("Ints", meta.IntType, "%s", "int64(%s)"),
+			coalesceEntry("Int64s", meta.Int64Type, "%s", "%s"),
+			coalesceEntry("Float64s", meta.Float64Type, "float64(%s)", "%s"),
+			coalesceNAEntry,
+		},
+	}
+	data["float64_ops.go"].Operations["Coalesce"] = Operation{
+		OpCode: meta.OP_BINARY_COALESCE,
+		ApplyTo: []OperationApplyTo{
+			coalesceEntry("Ints", meta.IntType, "%s", "float64(%s)"),
+			coalesceEntry("Int64s", meta.Int64Type, "%s", "float64(%s)"),
+			coalesceEntry("Float64s", meta.Float64Type, "%s", "%s"),
+			coalesceNAEntry,
+		},
+	}
+	data["string_ops.go"].Operations["Coalesce"] = Operation{
+		OpCode: meta.OP_BINARY_COALESCE,
+		ApplyTo: []OperationApplyTo{
+			coalesceEntry("Strings", meta.StringType, "%s", "%s"),
+			coalesceNAEntry,
+		},
+	}
+	data["time_ops.go"].Operations["Coalesce"] = Operation{
+		OpCode: meta.OP_BINARY_COALESCE,
+		ApplyTo: []OperationApplyTo{
+			coalesceEntry("Times", meta.TimeType, "%s", "%s"),
+			coalesceNAEntry,
+		},
+	}
+	data["duration_ops.go"].Operations["Coalesce"] = Operation{
+		OpCode: meta.OP_BINARY_COALESCE,
+		ApplyTo: []OperationApplyTo{
+			coalesceEntry("Durations", meta.DurationType, "%s", "%s"),
+			coalesceNAEntry,
+		},
 	}
 
 	return data

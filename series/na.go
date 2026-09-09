@@ -611,3 +611,34 @@ func (s NAs) ArrowArray() arrow.Array {
 	builder.AppendNulls(s.size)
 	return builder.NewNullArray()
 }
+
+// Coalesce fills the null elements of the series with the corresponding
+// elements of other. Every element of NAs is null, so the result is the
+// other operand: broadcast when it is a scalar, unchanged when the lengths
+// match. The returned series may share the operand's storage.
+func (s NAs) Coalesce(other any) Series {
+	var otherSeries Series
+	if o, ok := other.(Series); ok {
+		otherSeries = o
+	} else {
+		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+	}
+
+	if e, ok := otherSeries.(Errors); ok {
+		return e
+	}
+
+	if s.Ctx_ != otherSeries.GetContext() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	}
+
+	switch {
+	case otherSeries.Len() == s.Len() || s.Len() == 1:
+		return otherSeries
+	case otherSeries.Len() == 1:
+		// Broadcast the scalar to the receiver's length.
+		indices := make([]int, s.Len())
+		return otherSeries.FilterIntSlice(indices, false)
+	}
+	return Errors{fmt.Sprintf("Cannot coalesce %s and %s", s.Type().String(), otherSeries.Type().String())}
+}

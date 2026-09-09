@@ -72,3 +72,29 @@ func naOperandNullMask(nullable bool, mask []uint8, scalar bool, size int) []uin
 	copy(m, mask)
 	return m
 }
+
+// coalesceNullMask builds the null mask of Coalesce and reports whether the
+// result is nullable. A result position is null only when both operands are
+// null there, so if either operand has no nulls the result has none.
+//
+// Like binaryNullMask, the scalar flags are compile-time facts of the
+// generated call site, and a scalar operand's single mask bit is broadcast
+// across the result.
+func coalesceNullMask(aNullable bool, aMask []uint8, aScalar bool, bNullable bool, bMask []uint8, bScalar bool, size int) ([]uint8, bool) {
+	if !aNullable || !bNullable {
+		return utils.BinVecInit(0, false), false
+	}
+
+	mask := utils.BinVecInit(size, false)
+	switch {
+	case aScalar && bScalar:
+		utils.BinVecAndSS(aMask, bMask, mask)
+	case aScalar:
+		utils.BinVecAndSV(aMask, bMask, mask)
+	case bScalar:
+		utils.BinVecAndVS(aMask, bMask, mask)
+	default:
+		utils.BinVecAndVV(aMask, bMask, mask)
+	}
+	return mask, true
+}

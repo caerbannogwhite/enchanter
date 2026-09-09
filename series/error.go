@@ -207,6 +207,11 @@ func (s Errors) Or(other any) Series {
 	return s
 }
 
+// Coalesce on an errored series keeps the error.
+func (s Errors) Coalesce(other any) Series {
+	return s
+}
+
 func (s Errors) Mul(other any) Series {
 	return s
 }
