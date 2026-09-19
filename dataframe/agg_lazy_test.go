@@ -9,15 +9,15 @@ import (
 
 func TestGroupByIsLazyButJoinStillWorks(t *testing.T) {
 	ctx := enchanter.NewContext()
-	a := NewBaseDataFrame(ctx).
+	a := NewDataFrame(ctx).
 		AddSeries("k", series.NewSeriesString([]string{"x", "y"}, nil, false, ctx)).
 		AddSeries("va", series.NewSeriesInt64([]int64{1, 2}, nil, false, ctx))
-	b := NewBaseDataFrame(ctx).
+	b := NewDataFrame(ctx).
 		AddSeries("k", series.NewSeriesString([]string{"y", "z"}, nil, false, ctx)).
 		AddSeries("vb", series.NewSeriesInt64([]int64{3, 4}, nil, false, ctx))
 
 	// GroupBy no longer eagerly builds partitions
-	g := a.GroupBy("k").(BaseDataFrame)
+	g := a.GroupBy("k")
 	if !g.isGrouped {
 		t.Fatalf("expected isGrouped")
 	}

@@ -45,7 +45,7 @@ const aggMinParallel = 1 << 16
 // a null mask from the finalize isNull flags.
 //
 // len(keyCols) == 0 is handled as a single group with no key columns.
-func aggregateSerial(df BaseDataFrame, keyCols []series.Series, aggs []aggregator, removeNAs bool) DataFrame {
+func aggregateSerial(df DataFrame, keyCols []series.Series, aggs []aggregator, removeNAs bool) DataFrame {
 	nRows := df.NRows()
 	views, isHol := prepAggValueColumns(df, aggs)
 
@@ -78,7 +78,7 @@ func aggregateSerial(df BaseDataFrame, keyCols []series.Series, aggs []aggregato
 //     group): a group NA-propagated in any one chunk is NA-propagated in the merged
 //     result. This matches the serial engine's per-row NA propagation exactly,
 //     since an NA-propagated group there stays NA-propagated once any row in it is null.
-func aggregate(df BaseDataFrame, keyCols []series.Series, aggs []aggregator, removeNAs bool) DataFrame {
+func aggregate(df DataFrame, keyCols []series.Series, aggs []aggregator, removeNAs bool) DataFrame {
 	nRows := df.NRows()
 	views, isHol := prepAggValueColumns(df, aggs)
 
@@ -241,7 +241,7 @@ func newAggValueView(col series.Series) aggValueView {
 // front (Count needs no value column). The returned slice is read-only from
 // this point on and safe to share across accumulateChunk calls running
 // concurrently over disjoint row ranges — no per-op []float64 copy is made.
-func prepAggValueColumns(df BaseDataFrame, aggs []aggregator) (views []aggValueView, isHol []bool) {
+func prepAggValueColumns(df DataFrame, aggs []aggregator) (views []aggValueView, isHol []bool) {
 	views = make([]aggValueView, len(aggs))
 	isHol = make([]bool, len(aggs))
 	for j, agg := range aggs {
@@ -549,14 +549,14 @@ func accumulateChunk(keyCols []series.Series, aggs []aggregator, views []aggValu
 // other aggregate as Float64s with a null mask from the per-row isNull flags
 // (NA-propagated groups under removeNAs == false surface as non-null NaN,
 // matching aggregateSerial).
-func finalizeAggregate(df BaseDataFrame, keyCols []series.Series, aggs []aggregator, isHol []bool, removeNAs bool, gt *groupTable, states []*reducibleState, cols [][]collector, propagated [][]bool) DataFrame {
+func finalizeAggregate(df DataFrame, keyCols []series.Series, aggs []aggregator, isHol []bool, removeNAs bool, gt *groupTable, states []*reducibleState, cols [][]collector, propagated [][]bool) DataFrame {
 	ctx := df.GetContext()
 	nGroups := gt.numGroups()
 	reps := gt.representativeRows()
 	order := sortGroupOrder(keyCols, reps)
 
 	// Build the result: key columns first, then one aggregate column per agg.
-	result := NewBaseDataFrame(ctx)
+	result := NewDataFrame(ctx)
 	result = appendKeyColumns(result, df, keyCols, reps, order)
 
 	for j, agg := range aggs {
@@ -713,7 +713,7 @@ func compareBool(a, b bool) int {
 // from the group's representative row, with the groups laid out in the sorted
 // order. The type switch covers the same key types as the former groupHelper;
 // the representative row's null flag is carried into the emitted column.
-func appendKeyColumns(result DataFrame, df BaseDataFrame, keyCols []series.Series, reps, order []int) DataFrame {
+func appendKeyColumns(result DataFrame, df DataFrame, keyCols []series.Series, reps, order []int) DataFrame {
 	ctx := df.GetContext()
 	n := len(order)
 
@@ -791,7 +791,7 @@ func appendKeyColumns(result DataFrame, df BaseDataFrame, keyCols []series.Serie
 // called with keyCols drawn from df.series (see buildGroupKeyCols), so the
 // column is matched back to its name by the identity of its backing data array.
 // The k-based fallback is defensive: it is unreachable when keyCols come from df.
-func keyColumnName(df BaseDataFrame, col series.Series, k int) string {
+func keyColumnName(df DataFrame, col series.Series, k int) string {
 	if p := seriesBackingPtr(col); p != nil {
 		for i, s := range df.series {
 			if seriesBackingPtr(s) == p {

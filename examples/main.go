@@ -38,7 +38,7 @@ Operations,5,250000
 var ctx = enchanter.NewContext()
 
 func Example01() {
-	dataframe.NewBaseDataFrame(ctx).
+	dataframe.NewDataFrame(ctx).
 		FromCsv().
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
@@ -68,14 +68,14 @@ func Example01() {
 }
 
 func Example02() {
-	employees := dataframe.NewBaseDataFrame(ctx).
+	employees := dataframe.NewDataFrame(ctx).
 		FromCsv().
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
 		SetHeader(true).
 		Read()
 
-	departments := dataframe.NewBaseDataFrame(ctx).
+	departments := dataframe.NewDataFrame(ctx).
 		FromCsv().
 		SetReader(strings.NewReader(data2)).
 		SetDelimiter(',').
@@ -89,7 +89,7 @@ func Example02() {
 }
 
 func Example03() {
-	df := dataframe.NewBaseDataFrame(ctx).
+	df := dataframe.NewDataFrame(ctx).
 		FromCsv().
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
@@ -124,14 +124,14 @@ a,b
 
 	ppp := dataframe.NewPPrintParams()
 
-	dfX := dataframe.NewBaseDataFrame(ctx).
+	dfX := dataframe.NewDataFrame(ctx).
 		FromCsv().
 		SetReader(strings.NewReader(x)).
 		SetDelimiter(',').
 		SetHeader(true).
 		Read()
 
-	dfY := dataframe.NewBaseDataFrame(ctx).
+	dfY := dataframe.NewDataFrame(ctx).
 		FromCsv().
 		SetReader(strings.NewReader(y)).
 		SetDelimiter(',').
@@ -152,7 +152,7 @@ a,b
 }
 
 func Example05() {
-	dataframe.NewBaseDataFrame(ctx).
+	dataframe.NewDataFrame(ctx).
 		FromXpt().
 		SetPath("../testdata/CDBRFS90.XPT").
 		// SetPath("../testdata/xpt_test_mixed.xpt").
@@ -197,7 +197,7 @@ func Example05() {
 }
 
 func Example06() {
-	df := dataframe.NewBaseDataFrame(ctx).
+	df := dataframe.NewDataFrame(ctx).
 		FromCsv().
 		SetNullValues(true).
 		// SetRows(20).

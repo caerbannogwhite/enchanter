@@ -37,11 +37,11 @@ func equalFloats(a, b, eps float64) bool {
 	return math.Abs(a-b) < eps
 }
 
-func Test_BaseDataFrame_Base(t *testing.T) {
+func Test_DataFrame_Base(t *testing.T) {
 
 }
 
-func Test_BaseDataFrame_Select(t *testing.T) {
+func Test_DataFrame_Select(t *testing.T) {
 	names := []string{
 		"NUMMEN", "NUMWOMEN", "NUMPHONS", "AGE", "ORACE", "HISPANIC", "RACE", "EDUCA", "EMPLOY", "MARITAL",
 		"INCOME", "WEIGHT", "HEIGHT", "HTF", "HTI", "SEX", "SEATBELT", "BPHIGH", "HIGHGT1", "BPTREAT",
@@ -65,7 +65,7 @@ func Test_BaseDataFrame_Select(t *testing.T) {
 		"_RACEG", "_RACEGR", "_RFCHOL",
 	}
 
-	df := NewBaseDataFrame(ctx)
+	df := NewDataFrame(ctx)
 
 	for _, name := range names {
 		df = df.AddSeries(name, series.NewSeriesFloat64([]float64{1.0}, nil, false, ctx))
@@ -87,9 +87,9 @@ func Test_BaseDataFrame_Select(t *testing.T) {
 	}
 }
 
-func Test_BaseDataFrame_Filter(t *testing.T) {
+func Test_DataFrame_Filter(t *testing.T) {
 	// Create a new dataframe from the CSV data.
-	df := NewBaseDataFrame(ctx).FromCsv().
+	df := NewDataFrame(ctx).FromCsv().
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -136,7 +136,7 @@ func Benchmark_100000Rows_Filter(b *testing.B) {
 		b.SkipNow()
 	}
 
-	df := NewBaseDataFrame(ctx).FromCsv().
+	df := NewDataFrame(ctx).FromCsv().
 		SetReader(f).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -160,9 +160,9 @@ func Benchmark_100000Rows_Filter(b *testing.B) {
 	b.StopTimer()
 }
 
-func Test_BaseDataFrame_GroupBy_Count(t *testing.T) {
+func Test_DataFrame_GroupBy_Count(t *testing.T) {
 	// Create a new dataframe from the CSV data.
-	df := NewBaseDataFrame(ctx).FromCsv().
+	df := NewDataFrame(ctx).FromCsv().
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -340,7 +340,7 @@ func Benchmark_100000Rows_GroupBy_Count(b *testing.B) {
 		b.SkipNow()
 	}
 
-	df := NewBaseDataFrame(ctx).FromCsv().
+	df := NewDataFrame(ctx).FromCsv().
 		SetReader(f).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -356,9 +356,9 @@ func Benchmark_100000Rows_GroupBy_Count(b *testing.B) {
 	b.StopTimer()
 }
 
-func Test_BaseDataFrame_GroupBy_Sum(t *testing.T) {
+func Test_DataFrame_GroupBy_Sum(t *testing.T) {
 	// Create a new dataframe from the CSV data.
-	df := NewBaseDataFrame(ctx).FromCsv().
+	df := NewDataFrame(ctx).FromCsv().
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -412,9 +412,9 @@ func Test_BaseDataFrame_GroupBy_Sum(t *testing.T) {
 	}
 }
 
-func Test_BaseDataFrame_GroupBy_Min(t *testing.T) {
+func Test_DataFrame_GroupBy_Min(t *testing.T) {
 	// Create a new dataframe from the CSV data.
-	df := NewBaseDataFrame(ctx).FromCsv().
+	df := NewDataFrame(ctx).FromCsv().
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -468,9 +468,9 @@ func Test_BaseDataFrame_GroupBy_Min(t *testing.T) {
 	}
 }
 
-func Test_BaseDataFrame_GroupBy_Max(t *testing.T) {
+func Test_DataFrame_GroupBy_Max(t *testing.T) {
 	// Create a new dataframe from the CSV data.
-	df := NewBaseDataFrame(ctx).FromCsv().
+	df := NewDataFrame(ctx).FromCsv().
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -524,9 +524,9 @@ func Test_BaseDataFrame_GroupBy_Max(t *testing.T) {
 	}
 }
 
-func Test_BaseDataFrame_GroupBy_Mean(t *testing.T) {
+func Test_DataFrame_GroupBy_Mean(t *testing.T) {
 	// Create a new dataframe from the CSV data.
-	df := NewBaseDataFrame(ctx).FromCsv().
+	df := NewDataFrame(ctx).FromCsv().
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -587,7 +587,7 @@ func Benchmark_100000Rows_GroupBy_Mean(b *testing.B) {
 		b.SkipNow()
 	}
 
-	df := NewBaseDataFrame(ctx).FromCsv().
+	df := NewDataFrame(ctx).FromCsv().
 		SetReader(f).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -610,7 +610,7 @@ func Benchmark_500000Rows_GroupBy_Mean(b *testing.B) {
 		b.SkipNow()
 	}
 
-	df := NewBaseDataFrame(ctx).FromCsv().
+	df := NewDataFrame(ctx).FromCsv().
 		SetReader(f).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -626,9 +626,9 @@ func Benchmark_500000Rows_GroupBy_Mean(b *testing.B) {
 	b.StopTimer()
 }
 
-// func Test_BaseDataFrame_GroupBy_Std(t *testing.T) {
+// func Test_DataFrame_GroupBy_Std(t *testing.T) {
 // 	// Create a new dataframe from the CSV data.
-// 	df := NewBaseDataFrame(ctx).FromCsv().
+// 	df := NewDataFrame(ctx).FromCsv().
 // 		SetReader(strings.NewReader(data1)).
 // 		SetDelimiter(',').
 // 		SetHeader(true).
@@ -681,12 +681,12 @@ func Benchmark_500000Rows_GroupBy_Mean(b *testing.B) {
 // 	}
 // }
 
-func Test_BaseDataFrame_Join(t *testing.T) {
-	dfx := NewBaseDataFrame(ctx).
+func Test_DataFrame_Join(t *testing.T) {
+	dfx := NewDataFrame(ctx).
 		AddSeriesFromInt64s("A", []int64{1, 1, 2, 3, 4, 5, 5}, nil, false).
 		AddSeriesFromStrings("B", []string{"a", "b", "c", "d", "e", "f", "g"}, nil, false)
 
-	dfy := NewBaseDataFrame(ctx).
+	dfy := NewDataFrame(ctx).
 		AddSeriesFromInt64s("A", []int64{4, 5, 6, 6}, nil, false).
 		AddSeriesFromStrings("C", []string{"h", "i", "j", "k"}, nil, false)
 
@@ -811,10 +811,10 @@ func Test_BaseDataFrame_Join(t *testing.T) {
 	}
 }
 
-func Test_BaseDataFrame_Sort(t *testing.T) {
+func Test_DataFrame_Sort(t *testing.T) {
 	var res DataFrame
 
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeriesFromInt64s("A", []int64{1, 5, 2, 1, 4, 1, 5, 1, 2, 1}, nil, false).
 		AddSeriesFromStrings("B", []string{"a", "b", "c", "d", "e", "f", "g", "a", "b", "c"}, nil, false).
 		AddSeriesFromFloat64s("C", []float64{1.2, 2.3, 3.4, 4.5, 5.6, 7.8, 8.9, 1.2, 2.3, 3.4}, nil, false).
@@ -822,174 +822,174 @@ func Test_BaseDataFrame_Sort(t *testing.T) {
 
 	res = df.OrderBy(Asc("A"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 1, 1, 2, 2, 4, 5, 5}, nil, "") {
-		t.Error("BaseDataFrame Sort, column A asc failed")
+		t.Error("DataFrame Sort, column A asc failed")
 	}
 
 	res = df.OrderBy(Desc("A"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{5, 5, 4, 2, 2, 1, 1, 1, 1, 1}, nil, "") {
-		t.Error("BaseDataFrame Sort, column A desc failed")
+		t.Error("DataFrame Sort, column A desc failed")
 	}
 
 	res = df.OrderBy(Asc("B"))
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{"a", "a", "b", "b", "c", "c", "d", "e", "f", "g"}, nil, "") {
-		t.Error("BaseDataFrame Sort, column B asc failed")
+		t.Error("DataFrame Sort, column B asc failed")
 	}
 
 	res = df.OrderBy(Desc("B"))
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{"g", "f", "e", "d", "c", "c", "b", "b", "a", "a"}, nil, "") {
-		t.Error("BaseDataFrame Sort, column B desc failed")
+		t.Error("DataFrame Sort, column B desc failed")
 	}
 
 	res = df.OrderBy(Asc("C"))
 	if !utils.CheckEqSliceFloat64(res.C("C").(series.Float64s).Float64s(), []float64{1.2, 1.2, 2.3, 2.3, 3.4, 3.4, 4.5, 5.6, 7.8, 8.9}, nil, "") {
-		t.Error("BaseDataFrame Sort, column C asc failed")
+		t.Error("DataFrame Sort, column C asc failed")
 	}
 
 	res = df.OrderBy(Desc("C"))
 	if !utils.CheckEqSliceFloat64(res.C("C").(series.Float64s).Float64s(), []float64{8.9, 7.8, 5.6, 4.5, 3.4, 3.4, 2.3, 2.3, 1.2, 1.2}, nil, "") {
-		t.Error("BaseDataFrame Sort, column C desc failed")
+		t.Error("DataFrame Sort, column C desc failed")
 	}
 
 	res = df.OrderBy(Asc("D"))
 	if !utils.CheckEqSliceBool(res.C("D").(series.Bools).Bools(), []bool{false, false, false, false, true, true, true, true, true, true}, nil, "") {
-		t.Error("BaseDataFrame Sort, column D asc failed")
+		t.Error("DataFrame Sort, column D asc failed")
 	}
 
 	res = df.OrderBy(Desc("D"))
 	if !utils.CheckEqSliceBool(res.C("D").(series.Bools).Bools(), []bool{true, true, true, true, true, true, false, false, false, false}, nil, "") {
-		t.Error("BaseDataFrame Sort, column D desc failed")
+		t.Error("DataFrame Sort, column D desc failed")
 	}
 
 	////////////////////////			.Sort() with 2 columns
 
 	res = df.OrderBy(Asc("A"), Asc("B"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 1, 1, 2, 2, 4, 5, 5}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc: A failed")
+		t.Error("DataFrame Sort A asc, B asc: A failed")
 	}
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{"a", "a", "c", "d", "f", "b", "c", "e", "b", "g"}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc: B failed")
+		t.Error("DataFrame Sort A asc, B asc: B failed")
 	}
 
 	res = df.OrderBy(Asc("A"), Desc("B"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 1, 1, 2, 2, 4, 5, 5}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B desc: A failed")
+		t.Error("DataFrame Sort A asc, B desc: A failed")
 	}
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{"f", "d", "c", "a", "a", "c", "b", "e", "g", "b"}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B desc: B failed")
+		t.Error("DataFrame Sort A asc, B desc: B failed")
 	}
 
 	res = df.OrderBy(Desc("A"), Asc("B"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{5, 5, 4, 2, 2, 1, 1, 1, 1, 1}, nil, "") {
-		t.Error("BaseDataFrame Sort A desc, B asc: A failed")
+		t.Error("DataFrame Sort A desc, B asc: A failed")
 	}
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{"b", "g", "e", "b", "c", "a", "a", "c", "d", "f"}, nil, "") {
-		t.Error("BaseDataFrame Sort A desc, B asc: B failed")
+		t.Error("DataFrame Sort A desc, B asc: B failed")
 	}
 
 	res = df.OrderBy(Desc("A"), Desc("B"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{5, 5, 4, 2, 2, 1, 1, 1, 1, 1}, nil, "") {
-		t.Error("BaseDataFrame Sort A desc, B desc: A failed")
+		t.Error("DataFrame Sort A desc, B desc: A failed")
 	}
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{"g", "b", "e", "c", "b", "f", "d", "c", "a", "a"}, nil, "") {
-		t.Error("BaseDataFrame Sort A desc, B desc: B failed")
+		t.Error("DataFrame Sort A desc, B desc: B failed")
 	}
 
 	res = df.OrderBy(Asc("A"), Asc("C"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 1, 1, 2, 2, 4, 5, 5}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, C asc: A failed")
+		t.Error("DataFrame Sort A asc, C asc: A failed")
 	}
 	if !utils.CheckEqSliceFloat64(res.C("C").(series.Float64s).Float64s(), []float64{1.2, 1.2, 3.4, 4.5, 7.8, 2.3, 3.4, 5.6, 2.3, 8.9}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, C asc: C failed")
+		t.Error("DataFrame Sort A asc, C asc: C failed")
 	}
 
 	res = df.OrderBy(Asc("A"), Desc("C"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 1, 1, 2, 2, 4, 5, 5}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, C desc: A failed")
+		t.Error("DataFrame Sort A asc, C desc: A failed")
 	}
 	if !utils.CheckEqSliceFloat64(res.C("C").(series.Float64s).Float64s(), []float64{7.8, 4.5, 3.4, 1.2, 1.2, 3.4, 2.3, 5.6, 8.9, 2.3}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, C desc: C failed")
+		t.Error("DataFrame Sort A asc, C desc: C failed")
 	}
 
 	res = df.OrderBy(Desc("A"), Asc("C"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{5, 5, 4, 2, 2, 1, 1, 1, 1, 1}, nil, "") {
-		t.Error("BaseDataFrame Sort A desc, C asc: A failed")
+		t.Error("DataFrame Sort A desc, C asc: A failed")
 	}
 	if !utils.CheckEqSliceFloat64(res.C("C").(series.Float64s).Float64s(), []float64{2.3, 8.9, 5.6, 2.3, 3.4, 1.2, 1.2, 3.4, 4.5, 7.8}, nil, "") {
-		t.Error("BaseDataFrame Sort A desc, C asc: C failed")
+		t.Error("DataFrame Sort A desc, C asc: C failed")
 	}
 
 	res = df.OrderBy(Desc("A"), Desc("C"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{5, 5, 4, 2, 2, 1, 1, 1, 1, 1}, nil, "") {
-		t.Error("BaseDataFrame Sort A desc, C desc: A failed")
+		t.Error("DataFrame Sort A desc, C desc: A failed")
 	}
 	if !utils.CheckEqSliceFloat64(res.C("C").(series.Float64s).Float64s(), []float64{8.9, 2.3, 5.6, 3.4, 2.3, 7.8, 4.5, 3.4, 1.2, 1.2}, nil, "") {
-		t.Error("BaseDataFrame Sort A desc, C desc: C failed")
+		t.Error("DataFrame Sort A desc, C desc: C failed")
 	}
 
 	////////////////////////			.Sort() with 3 columns
 
 	res = df.OrderBy(Asc("A"), Asc("B"), Asc("D"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 1, 1, 2, 2, 4, 5, 5}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc, D asc: A failed")
+		t.Error("DataFrame Sort A asc, B asc, D asc: A failed")
 	}
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{"a", "a", "c", "d", "f", "b", "c", "e", "b", "g"}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc, D asc: B failed")
+		t.Error("DataFrame Sort A asc, B asc, D asc: B failed")
 	}
 	if !utils.CheckEqSliceBool(res.C("D").(series.Bools).Bools(), []bool{false, true, false, true, true, true, true, false, false, true}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc, D asc: D failed")
+		t.Error("DataFrame Sort A asc, B asc, D asc: D failed")
 	}
 
 	res = df.OrderBy(Asc("A"), Asc("B"), Desc("D"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 1, 1, 2, 2, 4, 5, 5}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc, D desc: A failed")
+		t.Error("DataFrame Sort A asc, B asc, D desc: A failed")
 	}
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{"a", "a", "c", "d", "f", "b", "c", "e", "b", "g"}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc, D desc: B failed")
+		t.Error("DataFrame Sort A asc, B asc, D desc: B failed")
 	}
 	if !utils.CheckEqSliceBool(res.C("D").(series.Bools).Bools(), []bool{true, false, false, true, true, true, true, false, false, true}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc, D desc: D failed")
+		t.Error("DataFrame Sort A asc, B asc, D desc: D failed")
 	}
 
 	res = df.OrderBy(Asc("A"), Desc("B"), Asc("D"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 1, 1, 2, 2, 4, 5, 5}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B desc, D asc: A failed")
+		t.Error("DataFrame Sort A asc, B desc, D asc: A failed")
 	}
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{"f", "d", "c", "a", "a", "c", "b", "e", "g", "b"}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B desc, D asc: B failed")
+		t.Error("DataFrame Sort A asc, B desc, D asc: B failed")
 	}
 	if !utils.CheckEqSliceBool(res.C("D").(series.Bools).Bools(), []bool{true, true, false, false, true, true, true, false, true, false}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B desc, D asc: D failed")
+		t.Error("DataFrame Sort A asc, B desc, D asc: D failed")
 	}
 
 	res = df.OrderBy(Asc("A"), Desc("B"), Desc("D"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 1, 1, 2, 2, 4, 5, 5}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B desc, D desc: A failed")
+		t.Error("DataFrame Sort A asc, B desc, D desc: A failed")
 	}
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{"f", "d", "c", "a", "a", "c", "b", "e", "g", "b"}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B desc, D desc: B failed")
+		t.Error("DataFrame Sort A asc, B desc, D desc: B failed")
 	}
 	if !utils.CheckEqSliceBool(res.C("D").(series.Bools).Bools(), []bool{true, true, false, true, false, true, true, false, true, false}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B desc, D desc: D failed")
+		t.Error("DataFrame Sort A asc, B desc, D desc: D failed")
 	}
 
 	////////////////////////
 
 	res = df.OrderBy(Desc("D"), Asc("C"), Desc("B"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 2, 2, 1, 1, 5, 1, 5, 1, 4}, nil, "") {
-		t.Error("BaseDataFrame Sort D desc, C asc, B desc: A failed")
+		t.Error("DataFrame Sort D desc, C asc, B desc: A failed")
 	}
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{"a", "b", "c", "d", "f", "g", "a", "b", "c", "e"}, nil, "") {
-		t.Error("BaseDataFrame Sort D desc, C asc, B desc: B failed")
+		t.Error("DataFrame Sort D desc, C asc, B desc: B failed")
 	}
 	if !utils.CheckEqSliceFloat64(res.C("C").(series.Float64s).Float64s(), []float64{1.2, 2.3, 3.4, 4.5, 7.8, 8.9, 1.2, 2.3, 3.4, 5.6}, nil, "") {
-		t.Error("BaseDataFrame Sort D desc, C asc, B desc: C failed")
+		t.Error("DataFrame Sort D desc, C asc, B desc: C failed")
 	}
 	if !utils.CheckEqSliceBool(res.C("D").(series.Bools).Bools(), []bool{true, true, true, true, true, true, false, false, false, false}, nil, "") {
-		t.Error("BaseDataFrame Sort D desc, C asc, B desc: D failed")
+		t.Error("DataFrame Sort D desc, C asc, B desc: D failed")
 	}
 }
 
-func Test_BaseDataFrame_Sort_Nulls(t *testing.T) {
+func Test_DataFrame_Sort_Nulls(t *testing.T) {
 	var res DataFrame
 
 	a := series.NewSeriesInt64([]int64{1, 4, 2, 1, 4, 1, 4, 1, 2, 1}, nil, true, ctx).
@@ -1001,7 +1001,7 @@ func Test_BaseDataFrame_Sort_Nulls(t *testing.T) {
 	d := series.NewSeriesBool([]bool{true, false, true, true, false, true, true, false, true, false}, nil, true, ctx).
 		SetNullMask([]bool{false, false, false, false, false, true, false, false, true, true})
 
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("A", a).
 		AddSeries("B", b).
 		AddSeries("C", c).
@@ -1009,47 +1009,47 @@ func Test_BaseDataFrame_Sort_Nulls(t *testing.T) {
 
 	res = df.OrderBy(Asc("A"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 2, 4, 4, 4, 1, 2, 1}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc: A failed")
+		t.Error("DataFrame Sort A asc: A failed")
 	}
 	if !utils.CheckEqSliceBool(res.C("A").GetNullMask(), []bool{false, false, false, false, false, false, false, true, true, true}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc: A nullmask failed")
+		t.Error("DataFrame Sort A asc: A nullmask failed")
 	}
 
 	res = df.OrderBy(Desc("A"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 2, 1, 4, 4, 4, 2, 1, 1, 1}, nil, "") {
-		t.Error("BaseDataFrame Sort A desc: A failed")
+		t.Error("DataFrame Sort A desc: A failed")
 	}
 	if !utils.CheckEqSliceBool(res.C("A").GetNullMask(), []bool{true, true, true, false, false, false, false, false, false, false}, nil, "") {
-		t.Error("BaseDataFrame Sort A desc: A nullmask failed")
+		t.Error("DataFrame Sort A desc: A nullmask failed")
 	}
 
 	res = df.OrderBy(Asc("A"), Asc("B"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 2, 4, 4, 4, 2, 1, 1}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc: A failed")
+		t.Error("DataFrame Sort A asc, B asc: A failed")
 	}
 	if !utils.CheckEqSliceBool(res.C("A").GetNullMask(), []bool{false, false, false, false, false, false, false, true, true, true}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc: A nullmask failed")
+		t.Error("DataFrame Sort A asc: A nullmask failed")
 	}
 
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{"a", "d", NA_TEXT, "c", "e", "g", NA_TEXT, "b", "c", NA_TEXT}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc: B failed")
+		t.Error("DataFrame Sort A asc, B asc: B failed")
 	}
 	if !utils.CheckEqSliceBool(res.C("B").GetNullMask(), []bool{false, false, true, false, false, false, true, false, false, true}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc: B nullmask failed")
+		t.Error("DataFrame Sort A asc, B asc: B nullmask failed")
 	}
 
 	res = df.OrderBy(Asc("A"), Desc("B"))
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 2, 4, 4, 4, 1, 1, 2}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc: A failed")
+		t.Error("DataFrame Sort A asc, B asc: A failed")
 	}
 	if !utils.CheckEqSliceBool(res.C("A").GetNullMask(), []bool{false, false, false, false, false, false, false, true, true, true}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc: A nullmask failed")
+		t.Error("DataFrame Sort A asc: A nullmask failed")
 	}
 
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{NA_TEXT, "d", "a", "c", NA_TEXT, "g", "e", NA_TEXT, "c", "b"}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc: B failed")
+		t.Error("DataFrame Sort A asc, B asc: B failed")
 	}
 	if !utils.CheckEqSliceBool(res.C("B").GetNullMask(), []bool{true, false, false, false, true, false, false, true, false, false}, nil, "") {
-		t.Error("BaseDataFrame Sort A asc, B asc: B nullmask failed")
+		t.Error("DataFrame Sort A asc, B asc: B nullmask failed")
 	}
 }

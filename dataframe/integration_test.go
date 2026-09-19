@@ -10,20 +10,20 @@ var integrationCtx = enchanter.NewContext()
 
 func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 	// Create employee dataframe
-	employees := NewBaseDataFrame(integrationCtx).
+	employees := NewDataFrame(integrationCtx).
 		AddSeriesFromInt64s("emp_id", []int64{1, 2, 3, 4, 5, 6}, nil, false).
 		AddSeriesFromStrings("name", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank"}, nil, false).
 		AddSeriesFromStrings("department", []string{"HR", "IT", "IT", "HR", "Finance", "IT"}, nil, false).
 		AddSeriesFromInt64s("manager_id", []int64{0, 1, 2, 1, 0, 2}, nil, false) // 0 means no manager
 
 	// Create salary dataframe
-	salaries := NewBaseDataFrame(integrationCtx).
+	salaries := NewDataFrame(integrationCtx).
 		AddSeriesFromInt64s("emp_id", []int64{1, 2, 3, 4, 5, 6, 7}, nil, false). // emp_id 7 doesn't exist in employees
 		AddSeriesFromFloat64s("salary", []float64{75000, 65000, 60000, 70000, 80000, 55000, 50000}, nil, false).
 		AddSeriesFromInt64s("year", []int64{2023, 2023, 2023, 2023, 2023, 2023, 2023}, nil, false)
 
 	// Create bonus dataframe
-	bonuses := NewBaseDataFrame(integrationCtx).
+	bonuses := NewDataFrame(integrationCtx).
 		AddSeriesFromInt64s("emp_id", []int64{1, 2, 4, 5}, nil, false). // Not all employees have bonuses
 		AddSeriesFromFloat64s("bonus", []float64{5000, 3000, 4000, 6000}, nil, false)
 
@@ -116,13 +116,13 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 
 func TestIntegration_ChainedOperations(t *testing.T) {
 	// Test a complex chain of operations
-	sales := NewBaseDataFrame(integrationCtx).
+	sales := NewDataFrame(integrationCtx).
 		AddSeriesFromStrings("region", []string{"North", "South", "East", "West", "North", "South"}, nil, false).
 		AddSeriesFromStrings("product", []string{"A", "B", "A", "C", "B", "A"}, nil, false).
 		AddSeriesFromFloat64s("revenue", []float64{1000, 1500, 800, 1200, 900, 1100}, nil, false).
 		AddSeriesFromInt64s("units", []int64{10, 15, 8, 12, 9, 11}, nil, false)
 
-	targets := NewBaseDataFrame(integrationCtx).
+	targets := NewDataFrame(integrationCtx).
 		AddSeriesFromStrings("region", []string{"North", "South", "East", "West"}, nil, false).
 		AddSeriesFromFloat64s("target", []float64{2000, 2500, 1000, 1500}, nil, false)
 
@@ -170,7 +170,7 @@ func TestIntegration_ChainedOperations(t *testing.T) {
 
 func TestIntegration_AllAggregationsWithComplexData(t *testing.T) {
 	// Test all aggregation functions work correctly together
-	data := NewBaseDataFrame(integrationCtx).
+	data := NewDataFrame(integrationCtx).
 		AddSeriesFromStrings("category", []string{"A", "A", "B", "B", "A", "C"}, nil, false).
 		AddSeriesFromFloat64s("value1", []float64{10.5, 20.3, 15.7, 25.1, 12.9, 30.0}, nil, false).
 		AddSeriesFromFloat64s("value2", []float64{100, 200, 150, 250, 120, 300}, nil, false).

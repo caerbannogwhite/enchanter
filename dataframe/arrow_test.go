@@ -12,7 +12,7 @@ import (
 
 func TestArrowSchema(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeriesFromFloat64s("price", []float64{1.1, 2.2, 3.3}, nil, false).
 		AddSeriesFromInts("qty", []int{10, 20, 30}, nil, false).
 		AddSeriesFromStrings("name", []string{"a", "b", "c"}, nil, false)
@@ -50,7 +50,7 @@ func TestArrowSchema(t *testing.T) {
 
 func TestToArrowRecord(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeriesFromFloat64s("x", []float64{1.0, 2.0, 3.0}, nil, false).
 		AddSeriesFromInt64s("y", []int64{10, 20, 30}, nil, false)
 
@@ -75,7 +75,7 @@ func TestToArrowRecord(t *testing.T) {
 	}
 }
 
-func TestNewBaseDataFrameFromArrowRecord(t *testing.T) {
+func TestNewDataFrameFromArrowRecord(t *testing.T) {
 	ctx := enchanter.NewContext()
 	alloc := memory.DefaultAllocator
 
@@ -101,7 +101,7 @@ func TestNewBaseDataFrameFromArrowRecord(t *testing.T) {
 	rec := array.NewRecordBatch(schema, []arrow.Array{fArr, sArr}, 2)
 	defer rec.Release()
 
-	df := NewBaseDataFrameFromArrowRecord(rec, ctx)
+	df := NewDataFrameFromArrowRecord(rec, ctx)
 	if df.IsErrored() {
 		t.Fatal(df.GetError())
 	}
@@ -139,7 +139,7 @@ func TestArrowRecordRoundTrip(t *testing.T) {
 	ctx := enchanter.NewContext()
 
 	// Build a DataFrame
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeriesFromFloat64s("x", []float64{1.5, 2.5}, nil, false).
 		AddSeriesFromInts("y", []int{10, 20}, nil, false).
 		AddSeriesFromBools("z", []bool{true, false}, nil, false)
@@ -149,7 +149,7 @@ func TestArrowRecordRoundTrip(t *testing.T) {
 	defer rec.Release()
 
 	// Convert back to DataFrame
-	df2 := NewBaseDataFrameFromArrowRecord(rec, ctx)
+	df2 := NewDataFrameFromArrowRecord(rec, ctx)
 	if df2.IsErrored() {
 		t.Fatal(df2.GetError())
 	}

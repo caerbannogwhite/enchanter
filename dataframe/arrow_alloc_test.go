@@ -16,7 +16,7 @@ func TestArrowRecordRoundTripNoLeaks(t *testing.T) {
 	ctx.Allocator = mem
 	defer mem.AssertSize(t, 0)
 
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("a", series.NewSeriesFloat64([]float64{1, 2, 3}, []bool{false, true, false}, false, ctx)).
 		AddSeries("b", series.NewSeriesString([]string{"x", "y", "z"}, nil, false, ctx))
 	if df.IsErrored() {
@@ -24,7 +24,7 @@ func TestArrowRecordRoundTripNoLeaks(t *testing.T) {
 	}
 
 	rec := df.ToArrowRecord()
-	df2 := NewBaseDataFrameFromArrowRecord(rec, ctx)
+	df2 := NewDataFrameFromArrowRecord(rec, ctx)
 	rec.Release()
 	if df2.IsErrored() {
 		t.Fatal(df2.GetError())

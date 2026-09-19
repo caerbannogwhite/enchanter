@@ -48,7 +48,7 @@ Ursula,27,65.0,f,Business,4
 Charlie,33,60.0,t,Business,2
 Megan,26,55.0,F,IT,3`
 
-	dataframe.NewBaseDataFrame(enchanter.NewContext()).
+	dataframe.NewDataFrame(enchanter.NewContext()).
 		FromCsv().
 		SetReader(strings.NewReader(data1)).
 		Read().
@@ -59,7 +59,7 @@ Megan,26,55.0,F,IT,3`
 		PPrint(dataframe.NewPPrintParams().SetUseLipGloss(true))
 }
 
-//   BaseDataFrame: 3 rows, 5 columns
+//   DataFrame: 3 rows, 5 columns
 // ╭────────────┬──────────┬─────────────┬──────────────┬───────╮
 // │ department │ min(age) │ max(weight) │ mean(junior) │ n     │
 // ├────────────┼──────────┼─────────────┼──────────────┼───────┤
@@ -94,7 +94,7 @@ All readers and writers share the same builder style:
 // Parquet round trip: types and nulls survive, unlike CSV.
 err := df.ToParquet().SetPath("people.parquet").Write()
 
-df2 := dataframe.NewBaseDataFrame(ctx).
+df2 := dataframe.NewDataFrame(ctx).
 	FromParquet().
 	SetPath("people.parquet").
 	Read()
@@ -112,7 +112,7 @@ Arrow (DuckDB, Polars, pandas, DataFusion, Spark, ...):
 rec := df.ToArrowRecord() // freshly built, owned by the record
 defer rec.Release()       // optional under the default GC-backed allocator
 
-df2 := dataframe.NewBaseDataFrameFromArrowRecord(rec, ctx)
+df2 := dataframe.NewDataFrameFromArrowRecord(rec, ctx)
 ```
 
 Conversion notes:

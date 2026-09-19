@@ -19,9 +19,9 @@ func f64(t *testing.T, df DataFrame, col string) []float64 {
 
 func TestAggregateSerialSingleKey(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"b", "a", "b", "a", "b"}, nil, false, ctx)).
-		AddSeries("v", series.NewSeriesFloat64([]float64{1, 10, 2, 20, 3}, nil, false, ctx)).(BaseDataFrame)
+		AddSeries("v", series.NewSeriesFloat64([]float64{1, 10, 2, 20, 3}, nil, false, ctx))
 
 	out := aggregateSerial(df, []series.Series{df.C("g")}, []aggregator{Sum("v"), Count()}, true)
 	// sorted by key: a then b
@@ -40,9 +40,9 @@ func TestAggregateSerialSingleKey(t *testing.T) {
 
 func TestAggregateSerialSkipNullsDefault(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"a", "a", "a"}, nil, false, ctx)).
-		AddSeries("v", series.NewSeriesFloat64([]float64{1, 0, 3}, []bool{false, true, false}, false, ctx)).(BaseDataFrame)
+		AddSeries("v", series.NewSeriesFloat64([]float64{1, 0, 3}, []bool{false, true, false}, false, ctx))
 
 	// removeNAs=true (new default): mean of {1,3} = 2
 	out := aggregateSerial(df, []series.Series{df.C("g")}, []aggregator{Mean("v")}, true)
@@ -63,9 +63,9 @@ func TestAggregateSerialSkipNullsDefault(t *testing.T) {
 // RemoveNAs(false) NA propagation.
 func TestAggregateSerialSkipNullsDefaultInt64(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"a", "a", "a"}, nil, false, ctx)).
-		AddSeries("v", series.NewSeriesInt64([]int64{1, 0, 3}, []bool{false, true, false}, false, ctx)).(BaseDataFrame)
+		AddSeries("v", series.NewSeriesInt64([]int64{1, 0, 3}, []bool{false, true, false}, false, ctx))
 
 	// removeNAs=true (new default): mean of {1,3} = 2
 	out := aggregateSerial(df, []series.Series{df.C("g")}, []aggregator{Mean("v")}, true)
@@ -81,9 +81,9 @@ func TestAggregateSerialSkipNullsDefaultInt64(t *testing.T) {
 
 func TestAggregateSerialMedianMultiKey(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"a", "a", "a", "a"}, nil, false, ctx)).
-		AddSeries("v", series.NewSeriesFloat64([]float64{1, 2, 3, 4}, nil, false, ctx)).(BaseDataFrame)
+		AddSeries("v", series.NewSeriesFloat64([]float64{1, 2, 3, 4}, nil, false, ctx))
 	out := aggregateSerial(df, []series.Series{df.C("g")}, []aggregator{Median("v"), Quantile("v", 0.25, WithInterpolation(Higher))}, true)
 	if got := f64(t, out, "median(v)")[0]; got != 2.5 {
 		t.Fatalf("median = %v, want 2.5", got)
@@ -97,9 +97,9 @@ func TestAggregateSerialMedianMultiKey(t *testing.T) {
 // holistic (Median) as well as reducible (Mean).
 func TestAggregateSerialNAPropagationAllAggregates(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"a", "a", "a"}, nil, false, ctx)).
-		AddSeries("v", series.NewSeriesFloat64([]float64{1, 0, 3}, []bool{false, true, false}, false, ctx)).(BaseDataFrame)
+		AddSeries("v", series.NewSeriesFloat64([]float64{1, 0, 3}, []bool{false, true, false}, false, ctx))
 
 	out := aggregateSerial(df, []series.Series{df.C("g")}, []aggregator{Mean("v"), Median("v")}, false)
 	if got := f64(t, out, "mean(v)")[0]; !math.IsNaN(got) {
@@ -115,9 +115,9 @@ func TestAggregateSerialNAPropagationAllAggregates(t *testing.T) {
 func TestAggregateSerialNullKeysSortLast(t *testing.T) {
 	ctx := enchanter.NewContext()
 	// keys: b, <null>, a, <null>, b  ->  groups b, <null>, a
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"b", "", "a", "", "b"}, []bool{false, true, false, true, false}, false, ctx)).
-		AddSeries("v", series.NewSeriesFloat64([]float64{1, 2, 3, 4, 5}, nil, false, ctx)).(BaseDataFrame)
+		AddSeries("v", series.NewSeriesFloat64([]float64{1, 2, 3, 4, 5}, nil, false, ctx))
 
 	out := aggregateSerial(df, []series.Series{df.C("g")}, []aggregator{Sum("v")}, true)
 	g := out.C("g").(series.Strings)
@@ -142,10 +142,10 @@ func TestAggregateSerialNullKeysSortLast(t *testing.T) {
 func TestAggregateSerialTwoKeyLexicographic(t *testing.T) {
 	ctx := enchanter.NewContext()
 	// (k1,k2): (b,y),(a,y),(b,x),(a,x) -> 4 distinct groups
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("k1", series.NewSeriesString([]string{"b", "a", "b", "a"}, nil, false, ctx)).
 		AddSeries("k2", series.NewSeriesString([]string{"y", "y", "x", "x"}, nil, false, ctx)).
-		AddSeries("v", series.NewSeriesFloat64([]float64{1, 2, 3, 4}, nil, false, ctx)).(BaseDataFrame)
+		AddSeries("v", series.NewSeriesFloat64([]float64{1, 2, 3, 4}, nil, false, ctx))
 
 	out := aggregateSerial(df, []series.Series{df.C("k1"), df.C("k2")}, []aggregator{Sum("v")}, true)
 	k1 := out.C("k1").(series.Strings)
@@ -174,9 +174,9 @@ func TestAggregateParallelParity(t *testing.T) {
 		keys[i] = []string{"a", "b", "c", "d"}[i%4]
 		vals[i] = float64(i % 97)
 	}
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString(keys, nil, false, ctx)).
-		AddSeries("v", series.NewSeriesFloat64(vals, nil, false, ctx)).(BaseDataFrame)
+		AddSeries("v", series.NewSeriesFloat64(vals, nil, false, ctx))
 
 	aggs := []aggregator{Sum("v"), Mean("v"), Min("v"), Max("v"), Std("v"), Count()}
 	ser := aggregateSerial(df, []series.Series{df.C("g")}, aggs, true)
@@ -221,9 +221,9 @@ func TestAggregateParallelNAPropagationCrossChunk(t *testing.T) {
 	}
 	nulls[0] = true // row 0 is key "a"; this is the only null in the frame
 
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString(keys, nil, false, ctx)).
-		AddSeries("v", series.NewSeriesFloat64(vals, nulls, false, ctx)).(BaseDataFrame)
+		AddSeries("v", series.NewSeriesFloat64(vals, nulls, false, ctx))
 
 	oldProcs := runtime.GOMAXPROCS(4)
 	defer runtime.GOMAXPROCS(oldProcs)
@@ -325,9 +325,9 @@ func TestAggregateParallelInt64ValueNAPropagationCrossChunk(t *testing.T) {
 	}
 	nulls[0] = true // row 0 is key "a"; this is the only null in the frame
 
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString(keys, nil, false, ctx)).
-		AddSeries("v", series.NewSeriesInt64(vals, nulls, false, ctx)).(BaseDataFrame)
+		AddSeries("v", series.NewSeriesInt64(vals, nulls, false, ctx))
 
 	oldProcs := runtime.GOMAXPROCS(4)
 	defer runtime.GOMAXPROCS(oldProcs)
@@ -409,9 +409,9 @@ func TestAggregateParallelInt64ValueNAPropagationCrossChunk(t *testing.T) {
 
 func TestAggregateAnyAll(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"a", "a", "b", "b"}, nil, false, ctx)).
-		AddSeries("b", series.NewSeriesBool([]bool{true, false, true, true}, nil, false, ctx)).(BaseDataFrame)
+		AddSeries("b", series.NewSeriesBool([]bool{true, false, true, true}, nil, false, ctx))
 	out := aggregate(df, []series.Series{df.C("g")}, []aggregator{Any("b"), All("b")}, true)
 	anyC := out.C("any(b)").(series.Bools) // sorted: a, b
 	allC := out.C("all(b)").(series.Bools)
@@ -422,9 +422,9 @@ func TestAggregateAnyAll(t *testing.T) {
 
 func TestAggregateAnyAllNAPropagationNull(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"a", "a", "b"}, nil, false, ctx)).
-		AddSeries("b", series.NewSeriesBool([]bool{true, false, true}, []bool{false, true, false}, false, ctx)).(BaseDataFrame)
+		AddSeries("b", series.NewSeriesBool([]bool{true, false, true}, []bool{false, true, false}, false, ctx))
 	out := aggregate(df, []series.Series{df.C("g")}, []aggregator{All("b")}, false)
 	allC := out.C("all(b)").(series.Bools)
 	if !allC.IsNull(0) {
@@ -479,9 +479,9 @@ func TestAggregateParallelAnyAllCrossChunk(t *testing.T) {
 	vals[150000] = false // group "a", chunk 3 (150000 % 4 == 0): the lone false
 	vals[1] = true       // group "b", chunk 0 (1 % 4 == 1): the lone true
 
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString(keys, nil, false, ctx)).
-		AddSeries("b", series.NewSeriesBool(vals, nil, false, ctx)).(BaseDataFrame)
+		AddSeries("b", series.NewSeriesBool(vals, nil, false, ctx))
 
 	oldProcs := runtime.GOMAXPROCS(4)
 	defer runtime.GOMAXPROCS(oldProcs)
@@ -558,9 +558,9 @@ func TestAggregateParallelAnyAllCrossChunk(t *testing.T) {
 	// exactly as it OR's bflag above.
 	nulls := make([]bool, n)
 	nulls[100000] = true // group "a" (100000 % 4 == 0), chunk 2
-	dfNAProp := NewBaseDataFrame(ctx).
+	dfNAProp := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString(keys, nil, false, ctx)).
-		AddSeries("b", series.NewSeriesBool(vals, nulls, false, ctx)).(BaseDataFrame)
+		AddSeries("b", series.NewSeriesBool(vals, nulls, false, ctx))
 
 	aggsNAProp := []aggregator{Any("b"), All("b")}
 	serNA := aggregateSerial(dfNAProp, []series.Series{dfNAProp.C("g")}, aggsNAProp, false)

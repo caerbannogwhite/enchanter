@@ -8,10 +8,10 @@ import (
 	"github.com/caerbannogwhite/enchanter/series"
 )
 
-func ExampleNewBaseDataFrame() {
+func ExampleNewDataFrame() {
 	ctx := enchanter.NewContext()
 
-	df := dataframe.NewBaseDataFrame(ctx).
+	df := dataframe.NewDataFrame(ctx).
 		AddSeries("name", series.NewSeriesString([]string{"Alice", "Bob", "Carol"}, nil, false, ctx)).
 		AddSeries("age", series.NewSeriesInt64([]int64{29, 35, 31}, nil, false, ctx))
 

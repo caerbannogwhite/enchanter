@@ -24,8 +24,8 @@ id,name,department,salary,active
 
 func TestJoin_EmptyDataFrames(t *testing.T) {
 	// Test joining with empty dataframes
-	dfEmpty := NewBaseDataFrame(testCtx)
-	dfNormal := NewBaseDataFrame(testCtx).
+	dfEmpty := NewDataFrame(testCtx)
+	dfNormal := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2}, nil, false).
 		AddSeriesFromStrings("name", []string{"Alice", "Bob"}, nil, false)
 
@@ -36,7 +36,7 @@ func TestJoin_EmptyDataFrames(t *testing.T) {
 	}
 
 	// Test with properly structured empty dataframe
-	dfEmptyStructured := NewBaseDataFrame(testCtx).
+	dfEmptyStructured := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{}, nil, false).
 		AddSeriesFromStrings("name", []string{}, nil, false)
 
@@ -50,12 +50,12 @@ func TestJoin_EmptyDataFrames(t *testing.T) {
 }
 
 func TestJoin_MultipleColumns(t *testing.T) {
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("dept_id", []int64{1, 1, 2, 2, 3}, nil, false).
 		AddSeriesFromStrings("category", []string{"A", "B", "A", "B", "A"}, nil, false).
 		AddSeriesFromStrings("name", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("dept_id", []int64{1, 1, 2, 4}, nil, false).
 		AddSeriesFromStrings("category", []string{"A", "B", "A", "A"}, nil, false).
 		AddSeriesFromFloat64s("budget", []float64{10000, 15000, 12000, 8000}, nil, false)
@@ -88,12 +88,12 @@ func TestJoin_MultipleColumns(t *testing.T) {
 func TestJoin_WithNullValues(t *testing.T) {
 	// Create dataframes with null values
 	nullMask1 := []bool{false, false, true, false} // Charlie has null department
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3, 4}, nil, false).
 		AddSeriesFromStrings("department", []string{"HR", "IT", "", "Finance"}, nullMask1, false)
 
 	nullMask2 := []bool{false, false, true, false} // id=3 has null salary
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3, 5}, nil, false).
 		AddSeriesFromFloat64s("salary", []float64{50000, 60000, 0, 45000}, nullMask2, false)
 
@@ -109,10 +109,10 @@ func TestJoin_WithNullValues(t *testing.T) {
 }
 
 func TestJoin_TypeMismatch(t *testing.T) {
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromStrings("id", []string{"1", "2", "3"}, nil, false) // Different type
 
 	result := df1.Join(INNER_JOIN, df2, "id")
@@ -122,11 +122,11 @@ func TestJoin_TypeMismatch(t *testing.T) {
 }
 
 func TestJoin_AllJoinTypes(t *testing.T) {
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3, 4}, nil, false).
 		AddSeriesFromStrings("name", []string{"Alice", "Bob", "Charlie", "David"}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{2, 3, 4, 5}, nil, false).
 		AddSeriesFromFloat64s("salary", []float64{60000, 50000, 55000, 65000}, nil, false)
 
@@ -155,11 +155,11 @@ func TestJoin_AllJoinTypes(t *testing.T) {
 }
 
 func TestJoin_ColumnNameCollisions(t *testing.T) {
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3}, nil, false).
 		AddSeriesFromStrings("value", []string{"A", "B", "C"}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3}, nil, false).
 		AddSeriesFromStrings("value", []string{"X", "Y", "Z"}, nil, false) // Same column name
 
@@ -190,7 +190,7 @@ Ursula,27,65.0,f,Business,4
 Charlie,33,60.0,t,Business,2
 `
 
-	df := NewBaseDataFrame(testCtx).FromCsv().
+	df := NewDataFrame(testCtx).FromCsv().
 		SetReader(strings.NewReader(testData)).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -243,7 +243,7 @@ func TestGroupBy_WithNullValues(t *testing.T) {
 	nullMaskSalary := []bool{false, false, true, false, false} // Charlie has null salary
 	nullMaskDept := []bool{false, false, false, true, false}   // David has null department
 
-	df := NewBaseDataFrame(testCtx).
+	df := NewDataFrame(testCtx).
 		AddSeriesFromStrings("name", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, nil, false).
 		AddSeriesFromStrings("department", []string{"HR", "IT", "IT", "", "HR"}, nullMaskDept, false).
 		AddSeriesFromFloat64s("salary", []float64{50000, 60000, 0, 55000, 52000}, nullMaskSalary, false)
@@ -267,7 +267,7 @@ func TestGroupBy_WithNullValues(t *testing.T) {
 }
 
 func TestGroupBy_MultipleColumns(t *testing.T) {
-	df := NewBaseDataFrame(testCtx).
+	df := NewDataFrame(testCtx).
 		AddSeriesFromStrings("department", []string{"IT", "IT", "HR", "HR", "IT", "HR"}, nil, false).
 		AddSeriesFromBools("senior", []bool{true, false, true, false, true, true}, nil, false).
 		AddSeriesFromFloat64s("salary", []float64{70000, 50000, 65000, 45000, 75000, 68000}, nil, false)
@@ -293,7 +293,7 @@ func TestGroupBy_MultipleColumns(t *testing.T) {
 
 func TestGroupBy_EmptyGroups(t *testing.T) {
 	// Test with a dataframe that could result in empty groups
-	df := NewBaseDataFrame(testCtx).
+	df := NewDataFrame(testCtx).
 		AddSeriesFromStrings("category", []string{"A", "A", "B", "B"}, nil, false).
 		AddSeriesFromInt64s("value", []int64{1, 2, 3, 4}, nil, false)
 
@@ -315,7 +315,7 @@ func TestGroupBy_AllDataTypes(t *testing.T) {
 		time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC),
 	}
 
-	df := NewBaseDataFrame(testCtx).
+	df := NewDataFrame(testCtx).
 		AddSeriesFromBools("active", []bool{true, true, false}, nil, false).
 		AddSeriesFromTimes("date", timeData, nil, false).
 		AddSeriesFromInt64s("count", []int64{5, 3, 8}, nil, false)
@@ -335,12 +335,12 @@ func TestGroupBy_AllDataTypes(t *testing.T) {
 
 func TestJoinThenGroupBy(t *testing.T) {
 	// Test combination: join then group by
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("emp_id", []int64{1, 2, 3, 4}, nil, false).
 		AddSeriesFromStrings("name", []string{"Alice", "Bob", "Charlie", "David"}, nil, false).
 		AddSeriesFromStrings("department", []string{"HR", "IT", "IT", "HR"}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("emp_id", []int64{1, 2, 3, 4, 5}, nil, false).
 		AddSeriesFromFloat64s("salary", []float64{50000, 60000, 55000, 52000, 65000}, nil, false)
 
@@ -363,11 +363,11 @@ func TestJoinThenGroupBy(t *testing.T) {
 
 func TestGroupByThenJoin(t *testing.T) {
 	// Test combination: group by then join (should fail as grouped dataframes can't be joined)
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromStrings("department", []string{"HR", "IT", "IT", "HR"}, nil, false).
 		AddSeriesFromFloat64s("salary", []float64{50000, 60000, 55000, 52000}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromStrings("department", []string{"HR", "IT", "Finance"}, nil, false).
 		AddSeriesFromFloat64s("budget", []float64{100000, 150000, 80000}, nil, false)
 
@@ -385,10 +385,10 @@ func TestGroupByThenJoin(t *testing.T) {
 }
 
 func TestErrorConditions(t *testing.T) {
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3}, nil, false)
 
 	// Test joining non-existent columns

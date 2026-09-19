@@ -10,7 +10,7 @@ import (
 
 func TestAggRunSortedAndSkipNullByDefault(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"b", "a", "b"}, nil, false, ctx)).
 		AddSeries("v", series.NewSeriesFloat64([]float64{1, 5, 0}, []bool{false, false, true}, false, ctx))
 
@@ -39,7 +39,7 @@ func TestAggRunSortedAndSkipNullByDefault(t *testing.T) {
 // catch it up front and return an errored frame instead.
 func TestAggRunUnsupportedValueTypeErrors(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"a", "a", "b"}, nil, false, ctx)).
 		AddSeries("v", series.NewSeriesString([]string{"x", "y", "z"}, nil, false, ctx))
 
@@ -63,7 +63,7 @@ func TestAggRunUnsupportedValueTypeErrors(t *testing.T) {
 //	C: [10]       mean=10  variance=0/1 = 0 (single point, ddof=0)  std=0
 func TestAggRunStdHandComputed(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"A", "A", "B", "B", "B", "C"}, nil, false, ctx)).
 		AddSeries("v", series.NewSeriesFloat64([]float64{2, 4, 1, 2, 3, 10}, nil, false, ctx))
 
@@ -100,7 +100,7 @@ func TestAggRunStdHandComputed(t *testing.T) {
 
 func TestAggRunOptionValidation(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"a"}, nil, false, ctx)).
 		AddSeries("v", series.NewSeriesFloat64([]float64{1}, nil, false, ctx))
 	out := df.GroupBy("g").Agg(Sum("v", WithDDoF(1))).Run() // ddof on Sum → error

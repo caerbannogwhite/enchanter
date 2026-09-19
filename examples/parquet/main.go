@@ -14,7 +14,7 @@ import (
 func main() {
 	ctx := enchanter.NewContext()
 
-	df := dataframe.NewBaseDataFrame(ctx).
+	df := dataframe.NewDataFrame(ctx).
 		AddSeries("name", series.NewSeriesString([]string{"Alice", "Bob", "Charlie", "Dana"}, nil, false, ctx)).
 		AddSeries("age", series.NewSeriesInt64([]int64{29, 31, 0, 25}, []bool{false, false, true, false}, false, ctx)).
 		AddSeries("score", series.NewSeriesFloat64([]float64{7.5, 8.25, 9.0, 6.75}, nil, false, ctx))
@@ -36,7 +36,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	back := dataframe.NewBaseDataFrame(ctx).FromParquet().SetPath(path).Read()
+	back := dataframe.NewDataFrame(ctx).FromParquet().SetPath(path).Read()
 	if back.IsErrored() {
 		fmt.Fprintln(os.Stderr, "read:", back.GetError())
 		os.Exit(1)

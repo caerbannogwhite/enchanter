@@ -10,20 +10,20 @@ import (
 )
 
 func FromIoData(iod *encio.IoData) DataFrame {
-	df := NewBaseDataFrame(iod.GetContext()).(BaseDataFrame)
+	df := NewDataFrame(iod.GetContext())
 
 	if iod.Error != nil {
 		df.err = iod.Error
 	}
 
 	for i, s := range iod.Series {
-		df = df.AddSeries(iod.SeriesMeta[i].Name, s).(BaseDataFrame)
+		df = df.AddSeries(iod.SeriesMeta[i].Name, s)
 	}
 
 	return df
 }
 
-func (df BaseDataFrame) ToIoData() *encio.IoData {
+func (df DataFrame) ToIoData() *encio.IoData {
 	iod := encio.NewIoData(df.ctx)
 
 	iod.Error = df.GetError()
@@ -43,7 +43,7 @@ type csvReaderWrapper struct {
 	reader *encio.CsvReader
 }
 
-func (df BaseDataFrame) FromCsv() *csvReaderWrapper {
+func (df DataFrame) FromCsv() *csvReaderWrapper {
 	return &csvReaderWrapper{
 		reader: encio.NewCsvReader(df.ctx),
 	}
@@ -105,7 +105,7 @@ type csvWriterWrapper struct {
 	writer *encio.CsvWriter
 }
 
-func (df BaseDataFrame) ToCsv() *csvWriterWrapper {
+func (df DataFrame) ToCsv() *csvWriterWrapper {
 	return &csvWriterWrapper{
 		writer: encio.NewCsvWriter().SetIoData(df.ToIoData()),
 	}
@@ -166,7 +166,7 @@ type jsonReaderWrapper struct {
 	reader *encio.JsonReader
 }
 
-func (df BaseDataFrame) FromJson() *jsonReaderWrapper {
+func (df DataFrame) FromJson() *jsonReaderWrapper {
 	return &jsonReaderWrapper{
 		reader: encio.NewJsonReader(df.ctx),
 	}
@@ -198,7 +198,7 @@ type jsonWriterWrapper struct {
 	writer *encio.JsonWriter
 }
 
-func (df BaseDataFrame) ToJson() *jsonWriterWrapper {
+func (df DataFrame) ToJson() *jsonWriterWrapper {
 	return &jsonWriterWrapper{
 		writer: encio.NewJsonWriter().SetIoData(df.ToIoData()),
 	}
@@ -234,7 +234,7 @@ type xptReaderWrapper struct {
 	reader *encio.XptReader
 }
 
-func (df BaseDataFrame) FromXpt() *xptReaderWrapper {
+func (df DataFrame) FromXpt() *xptReaderWrapper {
 	return &xptReaderWrapper{
 		reader: encio.NewXptReader(df.ctx),
 	}
@@ -276,7 +276,7 @@ type sas7bdatReaderWrapper struct {
 	reader *encio.Sas7bdatReader
 }
 
-func (df BaseDataFrame) FromSas7bdat() *sas7bdatReaderWrapper {
+func (df DataFrame) FromSas7bdat() *sas7bdatReaderWrapper {
 	return &sas7bdatReaderWrapper{
 		reader: encio.NewSas7bdatReader(df.ctx),
 	}
@@ -313,7 +313,7 @@ type xptWriterWrapper struct {
 	writer *encio.XptWriter
 }
 
-func (df BaseDataFrame) ToXpt() *xptWriterWrapper {
+func (df DataFrame) ToXpt() *xptWriterWrapper {
 	return &xptWriterWrapper{
 		writer: encio.NewXptWriter().SetIoData(df.ToIoData()),
 	}
@@ -349,7 +349,7 @@ type xlsxReaderWrapper struct {
 	reader *encio.XlsxReader
 }
 
-func (df BaseDataFrame) FromXlsx() *xlsxReaderWrapper {
+func (df DataFrame) FromXlsx() *xlsxReaderWrapper {
 	return &xlsxReaderWrapper{
 		reader: encio.NewXlsxReader(df.ctx),
 	}
@@ -401,7 +401,7 @@ type xlsxWriterWrapper struct {
 	writer *encio.XlsxWriter
 }
 
-func (df BaseDataFrame) ToXlsx() *xlsxWriterWrapper {
+func (df DataFrame) ToXlsx() *xlsxWriterWrapper {
 	return &xlsxWriterWrapper{
 		writer: encio.NewXlsxWriter().SetIoData(df.ToIoData()),
 	}
@@ -437,7 +437,7 @@ type htmlWriterWrapper struct {
 	writer *encio.HtmlWriter
 }
 
-func (df BaseDataFrame) ToHtml() *htmlWriterWrapper {
+func (df DataFrame) ToHtml() *htmlWriterWrapper {
 	return &htmlWriterWrapper{
 		writer: encio.NewHtmlWriter().SetIoData(df.ToIoData()),
 	}
@@ -483,7 +483,7 @@ type markDownWriterWrapper struct {
 	writer *encio.MarkDownWriter
 }
 
-func (df BaseDataFrame) ToMarkDown() *markDownWriterWrapper {
+func (df DataFrame) ToMarkDown() *markDownWriterWrapper {
 	return &markDownWriterWrapper{
 		writer: encio.NewMarkDownWriter().SetIoData(df.ToIoData()),
 	}
@@ -524,7 +524,7 @@ type parquetReaderWrapper struct {
 	reader *encio.ParquetReader
 }
 
-func (df BaseDataFrame) FromParquet() *parquetReaderWrapper {
+func (df DataFrame) FromParquet() *parquetReaderWrapper {
 	return &parquetReaderWrapper{
 		reader: encio.NewParquetReader(df.ctx),
 	}
@@ -546,7 +546,7 @@ type parquetWriterWrapper struct {
 	writer *encio.ParquetWriter
 }
 
-func (df BaseDataFrame) ToParquet() *parquetWriterWrapper {
+func (df DataFrame) ToParquet() *parquetWriterWrapper {
 	return &parquetWriterWrapper{
 		writer: encio.NewParquetWriter().SetIoData(df.ToIoData()),
 	}
@@ -567,7 +567,7 @@ type arrowIPCReaderWrapper struct {
 	reader *encio.ArrowIPCReader
 }
 
-func (df BaseDataFrame) FromArrowIPC() *arrowIPCReaderWrapper {
+func (df DataFrame) FromArrowIPC() *arrowIPCReaderWrapper {
 	return &arrowIPCReaderWrapper{
 		reader: encio.NewArrowIPCReader(df.ctx),
 	}
@@ -589,7 +589,7 @@ type arrowIPCWriterWrapper struct {
 	writer *encio.ArrowIPCWriter
 }
 
-func (df BaseDataFrame) ToArrowIPC() *arrowIPCWriterWrapper {
+func (df DataFrame) ToArrowIPC() *arrowIPCWriterWrapper {
 	return &arrowIPCWriterWrapper{
 		writer: encio.NewArrowIPCWriter().SetIoData(df.ToIoData()),
 	}

@@ -12,7 +12,7 @@ import (
 )
 
 // ArrowSchema returns the Arrow schema corresponding to this DataFrame's columns.
-func (df BaseDataFrame) ArrowSchema() *arrow.Schema {
+func (df DataFrame) ArrowSchema() *arrow.Schema {
 	fields := make([]arrow.Field, len(df.series))
 	for i, s := range df.series {
 		dt := arrowutil.BaseTypeToArrowType(s.Type())
@@ -32,7 +32,7 @@ func (df BaseDataFrame) ArrowSchema() *arrow.Schema {
 // The column arrays are freshly built copies owned by the record: the caller
 // should Release() the returned record when done (optional but recommended
 // under GC-backed allocators, see enchanter.Context.Allocator).
-func (df BaseDataFrame) ToArrowRecord() arrow.RecordBatch {
+func (df DataFrame) ToArrowRecord() arrow.RecordBatch {
 	alloc := memory.DefaultAllocator
 	if df.ctx != nil {
 		alloc = df.ctx.Allocator
@@ -62,16 +62,16 @@ func (df BaseDataFrame) ToArrowRecord() arrow.RecordBatch {
 	return rec
 }
 
-// NewBaseDataFrameFromArrowRecord creates a BaseDataFrame from an Arrow RecordBatch.
+// NewDataFrameFromArrowRecord creates a DataFrame from an Arrow RecordBatch.
 // Each column in the record becomes a Series in the DataFrame. Column data is
 // materialized into Go slices, so this function does not take ownership of the
 // record: the caller may Release it as soon as this function returns.
-func NewBaseDataFrameFromArrowRecord(record arrow.RecordBatch, ctx *enchanter.Context) DataFrame {
+func NewDataFrameFromArrowRecord(record arrow.RecordBatch, ctx *enchanter.Context) DataFrame {
 	if ctx == nil {
-		return BaseDataFrame{err: fmt.Errorf("NewBaseDataFrameFromArrowRecord: context is nil")}
+		return DataFrame{err: fmt.Errorf("NewDataFrameFromArrowRecord: context is nil")}
 	}
 
-	df := NewBaseDataFrame(ctx).(BaseDataFrame)
+	df := NewDataFrame(ctx)
 
 	schema := record.Schema()
 	for i := 0; i < int(record.NumCols()); i++ {
@@ -79,10 +79,10 @@ func NewBaseDataFrameFromArrowRecord(record arrow.RecordBatch, ctx *enchanter.Co
 		name := schema.Field(i).Name
 		s := series.ArrowArrayToSeries(col, ctx)
 		if s.IsError() {
-			df.err = fmt.Errorf("NewBaseDataFrameFromArrowRecord: column %q: %s", name, s.GetError())
+			df.err = fmt.Errorf("NewDataFrameFromArrowRecord: column %q: %s", name, s.GetError())
 			return df
 		}
-		df = df.AddSeries(name, s).(BaseDataFrame)
+		df = df.AddSeries(name, s)
 	}
 
 	return df

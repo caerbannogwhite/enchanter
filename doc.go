@@ -6,7 +6,7 @@
 // and dataframe created from it:
 //
 //	ctx := enchanter.NewContext()
-//	df := dataframe.NewBaseDataFrame(ctx).
+//	df := dataframe.NewDataFrame(ctx).
 //		FromCsv().SetReader(r).Read().
 //		GroupBy("department").
 //		Agg(dataframe.Mean("salary")).
@@ -16,7 +16,7 @@
 //
 //   - series: typed, nullable columns (Bool, Int, Int64, Float64, String,
 //     Time, Duration) with filtering, grouping, sorting and arithmetic.
-//   - dataframe: the DataFrame interface — select, filter, group by, join,
+//   - dataframe: the DataFrame type — select, filter, group by, join,
 //     sort, aggregate — plus Apache Arrow record conversion.
 //   - io: readers and writers for CSV, XLSX, XPT (SAS), JSON, HTML,
 //     Markdown, Parquet and Arrow IPC.

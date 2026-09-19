@@ -6,7 +6,7 @@ import (
 )
 
 func selectTestFrame() DataFrame {
-	return NewBaseDataFrame(testCtx).
+	return NewDataFrame(testCtx).
 		AddSeriesFromStrings("Car", []string{"a", "b"}, nil, false).
 		AddSeriesFromStrings("CarOrigin", []string{"a - US", "b - EU"}, nil, false).
 		AddSeriesFromStrings("Origin", []string{"US", "EU"}, nil, false).
