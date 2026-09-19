@@ -18,8 +18,8 @@ func main() {
 		AddSeries("name", series.NewSeriesString([]string{"Alice", "Bob", "Charlie", "Dana"}, nil, false, ctx)).
 		AddSeries("age", series.NewSeriesInt64([]int64{29, 31, 0, 25}, []bool{false, false, true, false}, false, ctx)).
 		AddSeries("score", series.NewSeriesFloat64([]float64{7.5, 8.25, 9.0, 6.75}, nil, false, ctx))
-	if df.IsErrored() {
-		fmt.Fprintln(os.Stderr, df.GetError())
+	if df.Err() != nil {
+		fmt.Fprintln(os.Stderr, df.Err())
 		os.Exit(1)
 	}
 
@@ -37,8 +37,8 @@ func main() {
 	}
 
 	back := dataframe.NewDataFrame(ctx).FromParquet().SetPath(path).Read()
-	if back.IsErrored() {
-		fmt.Fprintln(os.Stderr, "read:", back.GetError())
+	if back.Err() != nil {
+		fmt.Fprintln(os.Stderr, "read:", back.Err())
 		os.Exit(1)
 	}
 

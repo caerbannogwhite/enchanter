@@ -16,8 +16,8 @@ func ExampleNewDataFrame() {
 		AddSeries("age", series.NewSeriesInt64([]int64{29, 35, 31}, nil, false, ctx))
 
 	adults := df.Filter(df.C("age").Gt(int64(30)))
-	if adults.IsErrored() {
-		fmt.Println(adults.GetError())
+	if adults.Err() != nil {
+		fmt.Println(adults.Err())
 		return
 	}
 

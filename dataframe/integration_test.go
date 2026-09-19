@@ -29,14 +29,14 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 
 	// Complex scenario: Join employees with salaries (inner join)
 	empSalaries := employees.Join(INNER_JOIN, salaries, "emp_id")
-	if empSalaries.GetError() != nil {
-		t.Fatal("Employee-Salary join failed:", empSalaries.GetError())
+	if empSalaries.Err() != nil {
+		t.Fatal("Employee-Salary join failed:", empSalaries.Err())
 	}
 
 	// Then join with bonuses (left join to include employees without bonuses)
 	fullData := empSalaries.Join(LEFT_JOIN, bonuses, "emp_id")
-	if fullData.GetError() != nil {
-		t.Fatal("Full data join failed:", fullData.GetError())
+	if fullData.Err() != nil {
+		t.Fatal("Full data join failed:", fullData.Err())
 	}
 
 	// Now perform complex grouping: Group by department and calculate various metrics
@@ -50,8 +50,8 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 			Std("salary"),  // Salary standard deviation
 		).Run()
 
-	if departmentStats.GetError() != nil {
-		t.Fatal("Department statistics failed:", departmentStats.GetError())
+	if departmentStats.Err() != nil {
+		t.Fatal("Department statistics failed:", departmentStats.Err())
 	}
 
 	// Verify results
@@ -93,8 +93,8 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 	// Test multiple join types in sequence
 	// Right join to see what salary records don't have employees
 	rightJoinResult := employees.Join(RIGHT_JOIN, salaries, "emp_id")
-	if rightJoinResult.GetError() != nil {
-		t.Fatal("Right join failed:", rightJoinResult.GetError())
+	if rightJoinResult.Err() != nil {
+		t.Fatal("Right join failed:", rightJoinResult.Err())
 	}
 
 	// Should have 7 rows (all salary records)
@@ -104,8 +104,8 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 
 	// Outer join to see complete picture
 	outerJoinResult := employees.Join(OUTER_JOIN, salaries, "emp_id")
-	if outerJoinResult.GetError() != nil {
-		t.Fatal("Outer join failed:", outerJoinResult.GetError())
+	if outerJoinResult.Err() != nil {
+		t.Fatal("Outer join failed:", outerJoinResult.Err())
 	}
 
 	// Should have 7 rows (employees 1-6 match, salary record 7 is unmatched)
@@ -136,8 +136,8 @@ func TestIntegration_ChainedOperations(t *testing.T) {
 			Mean("target"), // Target should be same for all products in region
 		).Run()
 
-	if result.GetError() != nil {
-		t.Fatal("Chained operations failed:", result.GetError())
+	if result.Err() != nil {
+		t.Fatal("Chained operations failed:", result.Err())
 	}
 
 	if result.NRows() != 4 { // 4 regions
@@ -189,8 +189,8 @@ func TestIntegration_AllAggregationsWithComplexData(t *testing.T) {
 			Mean("count_field"),
 		).Run()
 
-	if result.GetError() != nil {
-		t.Fatal("All aggregations failed:", result.GetError())
+	if result.Err() != nil {
+		t.Fatal("All aggregations failed:", result.Err())
 	}
 
 	expectedCols := []string{

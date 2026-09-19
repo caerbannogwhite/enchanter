@@ -43,14 +43,10 @@ func (s NAs) IsSorted() enchanter.SeriesSortOrder {
 	return enchanter.SORTED_ASC
 }
 
-// Returns if the series is error.
-func (s NAs) IsError() bool {
-	return false
-}
-
-// Returns the error message of the series.
-func (s NAs) GetError() string {
-	return ""
+// Err returns the error carried by the series: always nil, an NAs
+// series is never in an error state.
+func (s NAs) Err() error {
+	return nil
 }
 
 // Makes the series nullable.

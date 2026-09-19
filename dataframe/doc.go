@@ -4,8 +4,8 @@
 // Construct one with [NewDataFrame] and build pipelines by chaining:
 // Select, Filter, GroupBy + Agg, Join (inner, left, right, outer), OrderBy
 // and Take. Operations never mutate their receiver; each call returns a new
-// DataFrame value, and errors travel with the frame (check IsErrored /
-// GetError at the end of a chain).
+// DataFrame value, and errors travel with the frame (check Err at
+// the end of a chain).
 //
 //	df := dataframe.NewDataFrame(ctx).
 //		FromCsv().SetPath("people.csv").Read().

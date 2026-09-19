@@ -68,7 +68,7 @@ func getG1(tb testing.TB, name string) dataframe.DataFrame {
 	}
 	d := readG1(pkgCtx, name)
 	loaded[name] = d
-	if d == nil || d.IsErrored() {
+	if d == nil || d.Err() != nil {
 		tb.Skipf("G1 data not available: %s", name)
 	}
 	return *d

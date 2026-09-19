@@ -75,16 +75,15 @@ func (df DataFrame) NRows() int {
 	return df.series[0].Len()
 }
 
-func (df DataFrame) IsErrored() bool {
-	return df.err != nil
+// Err returns the error carried by the frame; nil when the frame is
+// healthy. Operations never panic: a failure travels with the returned
+// frame and is checked once at the end of a chain.
+func (df DataFrame) Err() error {
+	return df.err
 }
 
 func (df DataFrame) IsGrouped() bool {
 	return df.isGrouped
-}
-
-func (df DataFrame) GetError() error {
-	return df.err
 }
 
 func (df DataFrame) GetSeriesIndex(name string) int {

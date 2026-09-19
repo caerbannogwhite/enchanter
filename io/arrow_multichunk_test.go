@@ -121,8 +121,8 @@ func TestMultiChunkToSeriesPreservesNulls(t *testing.T) {
 	defer a3.Release()
 
 	got := multiChunkToSeries([]arrow.Array{a1, a2, a3}, ctx)
-	if got.IsError() {
-		t.Fatal(got.GetError())
+	if got.Err() != nil {
+		t.Fatal(got.Err())
 	}
 	if got.Len() != 9 {
 		t.Fatalf("length %d, want 9", got.Len())
@@ -146,8 +146,8 @@ func TestMultiChunkToSeriesPreservesNulls(t *testing.T) {
 	b2 := s2.ArrowArray()
 	defer b2.Release()
 	gs := multiChunkToSeries([]arrow.Array{b1, b2}, ctx)
-	if gs.IsError() {
-		t.Fatal(gs.GetError())
+	if gs.Err() != nil {
+		t.Fatal(gs.Err())
 	}
 	if gs.Len() != 4 || !gs.IsNull(2) || gs.IsNull(3) {
 		t.Fatalf("string chunks: len=%d IsNull(2)=%v IsNull(3)=%v, want 4/true/false", gs.Len(), gs.IsNull(2), gs.IsNull(3))

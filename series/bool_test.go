@@ -548,7 +548,7 @@ func Test_SeriesBool_Filter(t *testing.T) {
 	// try to filter by a series with a different length.
 	filtered = filtered.Filter(filterMask)
 
-	if e, ok := filtered.(Errors); !ok || e.GetError() != "Bools.Filter: mask length (13) does not match series length (9)" {
+	if e, ok := filtered.(Errors); !ok || e.Err().Error() != "Bools.Filter: mask length (13) does not match series length (9)" {
 		t.Errorf("Expected Errors, got %v", filtered)
 	}
 

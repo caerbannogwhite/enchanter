@@ -1,6 +1,8 @@
 package series
 
 import (
+	"errors"
+
 	"github.com/apache/arrow-go/v18/arrow"
 	"github.com/caerbannogwhite/enchanter"
 	"github.com/caerbannogwhite/enchanter/meta"
@@ -35,14 +37,10 @@ func (s Errors) IsSorted() enchanter.SeriesSortOrder {
 	return enchanter.SORTED_NONE
 }
 
-// Returns if the series is error.
-func (s Errors) IsError() bool {
-	return true
-}
-
-// Returns the error message of the series.
-func (s Errors) GetError() string {
-	return s.Msg_
+// Err returns the error carried by the series, built from the stored
+// message on each call.
+func (s Errors) Err() error {
+	return errors.New(s.Msg_)
 }
 
 // Makes the series nullable.

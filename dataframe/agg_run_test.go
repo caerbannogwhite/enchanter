@@ -15,8 +15,8 @@ func TestAggRunSortedAndSkipNullByDefault(t *testing.T) {
 		AddSeries("v", series.NewSeriesFloat64([]float64{1, 5, 0}, []bool{false, false, true}, false, ctx))
 
 	out := df.GroupBy("g").Agg(Sum("v"), Std("v", WithDDoF(1))).Run()
-	if out.IsErrored() {
-		t.Fatalf("agg errored: %v", out.GetError())
+	if out.Err() != nil {
+		t.Fatalf("agg errored: %v", out.Err())
 	}
 	// sorted: a, b
 	if out.C("g").(series.Strings).GetAsString(0) != "a" {
@@ -44,10 +44,10 @@ func TestAggRunUnsupportedValueTypeErrors(t *testing.T) {
 		AddSeries("v", series.NewSeriesString([]string{"x", "y", "z"}, nil, false, ctx))
 
 	out := df.GroupBy("g").Agg(Sum("v")).Run()
-	if !out.IsErrored() {
+	if out.Err() == nil {
 		t.Fatalf("expected error for Sum over a Strings column, got none")
 	}
-	if out.GetError() == nil {
+	if out.Err() == nil {
 		t.Fatalf("expected non-nil GetError() for Sum over a Strings column")
 	}
 }
@@ -68,8 +68,8 @@ func TestAggRunStdHandComputed(t *testing.T) {
 		AddSeries("v", series.NewSeriesFloat64([]float64{2, 4, 1, 2, 3, 10}, nil, false, ctx))
 
 	out := df.GroupBy("g").Agg(Std("v")).Run()
-	if out.IsErrored() {
-		t.Fatalf("agg errored: %v", out.GetError())
+	if out.Err() != nil {
+		t.Fatalf("agg errored: %v", out.Err())
 	}
 
 	const eps = 1e-9
@@ -104,7 +104,7 @@ func TestAggRunOptionValidation(t *testing.T) {
 		AddSeries("g", series.NewSeriesString([]string{"a"}, nil, false, ctx)).
 		AddSeries("v", series.NewSeriesFloat64([]float64{1}, nil, false, ctx))
 	out := df.GroupBy("g").Agg(Sum("v", WithDDoF(1))).Run() // ddof on Sum → error
-	if !out.IsErrored() {
+	if out.Err() == nil {
 		t.Fatalf("expected error for WithDDoF on Sum")
 	}
 	_ = math.Inf

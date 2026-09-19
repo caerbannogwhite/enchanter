@@ -78,8 +78,8 @@ func NewDataFrameFromArrowRecord(record arrow.RecordBatch, ctx *enchanter.Contex
 		col := record.Column(i)
 		name := schema.Field(i).Name
 		s := series.ArrowArrayToSeries(col, ctx)
-		if s.IsError() {
-			df.err = fmt.Errorf("NewDataFrameFromArrowRecord: column %q: %s", name, s.GetError())
+		if s.Err() != nil {
+			df.err = fmt.Errorf("NewDataFrameFromArrowRecord: column %q: %w", name, s.Err())
 			return df
 		}
 		df = df.AddSeries(name, s)

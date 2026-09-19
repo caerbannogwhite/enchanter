@@ -50,14 +50,10 @@ func (s {{.SeriesName}}) IsSorted() enchanter.SeriesSortOrder {
 	return s.Sorted_
 }
 
-// Return if the series is error.
-func (s {{.SeriesName}}) IsError() bool {
-	return false
-}
-
-// Return the error message of the series.
-func (s {{.SeriesName}}) GetError() string {
-	return ""
+// Err returns the error carried by the series: always nil, a
+// {{.SeriesName}} series is never in an error state.
+func (s {{.SeriesName}}) Err() error {
+	return nil
 }
 
 // Return the Partition_ of the series.

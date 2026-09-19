@@ -102,8 +102,8 @@ func TestNewDataFrameFromArrowRecord(t *testing.T) {
 	defer rec.Release()
 
 	df := NewDataFrameFromArrowRecord(rec, ctx)
-	if df.IsErrored() {
-		t.Fatal(df.GetError())
+	if df.Err() != nil {
+		t.Fatal(df.Err())
 	}
 	if df.NCols() != 2 {
 		t.Fatalf("expected 2 cols, got %d", df.NCols())
@@ -150,8 +150,8 @@ func TestArrowRecordRoundTrip(t *testing.T) {
 
 	// Convert back to DataFrame
 	df2 := NewDataFrameFromArrowRecord(rec, ctx)
-	if df2.IsErrored() {
-		t.Fatal(df2.GetError())
+	if df2.Err() != nil {
+		t.Fatal(df2.Err())
 	}
 
 	if df2.NCols() != 3 {

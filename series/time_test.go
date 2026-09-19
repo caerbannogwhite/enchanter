@@ -148,7 +148,7 @@ func Test_SeriesTime_Cast(t *testing.T) {
 	s := NewSeriesTime(data, nil, true, ctx)
 
 	// Cast to bool.
-	if s.Cast(meta.BoolType).GetError() != "Times.Cast: cannot cast to Bool" {
+	if s.Cast(meta.BoolType).Err().Error() != "Times.Cast: cannot cast to Bool" {
 		t.Errorf("Expected an error, got %v", s.Cast(meta.BoolType))
 	}
 

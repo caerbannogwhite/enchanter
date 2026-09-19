@@ -447,7 +447,7 @@ func Test_SeriesFloat64_Filter(t *testing.T) {
 	// try to filter by a series with a different length.
 	filtered = filtered.Filter(filterMask)
 
-	if e, ok := filtered.(Errors); !ok || e.GetError() != "Float64s.Filter: mask length (20) does not match series length (14)" {
+	if e, ok := filtered.(Errors); !ok || e.Err().Error() != "Float64s.Filter: mask length (20) does not match series length (14)" {
 		t.Errorf("Expected Errors, got %v", filtered)
 	}
 

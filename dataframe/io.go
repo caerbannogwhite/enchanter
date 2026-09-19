@@ -26,7 +26,7 @@ func FromIoData(iod *encio.IoData) DataFrame {
 func (df DataFrame) ToIoData() *encio.IoData {
 	iod := encio.NewIoData(df.ctx)
 
-	iod.Error = df.GetError()
+	iod.Error = df.Err()
 
 	for i, s := range df.series {
 		iod.AddSeries(s, encio.SeriesMeta{

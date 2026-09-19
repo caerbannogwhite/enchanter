@@ -53,8 +53,8 @@ func forEachLenPattern(t *testing.T, fn func(t *testing.T, n int, pat func(i, n 
 
 func checkRoundTripNulls(t *testing.T, got Series, n int, pat func(i, n int) bool) {
 	t.Helper()
-	if got.IsError() {
-		t.Fatalf("round trip returned error series: %s", got.GetError())
+	if got.Err() != nil {
+		t.Fatalf("round trip returned error series: %s", got.Err())
 	}
 	if got.Len() != n {
 		t.Fatalf("length: got %d, want %d", got.Len(), n)

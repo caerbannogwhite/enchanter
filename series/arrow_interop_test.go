@@ -22,8 +22,8 @@ func TestArrowArrayToSeriesFloat64(t *testing.T) {
 	defer arr.Release()
 
 	s := ArrowArrayToSeries(arr, ctx)
-	if s.IsError() {
-		t.Fatal(s.GetError())
+	if s.Err() != nil {
+		t.Fatal(s.Err())
 	}
 	if s.Len() != 3 {
 		t.Fatalf("expected len 3, got %d", s.Len())

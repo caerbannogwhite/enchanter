@@ -17,8 +17,8 @@ func selectTestFrame() DataFrame {
 // nothing else. "Car" used to drag "CarOrigin" along with it.
 func TestSelect_ExactNamesDoNotOverSelect(t *testing.T) {
 	got := selectTestFrame().Select("Car", "Origin", "Stat")
-	if got.GetError() != nil {
-		t.Fatalf("unexpected error: %v", got.GetError())
+	if got.Err() != nil {
+		t.Fatalf("unexpected error: %v", got.Err())
 	}
 
 	want := []string{"Car", "Origin", "Stat"}
@@ -30,8 +30,8 @@ func TestSelect_ExactNamesDoNotOverSelect(t *testing.T) {
 // Selector order is preserved, and a repeated name is kept once.
 func TestSelect_OrderAndDuplicates(t *testing.T) {
 	got := selectTestFrame().Select("Stat", "Car", "Stat")
-	if got.GetError() != nil {
-		t.Fatalf("unexpected error: %v", got.GetError())
+	if got.Err() != nil {
+		t.Fatalf("unexpected error: %v", got.Err())
 	}
 
 	want := []string{"Stat", "Car"}
@@ -45,10 +45,10 @@ func TestSelect_OrderAndDuplicates(t *testing.T) {
 // shape of the result.
 func TestSelect_UnknownColumnIsAnError(t *testing.T) {
 	got := selectTestFrame().Select("Car", "NoSuchColumn")
-	if got.GetError() == nil {
+	if got.Err() == nil {
 		t.Fatal("expected an error for an unknown column name, got nil")
 	}
-	if msg := got.GetError().Error(); !strings.Contains(msg, "NoSuchColumn") {
+	if msg := got.Err().Error(); !strings.Contains(msg, "NoSuchColumn") {
 		t.Fatalf("error should name the missing column, got %q", msg)
 	}
 }
@@ -56,15 +56,15 @@ func TestSelect_UnknownColumnIsAnError(t *testing.T) {
 // An exact name is not treated as a pattern.
 func TestSelect_NameIsNotAPattern(t *testing.T) {
 	got := selectTestFrame().Select("Car.")
-	if got.GetError() == nil {
+	if got.Err() == nil {
 		t.Fatal("expected \"Car.\" to be an unknown column, not a pattern matching CarOrigin")
 	}
 }
 
 func TestSelectMatching_StillMatchesPatterns(t *testing.T) {
 	got := selectTestFrame().SelectMatching("^Car")
-	if got.GetError() != nil {
-		t.Fatalf("unexpected error: %v", got.GetError())
+	if got.Err() != nil {
+		t.Fatalf("unexpected error: %v", got.Err())
 	}
 
 	want := []string{"Car", "CarOrigin"}
@@ -77,8 +77,8 @@ func TestSelectMatching_StillMatchesPatterns(t *testing.T) {
 // that any particular column exists.
 func TestSelectMatching_NoMatchIsNotAnError(t *testing.T) {
 	got := selectTestFrame().SelectMatching("^nothing$")
-	if got.GetError() != nil {
-		t.Fatalf("unexpected error: %v", got.GetError())
+	if got.Err() != nil {
+		t.Fatalf("unexpected error: %v", got.Err())
 	}
 	if n := len(got.Names()); n != 0 {
 		t.Fatalf("expected no columns, got %d", n)
@@ -87,7 +87,7 @@ func TestSelectMatching_NoMatchIsNotAnError(t *testing.T) {
 
 func TestSelectMatching_InvalidPatternIsAnError(t *testing.T) {
 	got := selectTestFrame().SelectMatching("^(unclosed")
-	if got.GetError() == nil {
+	if got.Err() == nil {
 		t.Fatal("expected an error for an invalid regular expression, got nil")
 	}
 }

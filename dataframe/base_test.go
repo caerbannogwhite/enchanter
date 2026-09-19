@@ -96,8 +96,8 @@ func Test_DataFrame_Filter(t *testing.T) {
 		SetGuessDataTypeLen(3).
 		Read()
 
-	if df.GetError() != nil {
-		t.Error(df.GetError())
+	if df.Err() != nil {
+		t.Error(df.Err())
 	}
 
 	mask := df.C("department").
@@ -111,8 +111,8 @@ func Test_DataFrame_Filter(t *testing.T) {
 		)
 
 	res := df.Filter(mask.(series.Bools))
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	if res.NRows() != 2 {
@@ -169,14 +169,14 @@ func Test_DataFrame_GroupBy_Count(t *testing.T) {
 		SetGuessDataTypeLen(3).
 		Read()
 
-	if df.GetError() != nil {
-		t.Error(df.GetError())
+	if df.Err() != nil {
+		t.Error(df.Err())
 	}
 
 	// Group by department
 	res := df.GroupBy("department").Agg(Count()).Run()
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	exp1 := map[string]int64{
@@ -200,8 +200,8 @@ func Test_DataFrame_GroupBy_Count(t *testing.T) {
 
 	// Group by department and junior
 	res = df.Ungroup().GroupBy("junior", "department").Agg(Count()).Run()
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	exp2 := map[bool]map[string]int64{
@@ -233,8 +233,8 @@ func Test_DataFrame_GroupBy_Count(t *testing.T) {
 
 	// Group by department and junior
 	res = df.Ungroup().GroupBy("department", "junior").Agg(Count()).Run()
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	exp3 := map[string]map[bool]int64{
@@ -268,8 +268,8 @@ func Test_DataFrame_GroupBy_Count(t *testing.T) {
 
 	// Group by department and salary band
 	res = df.Ungroup().GroupBy("department", "salary band").Agg(Count()).Run()
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	exp4 := map[string]map[int64]int64{
@@ -304,8 +304,8 @@ func Test_DataFrame_GroupBy_Count(t *testing.T) {
 
 	// Group by weight
 	res = df.Ungroup().GroupBy("weight").Agg(Count()).Run()
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	exp5 := map[float64]int64{
@@ -365,16 +365,16 @@ func Test_DataFrame_GroupBy_Sum(t *testing.T) {
 		SetGuessDataTypeLen(3).
 		Read()
 
-	if df.GetError() != nil {
-		t.Error(df.GetError())
+	if df.Err() != nil {
+		t.Error(df.Err())
 	}
 
 	res := df.GroupBy("department").
 		Agg(Sum("age"), Sum("weight"), Sum("junior"), Sum("salary band")).
 		Run()
 
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	exp := map[string][]float64{
@@ -421,16 +421,16 @@ func Test_DataFrame_GroupBy_Min(t *testing.T) {
 		SetGuessDataTypeLen(3).
 		Read()
 
-	if df.GetError() != nil {
-		t.Error(df.GetError())
+	if df.Err() != nil {
+		t.Error(df.Err())
 	}
 
 	res := df.GroupBy("department").
 		Agg(Min("age"), Min("weight"), Min("junior"), Min("salary band")).
 		Run()
 
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	exp := map[string][]float64{
@@ -477,16 +477,16 @@ func Test_DataFrame_GroupBy_Max(t *testing.T) {
 		SetGuessDataTypeLen(3).
 		Read()
 
-	if df.GetError() != nil {
-		t.Error(df.GetError())
+	if df.Err() != nil {
+		t.Error(df.Err())
 	}
 
 	res := df.GroupBy("department").
 		Agg(Max("age"), Max("weight"), Max("junior"), Max("salary band")).
 		Run()
 
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	exp := map[string][]float64{
@@ -533,16 +533,16 @@ func Test_DataFrame_GroupBy_Mean(t *testing.T) {
 		SetGuessDataTypeLen(3).
 		Read()
 
-	if df.GetError() != nil {
-		t.Error(df.GetError())
+	if df.Err() != nil {
+		t.Error(df.Err())
 	}
 
 	res := df.GroupBy("department").
 		Agg(Mean("age"), Mean("weight"), Mean("junior"), Mean("salary band")).
 		Run()
 
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	exp := map[string][]float64{
@@ -635,15 +635,15 @@ func Benchmark_500000Rows_GroupBy_Mean(b *testing.B) {
 // 		SetGuessDataTypeLen(3).
 // 		Read()
 
-// 	if df.GetError() != nil {
-// 		t.Error(df.GetError())
+// 	if df.Err() != nil {
+// 		t.Error(df.Err())
 // 	}
 
 // 	res := df.GroupBy("department").
 // 		Agg(Std("age"), Std("weight"), Std("junior"), Std("salary band"))
 
-// 	if res.GetError() != nil {
-// 		t.Error(res.GetError())
+// 	if res.Err() != nil {
+// 		t.Error(res.Err())
 // 	}
 
 // 	exp := map[string][]float64{
@@ -694,8 +694,8 @@ func Test_DataFrame_Join(t *testing.T) {
 
 	res := dfx.Join(INNER_JOIN, dfy, "A")
 
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	if res.NRows() != 3 {
@@ -724,8 +724,8 @@ func Test_DataFrame_Join(t *testing.T) {
 
 	res = dfx.Join(LEFT_JOIN, dfy, "A")
 
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	if res.NRows() != 7 {
@@ -754,8 +754,8 @@ func Test_DataFrame_Join(t *testing.T) {
 
 	res = dfx.Join(RIGHT_JOIN, dfy, "A")
 
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	if res.NRows() != 5 {
@@ -784,8 +784,8 @@ func Test_DataFrame_Join(t *testing.T) {
 
 	res = dfx.Join(OUTER_JOIN, dfy, "A")
 
-	if res.GetError() != nil {
-		t.Error(res.GetError())
+	if res.Err() != nil {
+		t.Error(res.Err())
 	}
 
 	if res.NRows() != 9 {

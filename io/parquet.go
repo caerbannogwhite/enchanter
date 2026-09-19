@@ -71,8 +71,8 @@ func (r *ParquetReader) Read() *IoData {
 		// For single-chunk columns, use directly.
 		if len(chunks) == 1 {
 			s := series.ArrowArrayToSeries(chunks[0], r.ctx)
-			if s.IsError() {
-				iod.Error = fmt.Errorf("ParquetReader.Read: column %q: %s", name, s.GetError())
+			if s.Err() != nil {
+				iod.Error = fmt.Errorf("ParquetReader.Read: column %q: %w", name, s.Err())
 				return iod
 			}
 			iod.AddSeries(s, SeriesMeta{Name: name, Type: s.Type()})
@@ -81,8 +81,8 @@ func (r *ParquetReader) Read() *IoData {
 
 		// Multi-chunk: materialize into a single array via concatenation.
 		s := multiChunkToSeries(chunks, r.ctx)
-		if s.IsError() {
-			iod.Error = fmt.Errorf("ParquetReader.Read: column %q: %s", name, s.GetError())
+		if s.Err() != nil {
+			iod.Error = fmt.Errorf("ParquetReader.Read: column %q: %w", name, s.Err())
 			return iod
 		}
 		iod.AddSeries(s, SeriesMeta{Name: name, Type: s.Type()})
@@ -104,7 +104,7 @@ func multiChunkToSeries(chunks []arrow.Array, ctx *enchanter.Context) series.Ser
 	result := series.ArrowArrayToSeries(chunks[0], ctx)
 	for i := 1; i < len(chunks); i++ {
 		chunk := series.ArrowArrayToSeries(chunks[i], ctx)
-		if chunk.IsError() {
+		if chunk.Err() != nil {
 			return chunk
 		}
 		// Append the series (not its raw data) so the chunk's null mask is

@@ -333,7 +333,7 @@ func Test_SeriesString_Cast(t *testing.T) {
 	}
 
 	// Cast to time.
-	if s.Cast(meta.TimeType).(Errors).GetError() != "Strings.Cast: cannot cast to Time, use Strings.ParseTime(layout) instead" {
+	if s.Cast(meta.TimeType).(Errors).Err().Error() != "Strings.Cast: cannot cast to Time, use Strings.ParseTime(layout) instead" {
 		t.Errorf("Expected error, got %v", s.Cast(meta.TimeType))
 	}
 
@@ -435,7 +435,7 @@ func Test_SeriesString_Filter(t *testing.T) {
 	// try to filter by a series with a different length.
 	filtered = filtered.Filter(filterMask)
 
-	if e, ok := filtered.(Errors); !ok || e.GetError() != "Strings.Filter: mask length (20) does not match series length (14)" {
+	if e, ok := filtered.(Errors); !ok || e.Err().Error() != "Strings.Filter: mask length (20) does not match series length (14)" {
 		t.Errorf("Expected Errors, got %v", filtered)
 	}
 

@@ -27,10 +27,9 @@ type Series interface {
 	IsNullable() bool
 	// Return if the series is sorted.
 	IsSorted() enchanter.SeriesSortOrder
-	// Return if the series is error.
-	IsError() bool
-	// Return the error message of the series.
-	GetError() string
+	// Err returns the error carried by the series; nil when the series is
+	// healthy. Only the Errors type carries one.
+	Err() error
 
 	// Nullability operations.
 

@@ -16,13 +16,13 @@ func TestGroupByNullKeyKeepsNullInResult(t *testing.T) {
 	df := NewDataFrame(ctx).
 		AddSeries("k", series.NewSeriesInt64([]int64{1, 1, 2, 0, 2}, []bool{false, false, false, true, false}, false, ctx)).
 		AddSeries("v", series.NewSeriesFloat64([]float64{10, 20, 30, 40, 50}, nil, false, ctx))
-	if df.IsErrored() {
-		t.Fatal(df.GetError())
+	if df.Err() != nil {
+		t.Fatal(df.Err())
 	}
 
 	res := df.GroupBy("k").Agg(Count()).Run()
-	if res.IsErrored() {
-		t.Fatal(res.GetError())
+	if res.Err() != nil {
+		t.Fatal(res.Err())
 	}
 	if res.NRows() != 3 {
 		t.Fatalf("expected 3 groups (1, 2, null), got %d", res.NRows())
@@ -47,13 +47,13 @@ func TestGroupByOnGroupedRegroups(t *testing.T) {
 	df := NewDataFrame(ctx).
 		AddSeries("a", series.NewSeriesInt64([]int64{1, 1, 2, 2}, nil, false, ctx)).
 		AddSeries("b", series.NewSeriesString([]string{"x", "y", "x", "y"}, nil, false, ctx))
-	if df.IsErrored() {
-		t.Fatal(df.GetError())
+	if df.Err() != nil {
+		t.Fatal(df.Err())
 	}
 
 	res := df.GroupBy("a").GroupBy("b").Agg(Count()).Run()
-	if res.IsErrored() {
-		t.Fatal(res.GetError())
+	if res.Err() != nil {
+		t.Fatal(res.Err())
 	}
 
 	foundB := false
@@ -76,20 +76,20 @@ func TestGroupByTimeKeyProducesAlignedResult(t *testing.T) {
 	df := NewDataFrame(ctx).
 		AddSeries("k", series.NewSeriesTime([]time.Time{t0, t0, t1}, nil, false, ctx)).
 		AddSeries("v", series.NewSeriesFloat64([]float64{1, 2, 3}, nil, false, ctx))
-	if df.IsErrored() {
-		t.Fatal(df.GetError())
+	if df.Err() != nil {
+		t.Fatal(df.Err())
 	}
 
 	res := df.GroupBy("k").Agg(Count()).Run()
-	if res.IsErrored() {
-		t.Fatal(res.GetError())
+	if res.Err() != nil {
+		t.Fatal(res.Err())
 	}
 	if res.NRows() != 2 {
 		t.Fatalf("expected 2 groups, got %d", res.NRows())
 	}
 	k := res.C("k")
-	if k.IsError() {
-		t.Fatalf("key column missing from result: %s", k.GetError())
+	if k.Err() != nil {
+		t.Fatalf("key column missing from result: %s", k.Err())
 	}
 	if k.Len() != 2 {
 		t.Fatalf("key column length %d, want 2 (result frame must stay aligned)", k.Len())

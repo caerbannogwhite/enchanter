@@ -48,14 +48,10 @@ func (s Bools) IsSorted() enchanter.SeriesSortOrder {
 	return s.Sorted_
 }
 
-// Return if the series is error.
-func (s Bools) IsError() bool {
-	return false
-}
-
-// Return the error message of the series.
-func (s Bools) GetError() string {
-	return ""
+// Err returns the error carried by the series: always nil, a
+// Bools series is never in an error state.
+func (s Bools) Err() error {
+	return nil
 }
 
 // Return the Partition_ of the series.
