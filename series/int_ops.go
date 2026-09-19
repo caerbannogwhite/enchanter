@@ -2271,3 +2271,9 @@ func (s Ints) Coalesce(other any) Series {
 	}
 
 }
+
+// Not is the logical negation of a boolean series. Only Bools and NAs
+// support it, so on this type it returns an error series.
+func (s Ints) Not() Series {
+	return Errors{fmt.Sprintf("Cannot NOT %s", s.Type().String())}
+}

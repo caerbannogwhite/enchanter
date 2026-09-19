@@ -210,6 +210,11 @@ func (s Errors) Coalesce(other any) Series {
 	return s
 }
 
+// Not on an errored series keeps the error.
+func (s Errors) Not() Series {
+	return s
+}
+
 func (s Errors) Mul(other any) Series {
 	return s
 }

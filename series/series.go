@@ -105,6 +105,10 @@ type Series interface {
 	And(other any) Series
 	Or(other any) Series
 
+	// Not negates a boolean series element-wise. Only Bools and NAs
+	// support it; every other type returns an error series.
+	Not() Series
+
 	// Coalesce fills the null elements with the corresponding elements of
 	// other. A result element is null only when both operands are null there.
 	Coalesce(other any) Series
