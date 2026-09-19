@@ -692,7 +692,7 @@ func Test_DataFrame_Join(t *testing.T) {
 
 	///////////////////			INNER JOIN
 
-	res := dfx.Join(INNER_JOIN, dfy, "A")
+	res := dfx.Join(JoinInner, dfy, "A")
 
 	if res.Err() != nil {
 		t.Error(res.Err())
@@ -722,7 +722,7 @@ func Test_DataFrame_Join(t *testing.T) {
 
 	///////////////////			LEFT JOIN
 
-	res = dfx.Join(LEFT_JOIN, dfy, "A")
+	res = dfx.Join(JoinLeft, dfy, "A")
 
 	if res.Err() != nil {
 		t.Error(res.Err())
@@ -752,7 +752,7 @@ func Test_DataFrame_Join(t *testing.T) {
 
 	///////////////////			RIGHT JOIN
 
-	res = dfx.Join(RIGHT_JOIN, dfy, "A")
+	res = dfx.Join(JoinRight, dfy, "A")
 
 	if res.Err() != nil {
 		t.Error(res.Err())
@@ -782,7 +782,7 @@ func Test_DataFrame_Join(t *testing.T) {
 
 	///////////////////			FULL JOIN
 
-	res = dfx.Join(OUTER_JOIN, dfy, "A")
+	res = dfx.Join(JoinOuter, dfy, "A")
 
 	if res.Err() != nil {
 		t.Error(res.Err())

@@ -28,13 +28,13 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 		AddSeriesFromFloat64s("bonus", []float64{5000, 3000, 4000, 6000}, nil, false)
 
 	// Complex scenario: Join employees with salaries (inner join)
-	empSalaries := employees.Join(INNER_JOIN, salaries, "emp_id")
+	empSalaries := employees.Join(JoinInner, salaries, "emp_id")
 	if empSalaries.Err() != nil {
 		t.Fatal("Employee-Salary join failed:", empSalaries.Err())
 	}
 
 	// Then join with bonuses (left join to include employees without bonuses)
-	fullData := empSalaries.Join(LEFT_JOIN, bonuses, "emp_id")
+	fullData := empSalaries.Join(JoinLeft, bonuses, "emp_id")
 	if fullData.Err() != nil {
 		t.Fatal("Full data join failed:", fullData.Err())
 	}
@@ -92,7 +92,7 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 
 	// Test multiple join types in sequence
 	// Right join to see what salary records don't have employees
-	rightJoinResult := employees.Join(RIGHT_JOIN, salaries, "emp_id")
+	rightJoinResult := employees.Join(JoinRight, salaries, "emp_id")
 	if rightJoinResult.Err() != nil {
 		t.Fatal("Right join failed:", rightJoinResult.Err())
 	}
@@ -103,7 +103,7 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 	}
 
 	// Outer join to see complete picture
-	outerJoinResult := employees.Join(OUTER_JOIN, salaries, "emp_id")
+	outerJoinResult := employees.Join(JoinOuter, salaries, "emp_id")
 	if outerJoinResult.Err() != nil {
 		t.Fatal("Outer join failed:", outerJoinResult.Err())
 	}
@@ -128,7 +128,7 @@ func TestIntegration_ChainedOperations(t *testing.T) {
 
 	// Chain operations: Join -> Group -> Calculate metrics
 	result := sales.
-		Join(INNER_JOIN, targets, "region").
+		Join(JoinInner, targets, "region").
 		GroupBy("region").
 		Agg(
 			Sum("revenue"),

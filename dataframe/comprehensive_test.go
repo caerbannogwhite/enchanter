@@ -30,7 +30,7 @@ func TestJoin_EmptyDataFrames(t *testing.T) {
 		AddSeriesFromStrings("name", []string{"Alice", "Bob"}, nil, false)
 
 	// Empty left dataframe
-	result := dfEmpty.Join(INNER_JOIN, dfNormal, "id")
+	result := dfEmpty.Join(JoinInner, dfNormal, "id")
 	if result.Err() == nil {
 		t.Error("Expected error when joining empty dataframe without common columns")
 	}
@@ -40,7 +40,7 @@ func TestJoin_EmptyDataFrames(t *testing.T) {
 		AddSeriesFromInt64s("id", []int64{}, nil, false).
 		AddSeriesFromStrings("name", []string{}, nil, false)
 
-	result = dfEmptyStructured.Join(INNER_JOIN, dfNormal, "id")
+	result = dfEmptyStructured.Join(JoinInner, dfNormal, "id")
 	if result.Err() != nil {
 		t.Error("Should handle empty structured dataframe:", result.Err())
 	}
@@ -61,7 +61,7 @@ func TestJoin_MultipleColumns(t *testing.T) {
 		AddSeriesFromFloat64s("budget", []float64{10000, 15000, 12000, 8000}, nil, false)
 
 	// Multi-column join
-	result := df1.Join(INNER_JOIN, df2, "dept_id", "category")
+	result := df1.Join(JoinInner, df2, "dept_id", "category")
 	if result.Err() != nil {
 		t.Error("Multi-column join failed:", result.Err())
 	}
@@ -98,7 +98,7 @@ func TestJoin_WithNullValues(t *testing.T) {
 		AddSeriesFromFloat64s("salary", []float64{50000, 60000, 0, 45000}, nullMask2, false)
 
 	// Inner join should handle nulls properly
-	result := df1.Join(INNER_JOIN, df2, "id")
+	result := df1.Join(JoinInner, df2, "id")
 	if result.Err() != nil {
 		t.Error("Join with nulls failed:", result.Err())
 	}
@@ -115,7 +115,7 @@ func TestJoin_TypeMismatch(t *testing.T) {
 	df2 := NewDataFrame(testCtx).
 		AddSeriesFromStrings("id", []string{"1", "2", "3"}, nil, false) // Different type
 
-	result := df1.Join(INNER_JOIN, df2, "id")
+	result := df1.Join(JoinInner, df2, "id")
 	if result.Err() == nil {
 		t.Error("Expected error when joining columns with different types")
 	}
@@ -132,14 +132,14 @@ func TestJoin_AllJoinTypes(t *testing.T) {
 
 	// Test all join types
 	tests := []struct {
-		joinType     DataFrameJoinType
+		joinType     JoinType
 		expectedRows int
 		name         string
 	}{
-		{INNER_JOIN, 3, "Inner Join"}, // ids 2, 3, 4
-		{LEFT_JOIN, 4, "Left Join"},   // all from df1
-		{RIGHT_JOIN, 4, "Right Join"}, // all from df2
-		{OUTER_JOIN, 5, "Outer Join"}, // ids 1, 2, 3, 4, 5
+		{JoinInner, 3, "Inner Join"}, // ids 2, 3, 4
+		{JoinLeft, 4, "Left Join"},   // all from df1
+		{JoinRight, 4, "Right Join"}, // all from df2
+		{JoinOuter, 5, "Outer Join"}, // ids 1, 2, 3, 4, 5
 	}
 
 	for _, test := range tests {
@@ -163,7 +163,7 @@ func TestJoin_ColumnNameCollisions(t *testing.T) {
 		AddSeriesFromInt64s("id", []int64{1, 2, 3}, nil, false).
 		AddSeriesFromStrings("value", []string{"X", "Y", "Z"}, nil, false) // Same column name
 
-	result := df1.Join(INNER_JOIN, df2, "id")
+	result := df1.Join(JoinInner, df2, "id")
 	if result.Err() != nil {
 		t.Error("Join with column name collision failed:", result.Err())
 	}
@@ -345,7 +345,7 @@ func TestJoinThenGroupBy(t *testing.T) {
 		AddSeriesFromFloat64s("salary", []float64{50000, 60000, 55000, 52000, 65000}, nil, false)
 
 	// Join first
-	joined := df1.Join(INNER_JOIN, df2, "emp_id")
+	joined := df1.Join(JoinInner, df2, "emp_id")
 	if joined.Err() != nil {
 		t.Error("Join failed:", joined.Err())
 	}
@@ -378,7 +378,7 @@ func TestGroupByThenJoin(t *testing.T) {
 	}
 
 	// Try to join grouped dataframe - this should work now since grouped result is ungrouped
-	result := grouped.Join(INNER_JOIN, df2, "department")
+	result := grouped.Join(JoinInner, df2, "department")
 	if result.Err() != nil {
 		t.Error("Join after GroupBy failed:", result.Err())
 	}
@@ -392,7 +392,7 @@ func TestErrorConditions(t *testing.T) {
 		AddSeriesFromInt64s("id", []int64{1, 2, 3}, nil, false)
 
 	// Test joining non-existent columns
-	result := df1.Join(INNER_JOIN, df2, "nonexistent")
+	result := df1.Join(JoinInner, df2, "nonexistent")
 	if result.Err() == nil {
 		t.Error("Expected error when joining on non-existent column")
 	}

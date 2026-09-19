@@ -26,7 +26,7 @@ func TestGroupByIsLazyButJoinStillWorks(t *testing.T) {
 	}
 
 	// Join still produces the inner match on k=y
-	j := a.Join(INNER_JOIN, b, "k")
+	j := a.Join(JoinInner, b, "k")
 	if j.Err() != nil {
 		t.Fatalf("join errored: %v", j.Err())
 	}

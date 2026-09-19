@@ -84,7 +84,7 @@ func Example02() {
 
 	departments.PPrint(dataframe.NewPPrintParams())
 
-	employees.Join(dataframe.LEFT_JOIN, departments, "department").
+	employees.Join(dataframe.JoinLeft, departments, "department").
 		PPrint(dataframe.NewPPrintParams())
 }
 
@@ -138,16 +138,16 @@ a,b
 		SetHeader(true).
 		Read()
 
-	dfX.Join(dataframe.INNER_JOIN, dfY, "a", "b").
+	dfX.Join(dataframe.JoinInner, dfY, "a", "b").
 		PPrint(ppp)
 
-	dfX.Join(dataframe.LEFT_JOIN, dfY, "a", "b").
+	dfX.Join(dataframe.JoinLeft, dfY, "a", "b").
 		PPrint(ppp)
 
-	dfX.Join(dataframe.RIGHT_JOIN, dfY, "a", "b").
+	dfX.Join(dataframe.JoinRight, dfY, "a", "b").
 		PPrint(ppp)
 
-	dfX.Join(dataframe.OUTER_JOIN, dfY, "a", "b").
+	dfX.Join(dataframe.JoinOuter, dfY, "a", "b").
 		PPrint(ppp)
 }
 

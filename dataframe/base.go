@@ -554,7 +554,7 @@ func (df DataFrame) getPartitions() []series.SeriesPartition {
 	}
 }
 
-func (df DataFrame) Join(how DataFrameJoinType, other DataFrame, on ...string) DataFrame {
+func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame {
 	if df.err != nil {
 		return df
 	}
@@ -739,7 +739,7 @@ func (df DataFrame) Join(how DataFrameJoinType, other DataFrame, on ...string) D
 	}
 
 	switch how {
-	case INNER_JOIN:
+	case JoinInner:
 		// Get indices of the intersection
 		indicesA := make([]int, 0, len(keysIntersection))
 		indicesB := make([]int, 0, len(keysIntersection))
@@ -777,7 +777,7 @@ func (df DataFrame) Join(how DataFrameJoinType, other DataFrame, on ...string) D
 			joined = joined.AddSeries(name, ser_.Filter(indicesB))
 		}
 
-	case LEFT_JOIN:
+	case JoinLeft:
 		indicesA := make([]int, 0, len(keysA))
 		indicesB := make([]int, 0, len(keysIntersection))
 
@@ -854,7 +854,7 @@ func (df DataFrame) Join(how DataFrameJoinType, other DataFrame, on ...string) D
 			joined = joined.AddSeries(name, ser_)
 		}
 
-	case RIGHT_JOIN:
+	case JoinRight:
 		indicesA := make([]int, 0, len(keysIntersection))
 		indicesB := make([]int, 0, len(keysB))
 
@@ -924,7 +924,7 @@ func (df DataFrame) Join(how DataFrameJoinType, other DataFrame, on ...string) D
 			joined = joined.AddSeries(name, ser_)
 		}
 
-	case OUTER_JOIN:
+	case JoinOuter:
 		indicesA := make([]int, 0, len(keysA))
 		indicesB := make([]int, 0, len(keysB))
 
