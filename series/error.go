@@ -14,7 +14,7 @@ type Errors struct {
 }
 
 // Return the context of the series.
-func (s Errors) GetContext() *enchanter.Context {
+func (s Errors) Context() *enchanter.Context {
 	return nil
 }
 
@@ -33,7 +33,7 @@ func (s Errors) IsNullable() bool {
 	return false
 }
 
-func (s Errors) IsSorted() enchanter.SeriesSortOrder {
+func (s Errors) SortOrder() enchanter.SeriesSortOrder {
 	return enchanter.SORTED_NONE
 }
 
@@ -79,7 +79,7 @@ func (s Errors) IsNull(i int) bool {
 }
 
 // Returns the null mask of the series.
-func (s Errors) GetNullMask() []bool {
+func (s Errors) NullMask() []bool {
 	return []bool{}
 }
 
@@ -172,7 +172,7 @@ func (s Errors) UnGroup() Series {
 	return s
 }
 
-func (s Errors) GetPartition() SeriesPartition {
+func (s Errors) Partition() SeriesPartition {
 	return nil
 }
 

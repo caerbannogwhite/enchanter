@@ -15,8 +15,8 @@ func (s Strings) And(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -32,8 +32,8 @@ func (s Strings) Or(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -49,8 +49,8 @@ func (s Strings) Mul(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -66,8 +66,8 @@ func (s Strings) Div(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -83,8 +83,8 @@ func (s Strings) Mod(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -100,8 +100,8 @@ func (s Strings) Exp(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -117,8 +117,8 @@ func (s Strings) Add(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Bools:
@@ -406,8 +406,8 @@ func (s Strings) Sub(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -423,8 +423,8 @@ func (s Strings) Eq(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Strings:
@@ -490,8 +490,8 @@ func (s Strings) Ne(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Strings:
@@ -557,8 +557,8 @@ func (s Strings) Gt(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Strings:
@@ -608,8 +608,8 @@ func (s Strings) Ge(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Strings:
@@ -659,8 +659,8 @@ func (s Strings) Lt(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Strings:
@@ -710,8 +710,8 @@ func (s Strings) Le(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Strings:
@@ -766,8 +766,8 @@ func (s Strings) Coalesce(other any) Series {
 	} else {
 		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Strings:

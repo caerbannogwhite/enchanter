@@ -10,7 +10,7 @@ import (
 )
 
 func FromIoData(iod *encio.IoData) DataFrame {
-	df := NewDataFrame(iod.GetContext())
+	df := NewDataFrame(iod.Context())
 
 	if iod.Error != nil {
 		df.err = iod.Error

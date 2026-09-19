@@ -1011,7 +1011,7 @@ func Test_DataFrame_Sort_Nulls(t *testing.T) {
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 2, 4, 4, 4, 1, 2, 1}, nil, "") {
 		t.Error("DataFrame Sort A asc: A failed")
 	}
-	if !utils.CheckEqSliceBool(res.C("A").GetNullMask(), []bool{false, false, false, false, false, false, false, true, true, true}, nil, "") {
+	if !utils.CheckEqSliceBool(res.C("A").NullMask(), []bool{false, false, false, false, false, false, false, true, true, true}, nil, "") {
 		t.Error("DataFrame Sort A asc: A nullmask failed")
 	}
 
@@ -1019,7 +1019,7 @@ func Test_DataFrame_Sort_Nulls(t *testing.T) {
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 2, 1, 4, 4, 4, 2, 1, 1, 1}, nil, "") {
 		t.Error("DataFrame Sort A desc: A failed")
 	}
-	if !utils.CheckEqSliceBool(res.C("A").GetNullMask(), []bool{true, true, true, false, false, false, false, false, false, false}, nil, "") {
+	if !utils.CheckEqSliceBool(res.C("A").NullMask(), []bool{true, true, true, false, false, false, false, false, false, false}, nil, "") {
 		t.Error("DataFrame Sort A desc: A nullmask failed")
 	}
 
@@ -1027,14 +1027,14 @@ func Test_DataFrame_Sort_Nulls(t *testing.T) {
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 2, 4, 4, 4, 2, 1, 1}, nil, "") {
 		t.Error("DataFrame Sort A asc, B asc: A failed")
 	}
-	if !utils.CheckEqSliceBool(res.C("A").GetNullMask(), []bool{false, false, false, false, false, false, false, true, true, true}, nil, "") {
+	if !utils.CheckEqSliceBool(res.C("A").NullMask(), []bool{false, false, false, false, false, false, false, true, true, true}, nil, "") {
 		t.Error("DataFrame Sort A asc: A nullmask failed")
 	}
 
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{"a", "d", NA_TEXT, "c", "e", "g", NA_TEXT, "b", "c", NA_TEXT}, nil, "") {
 		t.Error("DataFrame Sort A asc, B asc: B failed")
 	}
-	if !utils.CheckEqSliceBool(res.C("B").GetNullMask(), []bool{false, false, true, false, false, false, true, false, false, true}, nil, "") {
+	if !utils.CheckEqSliceBool(res.C("B").NullMask(), []bool{false, false, true, false, false, false, true, false, false, true}, nil, "") {
 		t.Error("DataFrame Sort A asc, B asc: B nullmask failed")
 	}
 
@@ -1042,14 +1042,14 @@ func Test_DataFrame_Sort_Nulls(t *testing.T) {
 	if !utils.CheckEqSliceInt64(res.C("A").(series.Int64s).Int64s(), []int64{1, 1, 1, 2, 4, 4, 4, 1, 1, 2}, nil, "") {
 		t.Error("DataFrame Sort A asc, B asc: A failed")
 	}
-	if !utils.CheckEqSliceBool(res.C("A").GetNullMask(), []bool{false, false, false, false, false, false, false, true, true, true}, nil, "") {
+	if !utils.CheckEqSliceBool(res.C("A").NullMask(), []bool{false, false, false, false, false, false, false, true, true, true}, nil, "") {
 		t.Error("DataFrame Sort A asc: A nullmask failed")
 	}
 
 	if !utils.CheckEqSliceString(res.C("B").(series.Strings).Strings(), []string{NA_TEXT, "d", "a", "c", NA_TEXT, "g", "e", NA_TEXT, "c", "b"}, nil, "") {
 		t.Error("DataFrame Sort A asc, B asc: B failed")
 	}
-	if !utils.CheckEqSliceBool(res.C("B").GetNullMask(), []bool{true, false, false, false, true, false, false, true, false, false}, nil, "") {
+	if !utils.CheckEqSliceBool(res.C("B").NullMask(), []bool{true, false, false, false, true, false, false, true, false, false}, nil, "") {
 		t.Error("DataFrame Sort A asc, B asc: B nullmask failed")
 	}
 }

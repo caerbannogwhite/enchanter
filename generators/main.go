@@ -363,12 +363,12 @@ func generateSwitchType(
 		Cond: &ast.BinaryExpr{
 			X:  &ast.Ident{Name: fmt.Sprintf("%s.Ctx_", op1VarName)},
 			Op: token.NEQ,
-			Y:  &ast.Ident{Name: fmt.Sprintf("%s.GetContext()", "otherSeries")},
+			Y:  &ast.Ident{Name: fmt.Sprintf("%s.Context()", "otherSeries")},
 		},
 		Body: &ast.BlockStmt{
 			List: []ast.Stmt{
 				&ast.ReturnStmt{
-					Results: []ast.Expr{ast.NewIdent(fmt.Sprintf("Errors{fmt.Sprintf(\"Cannot operate on series with different contexts: %%v and %%v\", s.Ctx_, %s.GetContext())}", "otherSeries"))},
+					Results: []ast.Expr{ast.NewIdent(fmt.Sprintf("Errors{fmt.Sprintf(\"Cannot operate on series with different contexts: %%v and %%v\", s.Ctx_, %s.Context())}", "otherSeries"))},
 				},
 			},
 		},

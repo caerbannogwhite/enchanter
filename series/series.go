@@ -14,7 +14,7 @@ type Series interface {
 	// Basic accessors.
 
 	// Return the context of the series.
-	GetContext() *enchanter.Context
+	Context() *enchanter.Context
 	// Return the number of elements in the series.
 	Len() int
 	// Return the type of the series.
@@ -25,8 +25,8 @@ type Series interface {
 	IsGrouped() bool
 	// Return if the series admits null values.
 	IsNullable() bool
-	// Return if the series is sorted.
-	IsSorted() enchanter.SeriesSortOrder
+	// SortOrder reports whether and how the series is sorted.
+	SortOrder() enchanter.SeriesSortOrder
 	// Err returns the error carried by the series; nil when the series is
 	// healthy. Only the Errors type carries one.
 	Err() error
@@ -39,8 +39,10 @@ type Series interface {
 	NullCount() int
 	// Return if the element at index i is null.
 	IsNull(i int) bool
-	// Return the null mask of the series.
-	GetNullMask() []bool
+	// NullMask returns the null positions as a freshly built []bool. The
+	// mask is stored bit-packed, so every call allocates and walks the
+	// series: this is not a cheap getter.
+	NullMask() []bool
 	// Set the null mask of the series.
 	SetNullMask(mask []bool) Series
 	// Make the series nullable.
@@ -93,12 +95,7 @@ type Series interface {
 	UnGroup() Series
 
 	// Get the partition of the series.
-	GetPartition() SeriesPartition
-
-	// Sort Interface.
-	Less(i, j int) bool
-	Equal(i, j int) bool
-	Swap(i, j int)
+	Partition() SeriesPartition
 
 	// Sort the elements of the series.
 	Sort() Series

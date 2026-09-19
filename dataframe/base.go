@@ -44,7 +44,7 @@ func NewDataFrame(ctx *enchanter.Context) DataFrame {
 ////////////////////////			BASIC ACCESSORS
 
 // GetContext returns the context of the dataframe.
-func (df DataFrame) GetContext() *enchanter.Context {
+func (df DataFrame) Context() *enchanter.Context {
 	return df.ctx
 }
 
@@ -86,7 +86,8 @@ func (df DataFrame) IsGrouped() bool {
 	return df.isGrouped
 }
 
-func (df DataFrame) GetSeriesIndex(name string) int {
+// ColIndex returns the position of the named column, -1 when absent.
+func (df DataFrame) ColIndex(name string) int {
 	for i, name_ := range df.names {
 		if name_ == name {
 			return i
@@ -252,7 +253,7 @@ func (df DataFrame) Replace(name string, s series.Series) DataFrame {
 		return df
 	}
 
-	index := df.GetSeriesIndex(name)
+	index := df.ColIndex(name)
 	if index == -1 {
 		df.err = fmt.Errorf("DataFrame.Replace: series \"%s\" not found", name)
 		return df
@@ -500,7 +501,7 @@ func (df DataFrame) buildPartitions() []DataFramePartitionEntry {
 	partitions := make([]DataFramePartitionEntry, len(df.groupByNames))
 
 	for partitionsIndex, name := range df.groupByNames {
-		i := df.GetSeriesIndex(name)
+		i := df.ColIndex(name)
 		s := df.series[i]
 
 		// First partition: group the series
@@ -508,7 +509,7 @@ func (df DataFrame) buildPartitions() []DataFramePartitionEntry {
 			partitions[partitionsIndex] = DataFramePartitionEntry{
 				index:     i,
 				name:      name,
-				partition: s.Group().GetPartition(),
+				partition: s.Group().Partition(),
 			}
 		} else
 
@@ -517,7 +518,7 @@ func (df DataFrame) buildPartitions() []DataFramePartitionEntry {
 			partitions[partitionsIndex] = DataFramePartitionEntry{
 				index:     i,
 				name:      name,
-				partition: s.GroupBy(partitions[partitionsIndex-1].partition).GetPartition(),
+				partition: s.GroupBy(partitions[partitionsIndex-1].partition).Partition(),
 			}
 		}
 	}
@@ -559,7 +560,7 @@ func (df DataFrame) Join(how DataFrameJoinType, other DataFrame, on ...string) D
 	}
 
 	// CASE: the dataframes have different contexts
-	if df.ctx != other.GetContext() {
+	if df.ctx != other.Context() {
 		df.err = fmt.Errorf("DataFrame.Join: dataframes have different contexts")
 		return df
 	}
@@ -619,7 +620,7 @@ func (df DataFrame) Join(how DataFrameJoinType, other DataFrame, on ...string) D
 	// CASE: on is empty -> use all columns with the same name
 	if len(on) == 0 {
 		for _, name := range df.Names() {
-			if other.GetSeriesIndex(name) != -1 {
+			if other.ColIndex(name) != -1 {
 				on = append(on, name)
 			}
 		}
@@ -1074,10 +1075,20 @@ func (df DataFrame) Len() int {
 	return df.series[0].Len()
 }
 
+// seriesSorter is the sorting surface the dataframe needs from a series.
+// Every concrete series type implements these methods; they are not part
+// of the public Series interface.
+type seriesSorter interface {
+	Less(i, j int) bool
+	Equal(i, j int) bool
+	Swap(i, j int)
+}
+
 func (df DataFrame) Less(i, j int) bool {
 	for _, param := range df.sortParams {
-		if !param._series.Equal(i, j) {
-			return (param.asc && param._series.Less(i, j)) || (!param.asc && param._series.Less(j, i))
+		s := param._series.(seriesSorter)
+		if !s.Equal(i, j) {
+			return (param.asc && s.Less(i, j)) || (!param.asc && s.Less(j, i))
 		}
 	}
 
@@ -1086,7 +1097,7 @@ func (df DataFrame) Less(i, j int) bool {
 
 func (df DataFrame) Swap(i, j int) {
 	for _, series := range df.series {
-		series.Swap(i, j)
+		series.(seriesSorter).Swap(i, j)
 	}
 }
 
@@ -1136,7 +1147,7 @@ func (df DataFrame) Agg(aggregators ...aggregator) aggregatorBuilder {
 func (df DataFrame) buildGroupKeyCols() []series.Series {
 	keyCols := make([]series.Series, len(df.groupByNames))
 	for i, name := range df.groupByNames {
-		keyCols[i] = df.series[df.GetSeriesIndex(name)]
+		keyCols[i] = df.series[df.ColIndex(name)]
 	}
 	return keyCols
 }

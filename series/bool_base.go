@@ -14,7 +14,7 @@ import (
 ////////////////////////			BASIC ACCESSORS
 
 // Return the context of the series.
-func (s Bools) GetContext() *enchanter.Context {
+func (s Bools) Context() *enchanter.Context {
 	return s.Ctx_
 }
 
@@ -43,8 +43,8 @@ func (s Bools) IsNullable() bool {
 	return s.IsNullable_
 }
 
-// Return if the series is Sorted_.
-func (s Bools) IsSorted() enchanter.SeriesSortOrder {
+// SortOrder reports whether and how the series is sorted.
+func (s Bools) SortOrder() enchanter.SeriesSortOrder {
 	return s.Sorted_
 }
 
@@ -55,7 +55,7 @@ func (s Bools) Err() error {
 }
 
 // Return the Partition_ of the series.
-func (s Bools) GetPartition() SeriesPartition {
+func (s Bools) Partition() SeriesPartition {
 	return s.Partition_
 }
 
@@ -89,7 +89,7 @@ func (s Bools) IsNull(i int) bool {
 }
 
 // Return the null mask of the series.
-func (s Bools) GetNullMask() []bool {
+func (s Bools) NullMask() []bool {
 	mask := make([]bool, len(s.Data_))
 	idx := 0
 	for _, v := range s.NullMask_ {

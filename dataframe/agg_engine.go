@@ -550,7 +550,7 @@ func accumulateChunk(keyCols []series.Series, aggs []aggregator, views []aggValu
 // (NA-propagated groups under removeNAs == false surface as non-null NaN,
 // matching aggregateSerial).
 func finalizeAggregate(df DataFrame, keyCols []series.Series, aggs []aggregator, isHol []bool, removeNAs bool, gt *groupTable, states []*reducibleState, cols [][]collector, propagated [][]bool) DataFrame {
-	ctx := df.GetContext()
+	ctx := df.Context()
 	nGroups := gt.numGroups()
 	reps := gt.representativeRows()
 	order := sortGroupOrder(keyCols, reps)
@@ -714,7 +714,7 @@ func compareBool(a, b bool) int {
 // order. The type switch covers the same key types as the former groupHelper;
 // the representative row's null flag is carried into the emitted column.
 func appendKeyColumns(result DataFrame, df DataFrame, keyCols []series.Series, reps, order []int) DataFrame {
-	ctx := df.GetContext()
+	ctx := df.Context()
 	n := len(order)
 
 	for k, col := range keyCols {

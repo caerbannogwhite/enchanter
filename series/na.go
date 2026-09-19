@@ -20,7 +20,7 @@ type NAs struct {
 }
 
 // Return the context of the series.
-func (s NAs) GetContext() *enchanter.Context {
+func (s NAs) Context() *enchanter.Context {
 	return s.Ctx_
 }
 
@@ -39,7 +39,7 @@ func (s NAs) IsNullable() bool {
 	return true
 }
 
-func (s NAs) IsSorted() enchanter.SeriesSortOrder {
+func (s NAs) SortOrder() enchanter.SeriesSortOrder {
 	return enchanter.SORTED_ASC
 }
 
@@ -85,7 +85,7 @@ func (s NAs) IsNull(i int) bool {
 }
 
 // Returns the null mask of the series.
-func (s NAs) GetNullMask() []bool {
+func (s NAs) NullMask() []bool {
 	NullMask_ := make([]bool, s.size)
 	for i := 0; i < s.size; i++ {
 		NullMask_[i] = true
@@ -577,7 +577,7 @@ func (s NAs) UnGroup() Series {
 	return s
 }
 
-func (s NAs) GetPartition() SeriesPartition {
+func (s NAs) Partition() SeriesPartition {
 	return s.Partition_
 }
 
@@ -624,8 +624,8 @@ func (s NAs) Coalesce(other any) Series {
 		return e
 	}
 
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.Ctx_ != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
 	}
 
 	switch {

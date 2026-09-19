@@ -140,7 +140,7 @@ func (iod *IoData) Types() []meta.BaseType {
 	return types
 }
 
-func (iod *IoData) GetContext() *enchanter.Context {
+func (iod *IoData) Context() *enchanter.Context {
 	return iod.ctx
 }
 
