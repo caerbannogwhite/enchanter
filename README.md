@@ -245,6 +245,14 @@ the [storage measurement](docs/superpowers/specs/2026-08-08-arrow-native-storage
 - [x] `Coalesce` on every series type: fill null elements from another series
       or a scalar; a result element is null only when both operands are null
       there.
+- [x] API reshape from the interface review: the one-implementation
+      `DataFrame` interface is collapsed into the concrete type
+      (`NewDataFrame`); `IsError`/`GetError`/`IsErrored` become the standard
+      `Err() error`; the `Get` accessor prefix is dropped (`Context`,
+      `Partition`, `NullMask`, `ColIndex`); `IsSorted` becomes `SortOrder`;
+      the sort internals (`Less`, `Equal`, `Swap`) leave the `Series`
+      interface; `Not` works on every series type; the join constants are
+      `JoinInner` / `JoinLeft` / `JoinRight` / `JoinOuter` on `JoinType`.
 
 **1.0 — commit** to the stable API.
 
