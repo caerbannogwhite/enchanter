@@ -250,7 +250,12 @@ the [storage measurement](docs/superpowers/specs/2026-08-08-arrow-native-storage
       `Partition`, `NullMask`, `ColIndex`); `IsSorted` becomes `SortOrder`;
       the sort internals (`Less`, `Equal`, `Swap`) leave the `Series`
       interface; `Not` works on every series type; the join constants are
-      `JoinInner` / `JoinLeft` / `JoinRight` / `JoinOuter` on `JoinType`.
+      `JoinInner` / `JoinLeft` / `JoinRight` / `JoinOuter` on `JoinType`;
+      the undocumented variadic `Take` is replaced by `Slice(start, end)`
+      and `TakeIndices(indices)`; the column accessors are `Col`, `ColAt`,
+      `NameAt`, `ColIndex`; reading starts from package-level constructors
+      (`dataframe.ReadCsv(ctx)`, `ReadParquet`, ...) and writing from
+      `WriteCsv`, `WriteParquet`, ..., with the builder types exported.
 
 **1.0 — commit** to the stable API.
 
