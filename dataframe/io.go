@@ -104,62 +104,65 @@ func (r *CsvReader) Read() DataFrame {
 
 ////////////////////////			CSV WRITER
 
-type csvWriterWrapper struct {
+// CsvWriter writes CSV data from a DataFrame. Create one with WriteCsv,
+// configure it with the Set methods, then call Write.
+type CsvWriter struct {
 	writer *encio.CsvWriter
 }
 
-func (df DataFrame) ToCsv() *csvWriterWrapper {
-	return &csvWriterWrapper{
+// WriteCsv starts a CSV write of the frame.
+func (df DataFrame) WriteCsv() *CsvWriter {
+	return &CsvWriter{
 		writer: encio.NewCsvWriter().SetIoData(df.ToIoData()),
 	}
 }
 
-func (w *csvWriterWrapper) SetDelimiter(delimiter rune) *csvWriterWrapper {
+func (w *CsvWriter) SetDelimiter(delimiter rune) *CsvWriter {
 	w.writer = w.writer.SetDelimiter(delimiter)
 	return w
 }
 
-func (w *csvWriterWrapper) SetHeader(header bool) *csvWriterWrapper {
+func (w *CsvWriter) SetHeader(header bool) *CsvWriter {
 	w.writer = w.writer.SetHeader(header)
 	return w
 }
 
-func (w *csvWriterWrapper) SetFormat(format bool) *csvWriterWrapper {
+func (w *CsvWriter) SetFormat(format bool) *CsvWriter {
 	w.writer = w.writer.SetFormat(format)
 	return w
 }
 
-func (w *csvWriterWrapper) SetPath(path string) *csvWriterWrapper {
+func (w *CsvWriter) SetPath(path string) *CsvWriter {
 	w.writer = w.writer.SetPath(path)
 	return w
 }
 
-func (w *csvWriterWrapper) SetNaText(naText string) *csvWriterWrapper {
+func (w *CsvWriter) SetNaText(naText string) *CsvWriter {
 	w.writer = w.writer.SetNaText(naText)
 	return w
 }
 
-func (w *csvWriterWrapper) SetEol(eol string) *csvWriterWrapper {
+func (w *CsvWriter) SetEol(eol string) *CsvWriter {
 	w.writer = w.writer.SetEol(eol)
 	return w
 }
 
-func (w *csvWriterWrapper) SetQuote(quote string) *csvWriterWrapper {
+func (w *CsvWriter) SetQuote(quote string) *CsvWriter {
 	w.writer = w.writer.SetQuote(quote)
 	return w
 }
 
-func (w *csvWriterWrapper) SetQuoting(quoting encio.CsvQuotingType) *csvWriterWrapper {
+func (w *CsvWriter) SetQuoting(quoting encio.CsvQuotingType) *CsvWriter {
 	w.writer = w.writer.SetQuoting(quoting)
 	return w
 }
 
-func (w *csvWriterWrapper) SetWriter(writer io.Writer) *csvWriterWrapper {
+func (w *CsvWriter) SetWriter(writer io.Writer) *CsvWriter {
 	w.writer = w.writer.SetWriter(writer)
 	return w
 }
 
-func (w *csvWriterWrapper) Write() error {
+func (w *CsvWriter) Write() error {
 	return w.writer.Write()
 }
 
@@ -200,37 +203,40 @@ func (r *JsonReader) Read() DataFrame {
 
 ////////////////////////			JSON WRITER
 
-type jsonWriterWrapper struct {
+// JsonWriter writes JSON data from a DataFrame. Create one with WriteJson,
+// configure it with the Set methods, then call Write.
+type JsonWriter struct {
 	writer *encio.JsonWriter
 }
 
-func (df DataFrame) ToJson() *jsonWriterWrapper {
-	return &jsonWriterWrapper{
+// WriteJson starts a JSON write of the frame.
+func (df DataFrame) WriteJson() *JsonWriter {
+	return &JsonWriter{
 		writer: encio.NewJsonWriter().SetIoData(df.ToIoData()),
 	}
 }
 
-func (w *jsonWriterWrapper) SetPath(path string) *jsonWriterWrapper {
+func (w *JsonWriter) SetPath(path string) *JsonWriter {
 	w.writer = w.writer.SetPath(path)
 	return w
 }
 
-func (w *jsonWriterWrapper) SetNewLine(newLine string) *jsonWriterWrapper {
+func (w *JsonWriter) SetNewLine(newLine string) *JsonWriter {
 	w.writer = w.writer.SetNewLine(newLine)
 	return w
 }
 
-func (w *jsonWriterWrapper) SetIndent(indent string) *jsonWriterWrapper {
+func (w *JsonWriter) SetIndent(indent string) *JsonWriter {
 	w.writer = w.writer.SetIndent(indent)
 	return w
 }
 
-func (w *jsonWriterWrapper) SetWriter(writer io.Writer) *jsonWriterWrapper {
+func (w *JsonWriter) SetWriter(writer io.Writer) *JsonWriter {
 	w.writer = w.writer.SetWriter(writer)
 	return w
 }
 
-func (w *jsonWriterWrapper) Write() error {
+func (w *JsonWriter) Write() error {
 	return w.writer.Write()
 }
 
@@ -321,37 +327,40 @@ func (r *Sas7bdatReader) Read() DataFrame {
 
 ////////////////////////			XPT WRITER
 
-type xptWriterWrapper struct {
+// XptWriter writes XPT data from a DataFrame. Create one with WriteXpt,
+// configure it with the Set methods, then call Write.
+type XptWriter struct {
 	writer *encio.XptWriter
 }
 
-func (df DataFrame) ToXpt() *xptWriterWrapper {
-	return &xptWriterWrapper{
+// WriteXpt starts a XPT write of the frame.
+func (df DataFrame) WriteXpt() *XptWriter {
+	return &XptWriter{
 		writer: encio.NewXptWriter().SetIoData(df.ToIoData()),
 	}
 }
 
-func (w *xptWriterWrapper) SetVersion(version encio.XptVersionType) *xptWriterWrapper {
+func (w *XptWriter) SetVersion(version encio.XptVersionType) *XptWriter {
 	w.writer = w.writer.SetVersion(version)
 	return w
 }
 
-func (w *xptWriterWrapper) SetByteOrder(byteOrder binary.ByteOrder) *xptWriterWrapper {
+func (w *XptWriter) SetByteOrder(byteOrder binary.ByteOrder) *XptWriter {
 	w.writer = w.writer.SetByteOrder(byteOrder)
 	return w
 }
 
-func (w *xptWriterWrapper) SetPath(path string) *xptWriterWrapper {
+func (w *XptWriter) SetPath(path string) *XptWriter {
 	w.writer = w.writer.SetPath(path)
 	return w
 }
 
-func (w *xptWriterWrapper) SetWriter(writer io.Writer) *xptWriterWrapper {
+func (w *XptWriter) SetWriter(writer io.Writer) *XptWriter {
 	w.writer = w.writer.SetWriter(writer)
 	return w
 }
 
-func (w *xptWriterWrapper) Write() error {
+func (w *XptWriter) Write() error {
 	return w.writer.Write()
 }
 
@@ -412,124 +421,133 @@ func (r *XlsxReader) Read() DataFrame {
 
 ////////////////////////			XLSX WRITER
 
-type xlsxWriterWrapper struct {
+// XlsxWriter writes XLSX data from a DataFrame. Create one with WriteXlsx,
+// configure it with the Set methods, then call Write.
+type XlsxWriter struct {
 	writer *encio.XlsxWriter
 }
 
-func (df DataFrame) ToXlsx() *xlsxWriterWrapper {
-	return &xlsxWriterWrapper{
+// WriteXlsx starts a XLSX write of the frame.
+func (df DataFrame) WriteXlsx() *XlsxWriter {
+	return &XlsxWriter{
 		writer: encio.NewXlsxWriter().SetIoData(df.ToIoData()),
 	}
 }
 
-func (w *xlsxWriterWrapper) SetPath(path string) *xlsxWriterWrapper {
+func (w *XlsxWriter) SetPath(path string) *XlsxWriter {
 	w.writer = w.writer.SetPath(path)
 	return w
 }
 
-func (w *xlsxWriterWrapper) SetSheet(sheet string) *xlsxWriterWrapper {
+func (w *XlsxWriter) SetSheet(sheet string) *XlsxWriter {
 	w.writer = w.writer.SetSheet(sheet)
 	return w
 }
 
-func (w *xlsxWriterWrapper) SetNaText(naText string) *xlsxWriterWrapper {
+func (w *XlsxWriter) SetNaText(naText string) *XlsxWriter {
 	w.writer = w.writer.SetNaText(naText)
 	return w
 }
 
-func (w *xlsxWriterWrapper) SetWriter(writer io.Writer) *xlsxWriterWrapper {
+func (w *XlsxWriter) SetWriter(writer io.Writer) *XlsxWriter {
 	w.writer = w.writer.SetWriter(writer)
 	return w
 }
 
-func (w *xlsxWriterWrapper) Write() error {
+func (w *XlsxWriter) Write() error {
 	return w.writer.Write()
 }
 
 ////////////////////////			HTML WRITER
 
-type htmlWriterWrapper struct {
+// HtmlWriter writes HTML data from a DataFrame. Create one with WriteHtml,
+// configure it with the Set methods, then call Write.
+type HtmlWriter struct {
 	writer *encio.HtmlWriter
 }
 
-func (df DataFrame) ToHtml() *htmlWriterWrapper {
-	return &htmlWriterWrapper{
+// WriteHtml starts a HTML write of the frame.
+func (df DataFrame) WriteHtml() *HtmlWriter {
+	return &HtmlWriter{
 		writer: encio.NewHtmlWriter().SetIoData(df.ToIoData()),
 	}
 }
 
-func (w *htmlWriterWrapper) SetPath(path string) *htmlWriterWrapper {
+func (w *HtmlWriter) SetPath(path string) *HtmlWriter {
 	w.writer = w.writer.SetPath(path)
 	return w
 }
 
-func (w *htmlWriterWrapper) SetNaText(naText string) *htmlWriterWrapper {
+func (w *HtmlWriter) SetNaText(naText string) *HtmlWriter {
 	w.writer = w.writer.SetNaText(naText)
 	return w
 }
 
-func (w *htmlWriterWrapper) SetNewLine(newLine string) *htmlWriterWrapper {
+func (w *HtmlWriter) SetNewLine(newLine string) *HtmlWriter {
 	w.writer = w.writer.SetNewLine(newLine)
 	return w
 }
 
-func (w *htmlWriterWrapper) SetIndent(indent string) *htmlWriterWrapper {
+func (w *HtmlWriter) SetIndent(indent string) *HtmlWriter {
 	w.writer = w.writer.SetIndent(indent)
 	return w
 }
 
-func (w *htmlWriterWrapper) SetWriter(writer io.Writer) *htmlWriterWrapper {
+func (w *HtmlWriter) SetWriter(writer io.Writer) *HtmlWriter {
 	w.writer = w.writer.SetWriter(writer)
 	return w
 }
 
-func (w *htmlWriterWrapper) SetDatatables(datatables bool) *htmlWriterWrapper {
+func (w *HtmlWriter) SetDatatables(datatables bool) *HtmlWriter {
 	w.writer = w.writer.SetDatatables(datatables)
 	return w
 }
 
-func (w *htmlWriterWrapper) Write() error {
+func (w *HtmlWriter) Write() error {
 	return w.writer.Write()
 }
 
 ////////////////////////			MARKDOWN WRITER
 
-type markDownWriterWrapper struct {
+// MarkdownWriter writes Markdown data from a DataFrame. Create one with WriteMarkdown,
+// configure it with the Set methods, then call Write.
+type MarkdownWriter struct {
 	writer *encio.MarkDownWriter
 }
 
-func (df DataFrame) ToMarkDown() *markDownWriterWrapper {
-	return &markDownWriterWrapper{
+// WriteMarkdown starts a Markdown write of the frame.
+func (df DataFrame) WriteMarkdown() *MarkdownWriter {
+	return &MarkdownWriter{
 		writer: encio.NewMarkDownWriter().SetIoData(df.ToIoData()),
 	}
 }
 
-func (w *markDownWriterWrapper) SetHeader(header bool) *markDownWriterWrapper {
+func (w *MarkdownWriter) SetHeader(header bool) *MarkdownWriter {
 	w.writer = w.writer.SetHeader(header)
 	return w
 }
 
-func (w *markDownWriterWrapper) SetIndex(index bool) *markDownWriterWrapper {
+func (w *MarkdownWriter) SetIndex(index bool) *MarkdownWriter {
 	w.writer = w.writer.SetIndex(index)
 	return w
 }
 
-func (w *markDownWriterWrapper) SetPath(path string) *markDownWriterWrapper {
+func (w *MarkdownWriter) SetPath(path string) *MarkdownWriter {
 	w.writer = w.writer.SetPath(path)
 	return w
 }
 
-func (w *markDownWriterWrapper) SetNaText(naText string) *markDownWriterWrapper {
+func (w *MarkdownWriter) SetNaText(naText string) *MarkdownWriter {
 	w.writer = w.writer.SetNaText(naText)
 	return w
 }
 
-func (w *markDownWriterWrapper) SetWriter(writer io.Writer) *markDownWriterWrapper {
+func (w *MarkdownWriter) SetWriter(writer io.Writer) *MarkdownWriter {
 	w.writer = w.writer.SetWriter(writer)
 	return w
 }
 
-func (w *markDownWriterWrapper) Write() error {
+func (w *MarkdownWriter) Write() error {
 	return w.writer.Write()
 }
 
@@ -560,22 +578,25 @@ func (r *ParquetReader) Read() DataFrame {
 
 ////////////////////////			PARQUET WRITER
 
-type parquetWriterWrapper struct {
+// ParquetWriter writes Parquet data from a DataFrame. Create one with WriteParquet,
+// configure it with the Set methods, then call Write.
+type ParquetWriter struct {
 	writer *encio.ParquetWriter
 }
 
-func (df DataFrame) ToParquet() *parquetWriterWrapper {
-	return &parquetWriterWrapper{
+// WriteParquet starts a Parquet write of the frame.
+func (df DataFrame) WriteParquet() *ParquetWriter {
+	return &ParquetWriter{
 		writer: encio.NewParquetWriter().SetIoData(df.ToIoData()),
 	}
 }
 
-func (w *parquetWriterWrapper) SetPath(path string) *parquetWriterWrapper {
+func (w *ParquetWriter) SetPath(path string) *ParquetWriter {
 	w.writer = w.writer.SetPath(path)
 	return w
 }
 
-func (w *parquetWriterWrapper) Write() error {
+func (w *ParquetWriter) Write() error {
 	return w.writer.Write()
 }
 
@@ -606,21 +627,24 @@ func (r *ArrowIPCReader) Read() DataFrame {
 
 ////////////////////////			ARROW IPC WRITER
 
-type arrowIPCWriterWrapper struct {
+// ArrowIPCWriter writes Arrow IPC data from a DataFrame. Create one with WriteArrowIPC,
+// configure it with the Set methods, then call Write.
+type ArrowIPCWriter struct {
 	writer *encio.ArrowIPCWriter
 }
 
-func (df DataFrame) ToArrowIPC() *arrowIPCWriterWrapper {
-	return &arrowIPCWriterWrapper{
+// WriteArrowIPC starts a Arrow IPC write of the frame.
+func (df DataFrame) WriteArrowIPC() *ArrowIPCWriter {
+	return &ArrowIPCWriter{
 		writer: encio.NewArrowIPCWriter().SetIoData(df.ToIoData()),
 	}
 }
 
-func (w *arrowIPCWriterWrapper) SetPath(path string) *arrowIPCWriterWrapper {
+func (w *ArrowIPCWriter) SetPath(path string) *ArrowIPCWriter {
 	w.writer = w.writer.SetPath(path)
 	return w
 }
 
-func (w *arrowIPCWriterWrapper) Write() error {
+func (w *ArrowIPCWriter) Write() error {
 	return w.writer.Write()
 }

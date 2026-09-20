@@ -31,7 +31,7 @@ func main() {
 	defer os.RemoveAll(dir)
 	path := filepath.Join(dir, "people.parquet")
 
-	if err := df.ToParquet().SetPath(path).Write(); err != nil {
+	if err := df.WriteParquet().SetPath(path).Write(); err != nil {
 		fmt.Fprintln(os.Stderr, "write:", err)
 		os.Exit(1)
 	}

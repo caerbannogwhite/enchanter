@@ -91,7 +91,7 @@ All readers and writers share the same builder style:
 
 ```go
 // Parquet round trip: types and nulls survive, unlike CSV.
-err := df.ToParquet().SetPath("people.parquet").Write()
+err := df.WriteParquet().SetPath("people.parquet").Write()
 
 df2 := dataframe.ReadParquet(ctx).
 	SetPath("people.parquet").

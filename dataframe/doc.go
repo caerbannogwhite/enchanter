@@ -17,7 +17,7 @@
 //		Run()
 //
 // Reading and writing files (CSV, XLSX, XPT, JSON, HTML, Markdown, Parquet,
-// Arrow IPC) is exposed through builder chains such as ReadCsv/ToCsv and
-// ReadParquet/ToParquet. A DataFrame also converts to and from an Apache
+// Arrow IPC) is exposed through builder chains such as ReadCsv/WriteCsv
+// and ReadParquet/WriteParquet. A DataFrame also converts to and from an Apache
 // Arrow record batch via ToArrowRecord and [NewDataFrameFromArrowRecord].
 package dataframe
