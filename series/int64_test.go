@@ -141,7 +141,7 @@ func Test_SeriesInt64_Base(t *testing.T) {
 	}
 }
 
-func Test_SeriesInt64_Take(t *testing.T) {
+func Test_SeriesInt64_Slice(t *testing.T) {
 
 	data := []int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	mask := []bool{false, false, true, false, false, true, false, false, true, false}
@@ -149,8 +149,8 @@ func Test_SeriesInt64_Take(t *testing.T) {
 	// Create a new Int64s.
 	s := NewSeriesInt64(data, mask, true, ctx)
 
-	// Take the first 5 values.
-	result := s.Take(0, 5, 1)
+	// Slice the first 5 values.
+	result := s.Slice(0, 5)
 
 	// Check the length.
 	if result.Len() != 5 {
@@ -171,8 +171,8 @@ func Test_SeriesInt64_Take(t *testing.T) {
 		}
 	}
 
-	// Take the last 5 values.
-	result = s.Take(5, 10, 1)
+	// Slice the last 5 values.
+	result = s.Slice(5, 10)
 
 	// Check the length.
 	if result.Len() != 5 {
@@ -193,8 +193,8 @@ func Test_SeriesInt64_Take(t *testing.T) {
 		}
 	}
 
-	// Take the first 5 values in steps of 2.
-	result = s.Take(0, 6, 2)
+	// Take every second element of the first six.
+	result = s.TakeIndices([]int{0, 2, 4})
 
 	// Check the length.
 	if result.Len() != 3 {
@@ -215,8 +215,8 @@ func Test_SeriesInt64_Take(t *testing.T) {
 		}
 	}
 
-	// Take the last 5 values in steps of 2.
-	result = s.Take(5, 11, 2)
+	// Take every second element starting at index 5.
+	result = s.TakeIndices([]int{5, 7, 9})
 
 	// Check the length.
 	if result.Len() != 3 {

@@ -2,8 +2,8 @@
 // equally sized series with relational-style operations.
 //
 // Construct one with [NewDataFrame] and build pipelines by chaining:
-// Select, Filter, GroupBy + Agg, Join (inner, left, right, outer), OrderBy
-// and Take. Operations never mutate their receiver; each call returns a new
+// Select, Filter, GroupBy + Agg, Join (inner, left, right, outer), OrderBy,
+// Slice and TakeIndices. Operations never mutate their receiver; each call returns a new
 // DataFrame value, and errors travel with the frame (check Err at
 // the end of a chain).
 //

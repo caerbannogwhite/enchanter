@@ -102,8 +102,13 @@ func (s Errors) Set(i int, v any) Series {
 	return s
 }
 
-// Take the elements according to the given interval.
-func (s Errors) Take(params ...int) Series {
+// Slice on an errored series keeps the error.
+func (s Errors) Slice(start, end int) Series {
+	return s
+}
+
+// TakeIndices on an errored series keeps the error.
+func (s Errors) TakeIndices(indices []int) Series {
 	return s
 }
 

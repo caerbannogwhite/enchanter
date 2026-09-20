@@ -112,8 +112,24 @@ func (s NAs) Set(i int, v any) Series {
 	return s
 }
 
-// Take the elements according to the given interval.
-func (s NAs) Take(params ...int) Series {
+// Slice returns the elements in the half-open interval [start, end).
+func (s NAs) Slice(start, end int) Series {
+	if start < 0 || end < start || end > s.size {
+		return Errors{fmt.Sprintf("NAs.Slice: invalid interval [%d, %d) for a series of length %d", start, end, s.size)}
+	}
+	s.size = end - start
+	return s
+}
+
+// TakeIndices returns the elements at the given indices: every element
+// is null, so only the count matters.
+func (s NAs) TakeIndices(indices []int) Series {
+	for _, v := range indices {
+		if v < 0 || v >= s.size {
+			return Errors{fmt.Sprintf("NAs.TakeIndices: index %d is out of range", v)}
+		}
+	}
+	s.size = len(indices)
 	return s
 }
 

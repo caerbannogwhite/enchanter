@@ -1048,22 +1048,45 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 	return joined
 }
 
-func (df DataFrame) Take(params ...int) DataFrame {
+// Slice returns the rows in the half-open interval [start, end).
+func (df DataFrame) Slice(start, end int) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
-	indices, err := series.SeriesTakePreprocess("DataFrame", df.NRows(), params...)
-	if err != nil {
-		df.err = err
+	if start < 0 || end < start || end > df.NRows() {
+		df.err = fmt.Errorf("DataFrame.Slice: invalid interval [%d, %d) for a frame of %d rows", start, end, df.NRows())
 		return df
 	}
 
+	indices := make([]int, end-start)
+	for i := range indices {
+		indices[i] = start + i
+	}
+	return df.takeIndices(indices)
+}
+
+// TakeIndices returns the rows at the given indices, in the given
+// order. An index may repeat.
+func (df DataFrame) TakeIndices(indices []int) DataFrame {
+	if df.err != nil {
+		return df
+	}
+
+	for _, v := range indices {
+		if v < 0 || v >= df.NRows() {
+			df.err = fmt.Errorf("DataFrame.TakeIndices: index %d is out of range", v)
+			return df
+		}
+	}
+	return df.takeIndices(indices)
+}
+
+func (df DataFrame) takeIndices(indices []int) DataFrame {
 	taken := NewDataFrame(df.ctx)
 	for idx, series := range df.series {
 		taken = taken.AddSeries(df.names[idx], series.FilterIntSlice(indices, false))
 	}
-
 	return taken
 }
 

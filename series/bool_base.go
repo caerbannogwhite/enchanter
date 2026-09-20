@@ -227,13 +227,29 @@ func (s Bools) Append(v any) Series {
 	return s
 }
 
-// Take the elements according to the given interval.
-func (s Bools) Take(params ...int) Series {
-	indeces, err := SeriesTakePreprocess("Bools", s.Len(), params...)
-	if err != nil {
-		return Errors{err.Error()}
+// Slice returns the elements in the half-open interval [start, end).
+// An interval outside the series produces an error series.
+func (s Bools) Slice(start, end int) Series {
+	if start < 0 || end < start || end > s.Len() {
+		return Errors{fmt.Sprintf("Bools.Slice: invalid interval [%d, %d) for a series of length %d", start, end, s.Len())}
 	}
-	return s.FilterIntSlice(indeces, false)
+	indices := make([]int, end-start)
+	for i := range indices {
+		indices[i] = start + i
+	}
+	return s.FilterIntSlice(indices, false)
+}
+
+// TakeIndices returns the elements at the given indices, in the given
+// order. An index may repeat; one outside the series produces an error
+// series.
+func (s Bools) TakeIndices(indices []int) Series {
+	for _, v := range indices {
+		if v < 0 || v >= s.Len() {
+			return Errors{fmt.Sprintf("Bools.TakeIndices: index %d is out of range", v)}
+		}
+	}
+	return s.FilterIntSlice(indices, false)
 }
 
 // Return the elements of the series as a slice.

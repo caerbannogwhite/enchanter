@@ -159,7 +159,7 @@ func Example05() {
 		SetVersion(io.XPT_VERSION_9).
 		// SetMaxObservations(10).
 		Read().
-		Take(100).
+		Slice(0, 100).
 
 		// to SAS XPT
 		// ToXpt().

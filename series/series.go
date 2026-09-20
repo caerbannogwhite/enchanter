@@ -56,8 +56,11 @@ type Series interface {
 	GetAsString(i int) string
 	// Set the element at index i.
 	Set(i int, v any) Series
-	// Take the elements according to the given interval.
-	Take(params ...int) Series
+	// Slice returns the elements in the half-open interval [start, end).
+	Slice(start, end int) Series
+	// TakeIndices returns the elements at the given indices, in the
+	// given order. An index may repeat.
+	TakeIndices(indices []int) Series
 
 	// Append elements to the series.
 	// Value can be a single value, slice of values,

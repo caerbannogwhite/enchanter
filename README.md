@@ -152,7 +152,7 @@ Not implemented (would be added on demand): narrower integers (`Int8/16/32`),
 (`And`, `Or`, `Not`) operators, plus `Coalesce` (fill nulls from another
 series or a scalar), `Filter` (by a `[]bool` / `[]int` or a `Bools` / `Ints`
 series), null-aware `Group` / `SubGroup` and `Sort` / `SortRev`, and `Map`,
-`Take`, `Cast`, `Append`.
+`Slice`, `TakeIndices`, `Cast`, `Append`.
 
 **DataFrame**
 
@@ -163,7 +163,7 @@ series), null-aware `Group` / `SubGroup` and `Sort` / `SortRev`, and `Map`,
 | GroupBy + Agg        |   ✅   | null-aware group keys                    |
 | Join                 |   ✅   | inner / left / right / outer, null-aware |
 | OrderBy              |   ✅   | multi-key, ascending / descending        |
-| Take                 |   ✅   |                                          |
+| Slice / TakeIndices  |   ✅   |                                          |
 | Pivot (longer/wider) |   🚧   | in progress on `dev-pivot`               |
 | Map                  |   ❌   | planned                                  |
 | Stack / Append       |   ❌   | planned                                  |
