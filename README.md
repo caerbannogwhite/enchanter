@@ -264,7 +264,11 @@ the [storage measurement](docs/superpowers/specs/2026-08-08-arrow-native-storage
       and `TakeIndices(indices)`; the column accessors are `Col`, `ColAt`,
       `NameAt`, `ColIndex`; reading starts from package-level constructors
       (`dataframe.ReadCsv(ctx)`, `ReadParquet`, ...) and writing from
-      `WriteCsv`, `WriteParquet`, ..., with the builder types exported.
+      `WriteCsv`, `WriteParquet`, ..., with the builder types exported;
+      the dead `SeriesNumeric` interface is deleted; NA propagation now
+      holds for every operator (`String + NA` no longer concatenates and
+      `Bool OR NA` no longer copies values — both yield NA); the join row
+      order is deterministic and documented.
 
 **1.0 — commit** to the stable API.
 
