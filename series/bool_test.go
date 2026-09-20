@@ -1646,24 +1646,18 @@ func Test_SeriesBool_Boolean_Or(t *testing.T) {
 		t.Errorf("Expected null mask to be %v, got %v", []bool{false, true, false, true, false, true, false, true, false, true}, bools.Or(boolv_).NullMask())
 	}
 
-	// scalar | NA
-	if !utils.CheckEqSlice(bools.Or(nas).Data().([]bool), []bool{true}, nil, "Bool Or") {
-		t.Errorf("Expected data to be %v, got %v", []bool{true}, bools.Or(nas).Data())
+	// scalar | NA: NA propagation, the result is all null
+	if res, ok := bools.Or(nas).(NAs); !ok || res.Len() != 1 {
+		t.Errorf("Expected NAs of length 1, got %v", res)
 	}
-	if !utils.CheckEqSlice(bools.Or(nav).Data().([]bool), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Bool Or") {
-		t.Errorf("Expected data to be %v, got %v", []bool{true, true, true, true, true, true, true, true, true, true}, bools.Or(nav).Data())
+	if res, ok := bools.Or(nav).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
-	if !utils.CheckEqSlice(bools.Or(nas).NullMask(), []bool{false}, nil, "Bool Or") {
-		t.Errorf("Expected null mask to be %v, got %v", []bool{false}, bools.Or(nas).NullMask())
+	if res, ok := bools_.Or(nas).(NAs); !ok || res.Len() != 1 {
+		t.Errorf("Expected NAs of length 1, got %v", res)
 	}
-	if !utils.CheckEqSlice(bools.Or(nav).NullMask(), []bool{false, false, false, false, false, false, false, false, false, false}, nil, "Bool Or") {
-		t.Errorf("Expected null mask to be %v, got %v", []bool{false, false, false, false, false, false, false, false, false, false}, bools.Or(nav).NullMask())
-	}
-	if !utils.CheckEqSlice(bools_.Or(nas).NullMask(), []bool{true}, nil, "Bool Or") {
-		t.Errorf("Expected null mask to be %v, got %v", []bool{true}, bools_.Or(nas).NullMask())
-	}
-	if !utils.CheckEqSlice(bools_.Or(nav).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Bool Or") {
-		t.Errorf("Expected null mask to be %v, got %v", []bool{true, true, true, true, true, true, true, true, true, true}, bools_.Or(nav).NullMask())
+	if res, ok := bools_.Or(nav).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
 
 	// vector | bool
@@ -1680,23 +1674,17 @@ func Test_SeriesBool_Boolean_Or(t *testing.T) {
 		t.Errorf("Expected null mask to be %v, got %v", []bool{false, true, false, true, false, true, false, true, false, true}, boolv.Or(boolv_).NullMask())
 	}
 
-	// vector | NA
-	if !utils.CheckEqSlice(boolv.Or(nas).Data().([]bool), []bool{true, false, true, false, true, false, true, true, false, false}, nil, "Bool Or") {
-		t.Errorf("Expected data to be %v, got %v", []bool{true, false, true, false, true, false, true, true, false, false}, boolv.Or(nas).Data())
+	// vector | NA: NA propagation, the result is all null
+	if res, ok := boolv.Or(nas).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
-	if !utils.CheckEqSlice(boolv.Or(nav).Data().([]bool), []bool{true, false, true, false, true, false, true, true, false, false}, nil, "Bool Or") {
-		t.Errorf("Expected data to be %v, got %v", []bool{true, false, true, false, true, false, true, true, false, false}, boolv.Or(nav).Data())
+	if res, ok := boolv.Or(nav).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
-	if !utils.CheckEqSlice(boolv.Or(nas).NullMask(), []bool{false, false, false, false, false, false, false, false, false, false}, nil, "Bool Or") {
-		t.Errorf("Expected null mask to be %v, got %v", []bool{false, false, false, false, false, false, false, false, false, false}, boolv.Or(nas).NullMask())
+	if res, ok := boolv_.Or(nas).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
-	if !utils.CheckEqSlice(boolv.Or(nav).NullMask(), []bool{false, false, false, false, false, false, false, false, false, false}, nil, "Bool Or") {
-		t.Errorf("Expected null mask to be %v, got %v", []bool{false, false, false, false, false, false, false, false, false, false}, boolv.Or(nav).NullMask())
-	}
-	if !utils.CheckEqSlice(boolv_.Or(nas).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Bool Or") {
-		t.Errorf("Expected null mask to be %v, got %v", []bool{false, true, false, true, false, true, false, true, false, true}, boolv_.Or(nas).NullMask())
-	}
-	if !utils.CheckEqSlice(boolv_.Or(nav).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Bool Or") {
-		t.Errorf("Expected null mask to be %v, got %v", []bool{false, true, false, true, false, true, false, true, false, true}, boolv_.Or(nav).NullMask())
+	if res, ok := boolv_.Or(nav).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
 }

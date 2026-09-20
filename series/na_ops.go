@@ -2,11 +2,7 @@
 
 package series
 
-import (
-	"fmt"
-
-	"github.com/caerbannogwhite/enchanter"
-)
+import "fmt"
 
 func (s NAs) Not() Series {
 	return s
@@ -92,34 +88,16 @@ func (s NAs) Or(other any) Series {
 		switch {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
-			result := make([]bool, resultSize)
-			resultNullMask := naOperandNullMask(o.IsNullable_, o.NullMask_, true, resultSize)
-			result[0] = o.Data_[0]
-			return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		case s.Len() == 1:
 			resultSize := o.Len()
-			result := make([]bool, resultSize)
-			resultNullMask := naOperandNullMask(o.IsNullable_, o.NullMask_, false, resultSize)
-			for i := 0; i < resultSize; i++ {
-				result[i] = o.Data_[i]
-			}
-			return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		case o.Len() == 1:
 			resultSize := s.Len()
-			result := make([]bool, resultSize)
-			resultNullMask := naOperandNullMask(o.IsNullable_, o.NullMask_, true, resultSize)
-			for i := 0; i < resultSize; i++ {
-				result[i] = o.Data_[0]
-			}
-			return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
-			result := make([]bool, resultSize)
-			resultNullMask := naOperandNullMask(o.IsNullable_, o.NullMask_, false, resultSize)
-			for i := 0; i < resultSize; i++ {
-				result[i] = o.Data_[i]
-			}
-			return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		}
 		return Errors{fmt.Sprintf("Cannot OR %s and %s", s.Type().String(), o.Type().String())}
 	default:
@@ -611,34 +589,16 @@ func (s NAs) Add(other any) Series {
 		switch {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
-			result := make([]*string, resultSize)
-			resultNullMask := naOperandNullMask(o.IsNullable_, o.NullMask_, true, resultSize)
-			result[0] = s.Ctx_.StringPool.Put(enchanter.NA_TEXT + *o.Data_[0])
-			return Strings{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		case s.Len() == 1:
 			resultSize := o.Len()
-			result := make([]*string, resultSize)
-			resultNullMask := naOperandNullMask(o.IsNullable_, o.NullMask_, false, resultSize)
-			for i := 0; i < resultSize; i++ {
-				result[i] = s.Ctx_.StringPool.Put(enchanter.NA_TEXT + *o.Data_[i])
-			}
-			return Strings{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		case o.Len() == 1:
 			resultSize := s.Len()
-			result := make([]*string, resultSize)
-			resultNullMask := naOperandNullMask(o.IsNullable_, o.NullMask_, true, resultSize)
-			for i := 0; i < resultSize; i++ {
-				result[i] = s.Ctx_.StringPool.Put(enchanter.NA_TEXT + *o.Data_[0])
-			}
-			return Strings{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
-			result := make([]*string, resultSize)
-			resultNullMask := naOperandNullMask(o.IsNullable_, o.NullMask_, false, resultSize)
-			for i := 0; i < resultSize; i++ {
-				result[i] = s.Ctx_.StringPool.Put(enchanter.NA_TEXT + *o.Data_[i])
-			}
-			return Strings{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		}
 		return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
 	case Times:

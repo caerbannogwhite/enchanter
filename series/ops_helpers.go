@@ -53,14 +53,11 @@ func binaryNullMask(aNullable bool, aMask []uint8, aScalar bool, bNullable bool,
 	}
 }
 
-// naOperandNullMask builds the null mask of an operation whose other operand
-// is NAs but whose result is a typed series (for example Bools.Or(NAs)).
-//
-// It preserves the long-standing behavior of this case verbatim: the result
-// carries a copy of the typed operand's null mask — broadcast when that
-// operand is a scalar — while the result series itself is marked not nullable.
-// That combination is questionable, but changing it is a semantic decision,
-// not a code-generation one.
+// naOperandNullMask builds the null mask of a Coalesce whose other operand
+// is NAs. Coalesce is the one operation whose result stays typed with an NA
+// operand, since it exists to replace nulls: the result carries a copy of
+// the typed operand's null mask — broadcast when that operand is a scalar.
+// Every other binary operation with an NA operand returns NAs.
 func naOperandNullMask(nullable bool, mask []uint8, scalar bool, size int) []uint8 {
 	if !nullable {
 		return make([]uint8, 0)

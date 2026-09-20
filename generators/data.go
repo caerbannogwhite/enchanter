@@ -2177,27 +2177,7 @@ func GenerateOperationsData() map[string]SeriesFile {
 		for j, seriesName := range seriesNames {
 			resType := ComputeResInnerType(opCodes[i], seriesTypes[j], seriesTypes[j])
 
-			// Special case for string concatenation
-			if opCodes[i] == meta.OP_BINARY_ADD && seriesTypes[j] == meta.StringType {
-				applyTo = append(applyTo, OperationApplyTo{
-					SeriesName: seriesName,
-					SeriesType: seriesTypes[j],
-					MakeOperation: func(res, resIndex, op1, op1Index, op2, op2Index string) ast.Expr {
-						return &ast.Ident{Name: fmt.Sprintf("%s[%s] = %s.Ctx_.StringPool.Put(enchanter.NA_TEXT + *%s.Data_[%s])", res, resIndex, op1, op2, op2Index)}
-					},
-				})
-			} else
-
-			// Special case for logical OR
-			if opCodes[i] == meta.OP_BINARY_OR && seriesTypes[j] == meta.BoolType {
-				applyTo = append(applyTo, OperationApplyTo{
-					SeriesName: seriesName,
-					SeriesType: seriesTypes[j],
-					MakeOperation: func(res, resIndex, op1, op1Index, op2, op2Index string) ast.Expr {
-						return &ast.Ident{Name: fmt.Sprintf("%s[%s] = %s.Data_[%s]", res, resIndex, op2, op2Index)}
-					},
-				})
-			} else if resType != meta.ErrorType {
+			if resType != meta.ErrorType {
 				applyTo = append(applyTo, OperationApplyTo{
 					SeriesName: seriesName,
 					SeriesType: seriesTypes[j],
@@ -2219,33 +2199,7 @@ func GenerateOperationsData() map[string]SeriesFile {
 		for j, opName := range opNames {
 			resType := ComputeResInnerType(opCodes[j], seriesTypes[i], meta.NullType)
 
-			// Special case for string concatenation
-			if opCodes[j] == meta.OP_BINARY_ADD && seriesTypes[i] == meta.StringType {
-				data[fileName].Operations[opName] = Operation{
-					OpCode: data[fileName].Operations[opName].OpCode,
-					ApplyTo: append(data[fileName].Operations[opName].ApplyTo, OperationApplyTo{
-						SeriesName: "NAs",
-						SeriesType: meta.NullType,
-						MakeOperation: func(res, resIndex, op1, op1Index, op2, op2Index string) ast.Expr {
-							return &ast.Ident{Name: fmt.Sprintf("%s[%s] = %s.Ctx_.StringPool.Put(*%s.Data_[%s] + enchanter.NA_TEXT)", res, resIndex, op1, op1, op1Index)}
-						},
-					}),
-				}
-			} else
-
-			// Special case for logical OR
-			if opCodes[j] == meta.OP_BINARY_OR && seriesTypes[i] == meta.BoolType {
-				data[fileName].Operations[opName] = Operation{
-					OpCode: data[fileName].Operations[opName].OpCode,
-					ApplyTo: append(data[fileName].Operations[opName].ApplyTo, OperationApplyTo{
-						SeriesName: "NAs",
-						SeriesType: meta.NullType,
-						MakeOperation: func(res, resIndex, op1, op1Index, op2, op2Index string) ast.Expr {
-							return &ast.Ident{Name: fmt.Sprintf("%s[%s] = %s.Data_[%s]", res, resIndex, op1, op1Index)}
-						},
-					}),
-				}
-			} else if resType != meta.ErrorType {
+			if resType != meta.ErrorType {
 				data[fileName].Operations[opName] = Operation{
 					OpCode: data[fileName].Operations[opName].OpCode,
 					ApplyTo: append(data[fileName].Operations[opName].ApplyTo, OperationApplyTo{

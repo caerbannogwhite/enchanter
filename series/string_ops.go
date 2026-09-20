@@ -2,11 +2,7 @@
 
 package series
 
-import (
-	"fmt"
-
-	"github.com/caerbannogwhite/enchanter"
-)
+import "fmt"
 
 func (s Strings) And(other any) Series {
 	var otherSeries Series
@@ -363,34 +359,16 @@ func (s Strings) Add(other any) Series {
 		switch {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
-			result := make([]*string, resultSize)
-			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, true, resultSize)
-			result[0] = s.Ctx_.StringPool.Put(*s.Data_[0] + enchanter.NA_TEXT)
-			return Strings{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		case s.Len() == 1:
 			resultSize := o.Len()
-			result := make([]*string, resultSize)
-			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, true, resultSize)
-			for i := 0; i < resultSize; i++ {
-				result[i] = s.Ctx_.StringPool.Put(*s.Data_[0] + enchanter.NA_TEXT)
-			}
-			return Strings{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		case o.Len() == 1:
 			resultSize := s.Len()
-			result := make([]*string, resultSize)
-			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, false, resultSize)
-			for i := 0; i < resultSize; i++ {
-				result[i] = s.Ctx_.StringPool.Put(*s.Data_[i] + enchanter.NA_TEXT)
-			}
-			return Strings{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
-			result := make([]*string, resultSize)
-			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, false, resultSize)
-			for i := 0; i < resultSize; i++ {
-				result[i] = s.Ctx_.StringPool.Put(*s.Data_[i] + enchanter.NA_TEXT)
-			}
-			return Strings{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		}
 		return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
 	default:
@@ -777,10 +755,10 @@ func (s Strings) Coalesce(other any) Series {
 			result := make([]*string, resultSize)
 			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
 			if s.IsNullable_ && s.NullMask_[0]&1 != 0 {
-				result[0] = o.Data_[0]
-			} else {
-				result[0] = s.Data_[0]
-			}
+result[0] = o.Data_[0]
+} else {
+result[0] = s.Data_[0]
+}
 			return Strings{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
 		case s.Len() == 1:
 			resultSize := o.Len()
@@ -788,10 +766,10 @@ func (s Strings) Coalesce(other any) Series {
 			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
 			for i := 0; i < resultSize; i++ {
 				if s.IsNullable_ && s.NullMask_[0]&1 != 0 {
-					result[i] = o.Data_[i]
-				} else {
-					result[i] = s.Data_[0]
-				}
+result[i] = o.Data_[i]
+} else {
+result[i] = s.Data_[0]
+}
 			}
 			return Strings{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
 		case o.Len() == 1:
@@ -800,10 +778,10 @@ func (s Strings) Coalesce(other any) Series {
 			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
 			for i := 0; i < resultSize; i++ {
 				if s.IsNullable_ && s.NullMask_[i>>3]&(1<<uint(i%8)) != 0 {
-					result[i] = o.Data_[0]
-				} else {
-					result[i] = s.Data_[i]
-				}
+result[i] = o.Data_[0]
+} else {
+result[i] = s.Data_[i]
+}
 			}
 			return Strings{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
 		case s.Len() == o.Len():
@@ -812,10 +790,10 @@ func (s Strings) Coalesce(other any) Series {
 			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
 			for i := 0; i < resultSize; i++ {
 				if s.IsNullable_ && s.NullMask_[i>>3]&(1<<uint(i%8)) != 0 {
-					result[i] = o.Data_[i]
-				} else {
-					result[i] = s.Data_[i]
-				}
+result[i] = o.Data_[i]
+} else {
+result[i] = s.Data_[i]
+}
 			}
 			return Strings{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
 		}

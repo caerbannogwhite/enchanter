@@ -122,10 +122,9 @@ func generateMakeResultStmt(info BuildInfo) ([]ast.Stmt, string) {
 			},
 		})
 
-		// For the older operations this branch keeps the historical contract
-		// of naOperandNullMask: the mask is copied but the result is marked
-		// not nullable. Coalesce is new and has no history to preserve, so it
-		// keeps the typed operand's nullability flag.
+		// Only Coalesce reaches this branch: every other binary operation
+		// with an NA operand has an NAs result and returns above. Coalesce
+		// keeps the typed operand's mask and nullability flag.
 		if info.OpCode == meta.OP_BINARY_COALESCE {
 			return stmts, fmt.Sprintf("%s.IsNullable_", nonNullOperand)
 		}

@@ -346,24 +346,18 @@ func Test_SeriesNA_Arithmetic_Add(t *testing.T) {
 		t.Errorf("Expected %v, got %v", []bool{true, true, true, true, true, true, true, true, true, true}, nas.Add(intv_).NullMask())
 	}
 
-	// scalar | string
-	if !utils.CheckEqSlice(nas.Add(strings).Data(), []string{NA_TEXT + "a"}, nil, "NA Add") {
-		t.Errorf("Expected %v, got %v", []string{NA_TEXT + "a"}, nas.Add(strings).Data())
+	// scalar | string: NA propagation, the result is all null
+	if res, ok := nas.Add(strings).(NAs); !ok || res.Len() != 1 {
+		t.Errorf("Expected NAs of length 1, got %v", res)
 	}
-	if !utils.CheckEqSlice(nas.Add(stringv).Data(), []string{NA_TEXT + "a", NA_TEXT + "b", NA_TEXT + "c", NA_TEXT + "d", NA_TEXT + "e", NA_TEXT + "f", NA_TEXT + "g", NA_TEXT + "h", NA_TEXT + "i", NA_TEXT + "j"}, nil, "NA Add") {
-		t.Errorf("Expected %v, got %v", []string{NA_TEXT + "a", NA_TEXT + "b", NA_TEXT + "c", NA_TEXT + "d", NA_TEXT + "e", NA_TEXT + "f", NA_TEXT + "g", NA_TEXT + "h", NA_TEXT + "i", NA_TEXT + "j"}, nas.Add(stringv).Data())
+	if res, ok := nas.Add(stringv).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
-	if !utils.CheckEqSlice(nas.Add(strings).NullMask(), []bool{false}, nil, "NA Add") {
-		t.Errorf("Expected %v, got %v", []bool{false}, nas.Add(strings).NullMask())
+	if res, ok := nas.Add(strings_).(NAs); !ok || res.Len() != 1 {
+		t.Errorf("Expected NAs of length 1, got %v", res)
 	}
-	if !utils.CheckEqSlice(nas.Add(stringv).NullMask(), []bool{false, false, false, false, false, false, false, false, false, false}, nil, "NA Add") {
-		t.Errorf("Expected %v, got %v", []bool{false, false, false, false, false, false, false, false, false, false}, nas.Add(stringv).NullMask())
-	}
-	if !utils.CheckEqSlice(nas.Add(strings_).NullMask(), []bool{true}, nil, "NA Add") {
-		t.Errorf("Expected %v, got %v", []bool{true}, nas.Add(strings_).NullMask())
-	}
-	if !utils.CheckEqSlice(nas.Add(stringv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "NA Add") {
-		t.Errorf("Expected %v, got %v", []bool{false, true, false, true, false, true, false, true, false, true}, nas.Add(stringv_).NullMask())
+	if res, ok := nas.Add(stringv_).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
 
 	// vector | na
@@ -394,24 +388,18 @@ func Test_SeriesNA_Arithmetic_Add(t *testing.T) {
 		t.Errorf("Expected %v, got %v", []bool{true, true, true, true, true, true, true, true, true, true}, nav.Add(intv_).NullMask())
 	}
 
-	// vector | string
-	if !utils.CheckEqSlice(nav.Add(strings).Data(), []string{NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a"}, nil, "NA Add") {
-		t.Errorf("Expected %v, got %v", []string{NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a", NA_TEXT + "a"}, nav.Add(strings).Data())
+	// vector | string: NA propagation, the result is all null
+	if res, ok := nav.Add(strings).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
-	if !utils.CheckEqSlice(nav.Add(stringv).Data(), []string{NA_TEXT + "a", NA_TEXT + "b", NA_TEXT + "c", NA_TEXT + "d", NA_TEXT + "e", NA_TEXT + "f", NA_TEXT + "g", NA_TEXT + "h", NA_TEXT + "i", NA_TEXT + "j"}, nil, "NA Add") {
-		t.Errorf("Expected %v, got %v", []string{NA_TEXT + "a", NA_TEXT + "b", NA_TEXT + "c", NA_TEXT + "d", NA_TEXT + "e", NA_TEXT + "f", NA_TEXT + "g", NA_TEXT + "h", NA_TEXT + "i", NA_TEXT + "j"}, nav.Add(stringv).Data())
+	if res, ok := nav.Add(stringv).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
-	if !utils.CheckEqSlice(nav.Add(strings).NullMask(), []bool{false, false, false, false, false, false, false, false, false, false}, nil, "NA Add") {
-		t.Errorf("Expected %v, got %v", []bool{false, false, false, false, false, false, false, false, false, false}, nav.Add(strings).NullMask())
+	if res, ok := nav.Add(strings_).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
-	if !utils.CheckEqSlice(nav.Add(stringv).NullMask(), []bool{false, false, false, false, false, false, false, false, false, false}, nil, "NA Add") {
-		t.Errorf("Expected %v, got %v", []bool{false, false, false, false, false, false, false, false, false, false}, nav.Add(stringv).NullMask())
-	}
-	if !utils.CheckEqSlice(nav.Add(strings_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "NA Add") {
-		t.Errorf("Expected %v, got %v", []bool{true, true, true, true, true, true, true, true, true, true}, nav.Add(strings_).NullMask())
-	}
-	if !utils.CheckEqSlice(nav.Add(stringv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "NA Add") {
-		t.Errorf("Expected %v, got %v", []bool{false, true, false, true, false, true, false, true, false, true}, nav.Add(stringv_).NullMask())
+	if res, ok := nav.Add(stringv_).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
 }
 
@@ -433,24 +421,18 @@ func Test_SeriesNA_Boolean_Or(t *testing.T) {
 		t.Errorf("Expected %v, got %v", []bool{true, true, true, true, true, true, true, true, true, true}, nas.Or(nav).NullMask())
 	}
 
-	// scalar | bool
-	if !utils.CheckEqSlice(nas.Or(bools).Data().([]bool), []bool{true}, nil, "NA Or") {
-		t.Errorf("Expected %v, got %v", []bool{true}, nas.Or(bools).Data().([]bool))
+	// scalar | bool: NA propagation, the result is all null
+	if res, ok := nas.Or(bools).(NAs); !ok || res.Len() != 1 {
+		t.Errorf("Expected NAs of length 1, got %v", res)
 	}
-	if !utils.CheckEqSlice(nas.Or(boolv).Data().([]bool), []bool{true, false, true, false, true, false, true, true, false, false}, nil, "NA Or") {
-		t.Errorf("Expected %v, got %v", []bool{true, false, true, false, true, false, true, true, false, false}, nas.Or(boolv).Data().([]bool))
+	if res, ok := nas.Or(boolv).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
-	if !utils.CheckEqSlice(nas.Or(bools).NullMask(), []bool{false}, nil, "NA Or") {
-		t.Errorf("Expected %v, got %v", []bool{false}, nas.Or(bools).NullMask())
+	if res, ok := nas.Or(bools_).(NAs); !ok || res.Len() != 1 {
+		t.Errorf("Expected NAs of length 1, got %v", res)
 	}
-	if !utils.CheckEqSlice(nas.Or(boolv).NullMask(), []bool{false, false, false, false, false, false, false, false, false, false}, nil, "NA Or") {
-		t.Errorf("Expected %v, got %v", []bool{false, false, false, false, false, false, false, false, false, false}, nas.Or(boolv).NullMask())
-	}
-	if !utils.CheckEqSlice(nas.Or(bools_).NullMask(), []bool{true}, nil, "NA Or") {
-		t.Errorf("Expected %v, got %v", []bool{true}, nas.Or(bools_).NullMask())
-	}
-	if !utils.CheckEqSlice(nas.Or(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "NA Or") {
-		t.Errorf("Expected %v, got %v", []bool{false, true, false, true, false, true, false, true, false, true}, nas.Or(boolv_).NullMask())
+	if res, ok := nas.Or(boolv_).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
 
 	// vector | na
@@ -461,23 +443,17 @@ func Test_SeriesNA_Boolean_Or(t *testing.T) {
 		t.Errorf("Expected %v, got %v", []bool{true, true, true, true, true, true, true, true, true, true}, nav.Or(nav).NullMask())
 	}
 
-	// vector | bool
-	if !utils.CheckEqSlice(nav.Or(bools).Data().([]bool), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "NA Or") {
-		t.Errorf("Expected %v, got %v", []bool{true, true, true, true, true, true, true, true, true, true}, nav.Or(bools).Data().([]bool))
+	// vector | bool: NA propagation, the result is all null
+	if res, ok := nav.Or(bools).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
-	if !utils.CheckEqSlice(nav.Or(boolv).Data().([]bool), []bool{true, false, true, false, true, false, true, true, false, false}, nil, "NA Or") {
-		t.Errorf("Expected %v, got %v", []bool{true, false, true, false, true, false, true, true, false, false}, nav.Or(boolv).Data().([]bool))
+	if res, ok := nav.Or(boolv).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
-	if !utils.CheckEqSlice(nav.Or(bools).NullMask(), []bool{false, false, false, false, false, false, false, false, false, false}, nil, "NA Or") {
-		t.Errorf("Expected %v, got %v", []bool{false, false, false, false, false, false, false, false, false, false}, nav.Or(bools).NullMask())
+	if res, ok := nav.Or(bools_).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
-	if !utils.CheckEqSlice(nav.Or(boolv).NullMask(), []bool{false, false, false, false, false, false, false, false, false, false}, nil, "NA Or") {
-		t.Errorf("Expected %v, got %v", []bool{false, false, false, false, false, false, false, false, false, false}, nav.Or(boolv).NullMask())
-	}
-	if !utils.CheckEqSlice(nav.Or(bools_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "NA Or") {
-		t.Errorf("Expected %v, got %v", []bool{true, true, true, true, true, true, true, true, true, true}, nav.Or(bools_).NullMask())
-	}
-	if !utils.CheckEqSlice(nav.Or(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "NA Or") {
-		t.Errorf("Expected %v, got %v", []bool{false, true, false, true, false, true, false, true, false, true}, nav.Or(boolv_).NullMask())
+	if res, ok := nav.Or(boolv_).(NAs); !ok || res.Len() != 10 {
+		t.Errorf("Expected NAs of length 10, got %v", res)
 	}
 }

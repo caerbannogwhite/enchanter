@@ -152,6 +152,10 @@ series or a scalar), `Filter` (by a `[]bool` / `[]int` or a `Bools` / `Ints`
 series), null-aware `Group` / `SubGroup` and `Sort` / `SortRev`, and `Map`,
 `Slice`, `TakeIndices`, `Cast`, `Append`.
 
+Operators propagate NA: an operation with an NA operand yields NA, so
+`x + NA` is NA, as in SQL. `Coalesce` is the deliberate exception, since it
+exists to replace nulls.
+
 **DataFrame**
 
 | Operation            | Status | Notes                                    |

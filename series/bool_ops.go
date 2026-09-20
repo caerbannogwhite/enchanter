@@ -172,34 +172,16 @@ func (s Bools) Or(other any) Series {
 		switch {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
-			result := make([]bool, resultSize)
-			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, true, resultSize)
-			result[0] = s.Data_[0]
-			return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		case s.Len() == 1:
 			resultSize := o.Len()
-			result := make([]bool, resultSize)
-			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, true, resultSize)
-			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[0]
-			}
-			return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		case o.Len() == 1:
 			resultSize := s.Len()
-			result := make([]bool, resultSize)
-			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, false, resultSize)
-			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i]
-			}
-			return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
-			result := make([]bool, resultSize)
-			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, false, resultSize)
-			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i]
-			}
-			return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return NAs{size: resultSize}
 		}
 		return Errors{fmt.Sprintf("Cannot OR %s and %s", s.Type().String(), o.Type().String())}
 	default:
