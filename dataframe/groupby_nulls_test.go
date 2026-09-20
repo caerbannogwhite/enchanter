@@ -28,7 +28,7 @@ func TestGroupByNullKeyKeepsNullInResult(t *testing.T) {
 		t.Fatalf("expected 3 groups (1, 2, null), got %d", res.NRows())
 	}
 
-	k := res.C("k")
+	k := res.Col("k")
 	nullCount := 0
 	for i := 0; i < k.Len(); i++ {
 		if k.IsNull(i) {
@@ -87,7 +87,7 @@ func TestGroupByTimeKeyProducesAlignedResult(t *testing.T) {
 	if res.NRows() != 2 {
 		t.Fatalf("expected 2 groups, got %d", res.NRows())
 	}
-	k := res.C("k")
+	k := res.Col("k")
 	if k.Err() != nil {
 		t.Fatalf("key column missing from result: %s", k.Err())
 	}

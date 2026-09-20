@@ -249,7 +249,7 @@ func prepAggValueColumns(df DataFrame, aggs []aggregator) (views []aggValueView,
 		if agg.type_ == AGGREGATE_COUNT {
 			continue
 		}
-		views[j] = newAggValueView(df.C(agg.name))
+		views[j] = newAggValueView(df.Col(agg.name))
 	}
 	return views, isHol
 }

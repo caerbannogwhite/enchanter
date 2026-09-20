@@ -50,8 +50,8 @@ func (ab aggregatorBuilder) Run() DataFrame {
 			// Anything else (e.g. Strings) would otherwise reach
 			// accumulateChunk's aggValUnsupported default case and panic with
 			// an out-of-range slice index.
-			if newAggValueView(df.C(agg.name)).kind == aggValUnsupported {
-				df.err = fmt.Errorf("DataFrame.Agg: series \"%s\" has unsupported type %s for aggregator \"%s\"", agg.name, df.C(agg.name).Type(), agg.newName)
+			if newAggValueView(df.Col(agg.name)).kind == aggValUnsupported {
+				df.err = fmt.Errorf("DataFrame.Agg: series \"%s\" has unsupported type %s for aggregator \"%s\"", agg.name, df.Col(agg.name).Type(), agg.newName)
 				return df
 			}
 		}

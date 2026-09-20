@@ -9,7 +9,7 @@
 //
 //	df := dataframe.NewDataFrame(ctx).
 //		FromCsv().SetPath("people.csv").Read().
-//		Filter(df.C("age").Gt(int64(30))).
+//		Filter(df.Col("age").Gt(int64(30))).
 //		GroupBy("city").
 //		Agg(dataframe.Count()).
 //		Run()

@@ -72,8 +72,8 @@ func TestJoin_MultipleColumns(t *testing.T) {
 	}
 
 	// Verify the results
-	names := result.C("name").Data().([]string)
-	budgets := result.C("budget").Data().([]float64)
+	names := result.Col("name").Data().([]string)
+	budgets := result.Col("budget").Data().([]float64)
 	expectedNames := []string{"Alice", "Bob", "Charlie"}
 	expectedBudgets := []float64{10000, 15000, 12000}
 
@@ -219,11 +219,11 @@ Charlie,33,60.0,t,Business,2
 
 	// Test specific values for IT department
 	for i := 0; i < result.NRows(); i++ {
-		dept := result.C("department").Get(i).(string)
+		dept := result.Col("department").Get(i).(string)
 		if dept == "IT" {
-			count := result.C("n").Get(i).(int64)
-			minAge := result.C("min(age)").Get(i).(float64)
-			maxAge := result.C("max(age)").Get(i).(float64)
+			count := result.Col("n").Get(i).(int64)
+			minAge := result.Col("min(age)").Get(i).(float64)
+			maxAge := result.Col("max(age)").Get(i).(float64)
 
 			if count != 4 {
 				t.Errorf("IT department: expected count 4, got %d", count)

@@ -71,8 +71,8 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 
 	// Verify specific department statistics
 	for i := 0; i < departmentStats.NRows(); i++ {
-		dept := departmentStats.C("department").Get(i).(string)
-		count := departmentStats.C("n").Get(i).(int64)
+		dept := departmentStats.Col("department").Get(i).(string)
+		count := departmentStats.Col("n").Get(i).(int64)
 
 		switch dept {
 		case "IT":
@@ -146,9 +146,9 @@ func TestIntegration_ChainedOperations(t *testing.T) {
 
 	// Verify that each region's data is correctly aggregated
 	for i := 0; i < result.NRows(); i++ {
-		region := result.C("region").Get(i).(string)
-		totalRevenue := result.C("sum(revenue)").Get(i).(float64)
-		target := result.C("mean(target)").Get(i).(float64)
+		region := result.Col("region").Get(i).(string)
+		totalRevenue := result.Col("sum(revenue)").Get(i).(float64)
+		target := result.Col("mean(target)").Get(i).(float64)
 
 		switch region {
 		case "North":
@@ -207,11 +207,11 @@ func TestIntegration_AllAggregationsWithComplexData(t *testing.T) {
 
 	// Verify specific calculations for category A
 	for i := 0; i < result.NRows(); i++ {
-		category := result.C("category").Get(i).(string)
+		category := result.Col("category").Get(i).(string)
 		if category == "A" {
-			count := result.C("n").Get(i).(int64)
-			minVal := result.C("min(value1)").Get(i).(float64)
-			maxVal := result.C("max(value1)").Get(i).(float64)
+			count := result.Col("n").Get(i).(int64)
+			minVal := result.Col("min(value1)").Get(i).(float64)
+			maxVal := result.Col("max(value1)").Get(i).(float64)
 
 			if count != 3 { // 3 records for category A
 				t.Errorf("Category A: expected count 3, got %d", count)

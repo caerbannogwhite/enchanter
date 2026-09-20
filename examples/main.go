@@ -97,9 +97,9 @@ func Example03() {
 		Read()
 
 	df.Filter(
-		df.C("age").Ge(30).
-			And(df.C("junior").
-				Or(df.C("department").Eq("Business")))).
+		df.Col("age").Ge(30).
+			And(df.Col("junior").
+				Or(df.Col("department").Eq("Business")))).
 		PPrint(dataframe.NewPPrintParams())
 }
 
@@ -212,7 +212,7 @@ func Example06() {
 		Run().
 		PPrint(dataframe.NewPPrintParams().SetNRows(10).SetUseLipGloss(true))
 
-	fmt.Println(df.Agg(dataframe.Sum("sum(v1)")).Run().C("sum(sum(v1))"))
+	fmt.Println(df.Agg(dataframe.Sum("sum(v1)")).Run().Col("sum(sum(v1))"))
 }
 
 func main() {

@@ -126,7 +126,7 @@ func TestNewDataFrameFromArrowRecord(t *testing.T) {
 	}
 
 	// Check nullable string column
-	s := df.C("b")
+	s := df.Col("b")
 	if !s.IsNullable() {
 		t.Error("col 'b' should be nullable")
 	}

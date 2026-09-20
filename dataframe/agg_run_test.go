@@ -19,15 +19,15 @@ func TestAggRunSortedAndSkipNullByDefault(t *testing.T) {
 		t.Fatalf("agg errored: %v", out.Err())
 	}
 	// sorted: a, b
-	if out.C("g").(series.Strings).GetAsString(0) != "a" {
+	if out.Col("g").(series.Strings).GetAsString(0) != "a" {
 		t.Fatalf("not sorted by key")
 	}
 	// b's null value skipped by default: sum(b) = 1, sample std of single value -> null
-	sum := out.C("sum(v)").(series.Float64s)
+	sum := out.Col("sum(v)").(series.Float64s)
 	if sum.Data_[1] != 1 {
 		t.Fatalf("skip-null sum(b) = %v, want 1", sum.Data_[1])
 	}
-	std := out.C("std(v)").(series.Float64s)
+	std := out.Col("std(v)").(series.Float64s)
 	if !std.IsNull(1) {
 		t.Fatalf("sample std of single non-null should be null")
 	}
@@ -78,8 +78,8 @@ func TestAggRunStdHandComputed(t *testing.T) {
 		"B": math.Sqrt(2.0 / 3.0),
 		"C": 0.0,
 	}
-	g := out.C("g").(series.Strings)
-	std := out.C("std(v)").(series.Float64s)
+	g := out.Col("g").(series.Strings)
+	std := out.Col("std(v)").(series.Float64s)
 	if out.NRows() != 3 {
 		t.Fatalf("NRows = %d, want 3", out.NRows())
 	}

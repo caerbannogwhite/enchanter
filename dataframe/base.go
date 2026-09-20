@@ -268,8 +268,8 @@ func (df DataFrame) Replace(name string, s series.Series) DataFrame {
 	return df
 }
 
-// Returns the column with the given name.
-func (df DataFrame) C(name string) series.Series {
+// Col returns the column with the given name.
+func (df DataFrame) Col(name string) series.Series {
 	for i, name_ := range df.names {
 		if name_ == name {
 			return df.series[i]
@@ -291,10 +291,10 @@ func (df DataFrame) seriesByName(name string) series.Series {
 	return nil
 }
 
-// Returns the series at the given index.
-func (df DataFrame) At(index int) series.Series {
+// ColAt returns the column at the given index.
+func (df DataFrame) ColAt(index int) series.Series {
 	if index < 0 || index >= len(df.series) {
-		return series.Errors{Msg_: fmt.Sprintf("DataFrame.SeriesAt: index %d out of bounds", index)}
+		return series.Errors{Msg_: fmt.Sprintf("DataFrame.ColAt: index %d out of bounds", index)}
 	}
 	return df.series[index]
 }
@@ -341,7 +341,7 @@ func (df DataFrame) Select(names ...string) DataFrame {
 		}
 		taken[name] = true
 		outNames = append(outNames, name)
-		seriesList = append(seriesList, df.C(name))
+		seriesList = append(seriesList, df.Col(name))
 	}
 
 	return DataFrame{
@@ -392,7 +392,7 @@ func (df DataFrame) SelectMatching(patterns ...string) DataFrame {
 			if !selected[name] && regex.MatchString(name) {
 				selected[name] = true
 				names = append(names, name)
-				seriesList = append(seriesList, df.C(name))
+				seriesList = append(seriesList, df.Col(name))
 			}
 		}
 	}
@@ -634,7 +634,7 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 
 	// CHECK: all columns in on must have the same type
 	for _, name := range on {
-		if df.C(name).Type() != other.C(name).Type() {
+		if df.Col(name).Type() != other.Col(name).Type() {
 			df.err = fmt.Errorf("DataFrame.Join: columns \"%s\" have different types", name)
 			return df
 		}
@@ -755,13 +755,13 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 
 		// Join columns
 		for i, name := range on {
-			joined = joined.AddSeries(name, dfGrouped.C(on[i]).Filter(indicesA))
+			joined = joined.AddSeries(name, dfGrouped.Col(on[i]).Filter(indicesA))
 		}
 
 		// A columns
 		var ser_ series.Series
 		for _, name := range colsDiffA {
-			ser_ = df.C(name).Filter(indicesA)
+			ser_ = df.Col(name).Filter(indicesA)
 			if commonCols[name] {
 				name += "_x"
 			}
@@ -770,7 +770,7 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 
 		// B columns
 		for _, name := range colsDiffB {
-			ser_ = other.C(name).Filter(indicesB)
+			ser_ = other.Col(name).Filter(indicesB)
 			if commonCols[name] {
 				name += "_y"
 			}
@@ -796,13 +796,13 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 
 		// Join columns
 		for i, name := range on {
-			joined = joined.AddSeries(name, dfGrouped.C(on[i]).Filter(indicesA))
+			joined = joined.AddSeries(name, dfGrouped.Col(on[i]).Filter(indicesA))
 		}
 
 		// A columns
 		var ser_ series.Series
 		for _, name := range colsDiffA {
-			ser_ = df.C(name).Filter(indicesA)
+			ser_ = df.Col(name).Filter(indicesA)
 			if commonCols[name] {
 				name += "_x"
 			}
@@ -817,7 +817,7 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 
 		// B columns
 		for _, name := range colsDiffB {
-			ser_ = other.C(name).Filter(indicesB)
+			ser_ = other.Col(name).Filter(indicesB)
 			switch ser_.Type() {
 			case meta.BoolType:
 				ser_ = series.NewSeriesBool(make([]bool, padBlen), nullMask, false, df.ctx).
@@ -873,7 +873,7 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 
 		// Join columns
 		for i, name := range on {
-			joined = joined.AddSeries(name, otherGrouped.C(on[i]).Filter(indicesB))
+			joined = joined.AddSeries(name, otherGrouped.Col(on[i]).Filter(indicesB))
 		}
 
 		padAlen := len(indicesB) - len(indicesA)
@@ -885,7 +885,7 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 		// A columns
 		var ser_ series.Series
 		for _, name := range colsDiffA {
-			ser_ = df.C(name).Filter(indicesA)
+			ser_ = df.Col(name).Filter(indicesA)
 			switch ser_.Type() {
 			case meta.BoolType:
 				ser_ = ser_.(series.Bools).Append(series.NewSeriesBool(make([]bool, padAlen), nullMask, false, df.ctx))
@@ -917,7 +917,7 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 
 		// B columns
 		for _, name := range colsDiffB {
-			ser_ = other.C(name).Filter(indicesB)
+			ser_ = other.Col(name).Filter(indicesB)
 			if commonCols[name] {
 				name += "_y"
 			}
@@ -956,9 +956,9 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 		indicesBOnly := indicesB[intersectionLen:]
 		for i, name := range on {
 			joined = joined.AddSeries(name,
-				dfGrouped.C(on[i]).
+				dfGrouped.Col(on[i]).
 					Filter(indicesA).Append(
-					otherGrouped.C(on[i]).
+					otherGrouped.Col(on[i]).
 						Filter(indicesBOnly)))
 		}
 
@@ -975,7 +975,7 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 		// A columns
 		var ser_ series.Series
 		for _, name := range colsDiffA {
-			ser_ = df.C(name).Filter(indicesA)
+			ser_ = df.Col(name).Filter(indicesA)
 			switch ser_.Type() {
 			case meta.BoolType:
 				ser_ = ser_.(series.Bools).Append(series.NewSeriesBool(make([]bool, padAlen), nullMaskA, false, df.ctx))
@@ -1007,7 +1007,7 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 
 		// B columns
 		for _, name := range colsDiffB {
-			ser_ = other.C(name).Filter(indicesB)
+			ser_ = other.Col(name).Filter(indicesB)
 			switch ser_.Type() {
 			case meta.BoolType:
 				ser_ = series.NewSeriesBool(make([]bool, padBlen), nullMaskB, false, df.ctx).
