@@ -434,20 +434,3 @@ func (s Float64s) SortRev() Series {
 	}
 	return s
 }
-
-////////////////////////			NUMERIC OPERATIONS
-
-func (s Float64s) Min() any {
-	if s.IsNullable_ {
-		return enchanter.NullableFloat64{Valid: false, Value: 0}
-	}
-
-	min := s.Data_[0]
-	for _, v := range s.Data_ {
-		if v < min {
-			min = v
-		}
-	}
-
-	return min
-}

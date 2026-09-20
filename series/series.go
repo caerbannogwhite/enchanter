@@ -137,27 +137,6 @@ type Series interface {
 	ArrowArray() arrow.Array
 }
 
-type SeriesNumeric interface {
-	Series
-
-	// Return the minimum value of the series.
-	Min() any
-	// Return the maximum value of the series.
-	Max() any
-	// Return the sum of the values of the series.
-	Sum() any
-	// Return the mean of the values of the series.
-	Mean() any
-	// Return the median of the values of the series.
-	Median() any
-	// Return the variance of the values of the series.
-	Variance() any
-	// Return the standard deviation of the values of the series.
-	StdDev() any
-	// Return the quantile of the values of the series.
-	Quantile(q any) any
-}
-
 type SeriesPartition interface {
 	// Return the number partitions.
 	GetSize() int
