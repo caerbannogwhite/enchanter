@@ -580,7 +580,17 @@ func generateOperations() {
 				panic(err)
 			}
 
-			err = os.WriteFile(filepath.Join(SERIES_FOLDER, filename), buf.Bytes(), 0644)
+			// The operator bodies are injected as raw multi-line
+			// identifiers, and go/printer indents those by original token
+			// positions, which is not always the gofmt layout. A second
+			// pass through format.Source parses the printed text, where
+			// every body is real syntax, and formats it canonically.
+			src, err := format.Source(buf.Bytes())
+			if err != nil {
+				panic(err)
+			}
+
+			err = os.WriteFile(filepath.Join(SERIES_FOLDER, filename), src, 0644)
 			if err != nil {
 				panic(err)
 			}

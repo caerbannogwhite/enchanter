@@ -755,10 +755,10 @@ func (s Strings) Coalesce(other any) Series {
 			result := make([]*string, resultSize)
 			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
 			if s.IsNullable_ && s.NullMask_[0]&1 != 0 {
-result[0] = o.Data_[0]
-} else {
-result[0] = s.Data_[0]
-}
+				result[0] = o.Data_[0]
+			} else {
+				result[0] = s.Data_[0]
+			}
 			return Strings{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
 		case s.Len() == 1:
 			resultSize := o.Len()
@@ -766,10 +766,10 @@ result[0] = s.Data_[0]
 			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
 			for i := 0; i < resultSize; i++ {
 				if s.IsNullable_ && s.NullMask_[0]&1 != 0 {
-result[i] = o.Data_[i]
-} else {
-result[i] = s.Data_[0]
-}
+					result[i] = o.Data_[i]
+				} else {
+					result[i] = s.Data_[0]
+				}
 			}
 			return Strings{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
 		case o.Len() == 1:
@@ -778,10 +778,10 @@ result[i] = s.Data_[0]
 			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
 			for i := 0; i < resultSize; i++ {
 				if s.IsNullable_ && s.NullMask_[i>>3]&(1<<uint(i%8)) != 0 {
-result[i] = o.Data_[0]
-} else {
-result[i] = s.Data_[i]
-}
+					result[i] = o.Data_[0]
+				} else {
+					result[i] = s.Data_[i]
+				}
 			}
 			return Strings{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
 		case s.Len() == o.Len():
@@ -790,10 +790,10 @@ result[i] = s.Data_[i]
 			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
 			for i := 0; i < resultSize; i++ {
 				if s.IsNullable_ && s.NullMask_[i>>3]&(1<<uint(i%8)) != 0 {
-result[i] = o.Data_[i]
-} else {
-result[i] = s.Data_[i]
-}
+					result[i] = o.Data_[i]
+				} else {
+					result[i] = s.Data_[i]
+				}
 			}
 			return Strings{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
 		}
