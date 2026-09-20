@@ -175,6 +175,11 @@ does not exist is an error rather than a silently missing column. Pattern
 selection lives in `SelectMatching`, which takes regular expressions matched
 unanchored — so `SelectMatching("Car")` also selects `CarOrigin`.
 
+`Join` output row order is part of the contract: rows follow the left frame's
+row order (a right join follows the right frame), a row with several matches
+produces consecutive rows ordered by the other frame, and an outer join puts
+the unmatched right rows last.
+
 **Aggregations** (via `Agg`): `Count`, `Sum`, `Mean`, `Min`, `Max`, `Std`,
 `Variance`, `Median`, `Quantile`, `Any`, and `All` are all supported, with
 three deliberate behaviors:

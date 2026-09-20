@@ -554,6 +554,14 @@ func (df DataFrame) getPartitions() []series.SeriesPartition {
 	}
 }
 
+// Join joins the two frames on the given columns, or on every same-named
+// column when none are given. Null keys match null keys.
+//
+// The output row order is part of the contract. Rows follow the left
+// frame's row order, and a row with several matches produces consecutive
+// output rows, ordered by the right frame's rows. A right join follows
+// the right frame's row order instead. In an outer join the unmatched
+// right rows come last, in the right frame's row order.
 func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame {
 	if df.err != nil {
 		return df
@@ -738,314 +746,176 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 		j++
 	}
 
-	switch how {
-	case JoinInner:
-		// Get indices of the intersection
-		indicesA := make([]int, 0, len(keysIntersection))
-		indicesB := make([]int, 0, len(keysIntersection))
+	// Materialize the matching row pairs. The grouping code assigns group
+	// ids in no useful order, so every output segment is sorted by row
+	// index: the promised row order does not depend on grouping internals.
+	type pair struct{ a, b int }
 
-		for _, key := range keysIntersection {
-			for _, indexA := range mapA[key] {
-				for _, indexB := range mapB[key] {
-					indicesA = append(indicesA, indexA)
-					indicesB = append(indicesB, indexB)
-				}
+	matched := make([]pair, 0)
+	for _, key := range keysIntersection {
+		for _, indexA := range mapA[key] {
+			for _, indexB := range mapB[key] {
+				matched = append(matched, pair{indexA, indexB})
 			}
-		}
-
-		// Join columns
-		for i, name := range on {
-			joined = joined.AddSeries(name, dfGrouped.Col(on[i]).Filter(indicesA))
-		}
-
-		// A columns
-		var ser_ series.Series
-		for _, name := range colsDiffA {
-			ser_ = df.Col(name).Filter(indicesA)
-			if commonCols[name] {
-				name += "_x"
-			}
-			joined = joined.AddSeries(name, ser_)
-		}
-
-		// B columns
-		for _, name := range colsDiffB {
-			ser_ = other.Col(name).Filter(indicesB)
-			if commonCols[name] {
-				name += "_y"
-			}
-			joined = joined.AddSeries(name, ser_.Filter(indicesB))
-		}
-
-	case JoinLeft:
-		indicesA := make([]int, 0, len(keysA))
-		indicesB := make([]int, 0, len(keysIntersection))
-
-		for _, key := range keysAOnly {
-			indicesA = append(indicesA, mapA[key]...)
-		}
-
-		for _, key := range keysIntersection {
-			for _, indexA := range mapA[key] {
-				for _, indexB := range mapB[key] {
-					indicesA = append(indicesA, indexA)
-					indicesB = append(indicesB, indexB)
-				}
-			}
-		}
-
-		// Join columns
-		for i, name := range on {
-			joined = joined.AddSeries(name, dfGrouped.Col(on[i]).Filter(indicesA))
-		}
-
-		// A columns
-		var ser_ series.Series
-		for _, name := range colsDiffA {
-			ser_ = df.Col(name).Filter(indicesA)
-			if commonCols[name] {
-				name += "_x"
-			}
-			joined = joined.AddSeries(name, ser_)
-		}
-
-		padBlen := len(indicesA) - len(indicesB)
-		nullMask := make([]bool, padBlen)
-		for i := range nullMask {
-			nullMask[i] = true
-		}
-
-		// B columns
-		for _, name := range colsDiffB {
-			ser_ = other.Col(name).Filter(indicesB)
-			switch ser_.Type() {
-			case meta.BoolType:
-				ser_ = series.NewSeriesBool(make([]bool, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-
-			case meta.IntType:
-				ser_ = series.NewSeriesInt(make([]int, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-
-			case meta.Int64Type:
-				ser_ = series.NewSeriesInt64(make([]int64, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-
-			case meta.Float64Type:
-				ser_ = series.NewSeriesFloat64(make([]float64, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-
-			case meta.StringType:
-				ser_ = series.NewSeriesString(make([]string, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-
-			case meta.TimeType:
-				ser_ = series.NewSeriesTime(make([]time.Time, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-
-			case meta.DurationType:
-				ser_ = series.NewSeriesDuration(make([]time.Duration, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-			}
-
-			if commonCols[name] {
-				name += "_y"
-			}
-			joined = joined.AddSeries(name, ser_)
-		}
-
-	case JoinRight:
-		indicesA := make([]int, 0, len(keysIntersection))
-		indicesB := make([]int, 0, len(keysB))
-
-		for _, key := range keysIntersection {
-			for _, indexA := range mapA[key] {
-				for _, indexB := range mapB[key] {
-					indicesA = append(indicesA, indexA)
-					indicesB = append(indicesB, indexB)
-				}
-			}
-		}
-
-		for _, key := range keysBOnly {
-			indicesB = append(indicesB, mapB[key]...)
-		}
-
-		// Join columns
-		for i, name := range on {
-			joined = joined.AddSeries(name, otherGrouped.Col(on[i]).Filter(indicesB))
-		}
-
-		padAlen := len(indicesB) - len(indicesA)
-		nullMask := make([]bool, padAlen)
-		for i := range nullMask {
-			nullMask[i] = true
-		}
-
-		// A columns
-		var ser_ series.Series
-		for _, name := range colsDiffA {
-			ser_ = df.Col(name).Filter(indicesA)
-			switch ser_.Type() {
-			case meta.BoolType:
-				ser_ = ser_.(series.Bools).Append(series.NewSeriesBool(make([]bool, padAlen), nullMask, false, df.ctx))
-
-			case meta.IntType:
-				ser_ = ser_.(series.Ints).Append(series.NewSeriesInt(make([]int, padAlen), nullMask, false, df.ctx))
-
-			case meta.Int64Type:
-				ser_ = ser_.(series.Int64s).Append(series.NewSeriesInt64(make([]int64, padAlen), nullMask, false, df.ctx))
-
-			case meta.Float64Type:
-				ser_ = ser_.(series.Float64s).Append(series.NewSeriesFloat64(make([]float64, padAlen), nullMask, false, df.ctx))
-
-			case meta.StringType:
-				ser_ = ser_.(series.Strings).Append(series.NewSeriesString(make([]string, padAlen), nullMask, false, df.ctx))
-
-			case meta.TimeType:
-				ser_ = ser_.(series.Times).Append(series.NewSeriesTime(make([]time.Time, padAlen), nullMask, false, df.ctx))
-
-			case meta.DurationType:
-				ser_ = ser_.(series.Durations).Append(series.NewSeriesDuration(make([]time.Duration, padAlen), nullMask, false, df.ctx))
-			}
-
-			if commonCols[name] {
-				name += "_x"
-			}
-			joined = joined.AddSeries(name, ser_)
-		}
-
-		// B columns
-		for _, name := range colsDiffB {
-			ser_ = other.Col(name).Filter(indicesB)
-			if commonCols[name] {
-				name += "_y"
-			}
-			joined = joined.AddSeries(name, ser_)
-		}
-
-	case JoinOuter:
-		indicesA := make([]int, 0, len(keysA))
-		indicesB := make([]int, 0, len(keysB))
-
-		padAlen := 0
-		padBlen := 0
-
-		for _, key := range keysAOnly {
-			indicesA = append(indicesA, mapA[key]...)
-			padBlen += len(mapA[key])
-		}
-
-		intersectionLen := 0
-		for _, key := range keysIntersection {
-			for _, indexA := range mapA[key] {
-				for _, indexB := range mapB[key] {
-					indicesA = append(indicesA, indexA)
-					indicesB = append(indicesB, indexB)
-					intersectionLen++
-				}
-			}
-		}
-
-		for _, key := range keysBOnly {
-			indicesB = append(indicesB, mapB[key]...)
-			padAlen += len(mapB[key])
-		}
-
-		// Join columns
-		indicesBOnly := indicesB[intersectionLen:]
-		for i, name := range on {
-			joined = joined.AddSeries(name,
-				dfGrouped.Col(on[i]).
-					Filter(indicesA).Append(
-					otherGrouped.Col(on[i]).
-						Filter(indicesBOnly)))
-		}
-
-		nullMaskA := make([]bool, padAlen)
-		for i := range nullMaskA {
-			nullMaskA[i] = true
-		}
-
-		nullMaskB := make([]bool, padBlen)
-		for i := range nullMaskB {
-			nullMaskB[i] = true
-		}
-
-		// A columns
-		var ser_ series.Series
-		for _, name := range colsDiffA {
-			ser_ = df.Col(name).Filter(indicesA)
-			switch ser_.Type() {
-			case meta.BoolType:
-				ser_ = ser_.(series.Bools).Append(series.NewSeriesBool(make([]bool, padAlen), nullMaskA, false, df.ctx))
-
-			case meta.IntType:
-				ser_ = ser_.(series.Ints).Append(series.NewSeriesInt(make([]int, padAlen), nullMaskA, false, df.ctx))
-
-			case meta.Int64Type:
-				ser_ = ser_.(series.Int64s).Append(series.NewSeriesInt64(make([]int64, padAlen), nullMaskA, false, df.ctx))
-
-			case meta.Float64Type:
-				ser_ = ser_.(series.Float64s).Append(series.NewSeriesFloat64(make([]float64, padAlen), nullMaskA, false, df.ctx))
-
-			case meta.StringType:
-				ser_ = ser_.(series.Strings).Append(series.NewSeriesString(make([]string, padAlen), nullMaskA, false, df.ctx))
-
-			case meta.TimeType:
-				ser_ = ser_.(series.Times).Append(series.NewSeriesTime(make([]time.Time, padAlen), nullMaskA, false, df.ctx))
-
-			case meta.DurationType:
-				ser_ = ser_.(series.Durations).Append(series.NewSeriesDuration(make([]time.Duration, padAlen), nullMaskA, false, df.ctx))
-			}
-
-			if commonCols[name] {
-				name += "_x"
-			}
-			joined = joined.AddSeries(name, ser_)
-		}
-
-		// B columns
-		for _, name := range colsDiffB {
-			ser_ = other.Col(name).Filter(indicesB)
-			switch ser_.Type() {
-			case meta.BoolType:
-				ser_ = series.NewSeriesBool(make([]bool, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-
-			case meta.IntType:
-				ser_ = series.NewSeriesInt(make([]int, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-
-			case meta.Int64Type:
-				ser_ = series.NewSeriesInt64(make([]int64, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-
-			case meta.Float64Type:
-				ser_ = series.NewSeriesFloat64(make([]float64, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-
-			case meta.StringType:
-				ser_ = series.NewSeriesString(make([]string, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-
-			case meta.TimeType:
-				ser_ = series.NewSeriesTime(make([]time.Time, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-
-			case meta.DurationType:
-				ser_ = series.NewSeriesDuration(make([]time.Duration, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-			}
-
-			if commonCols[name] {
-				name += "_y"
-			}
-			joined = joined.AddSeries(name, ser_)
 		}
 	}
 
+	aOnly := make([]int, 0)
+	for _, key := range keysAOnly {
+		aOnly = append(aOnly, mapA[key]...)
+	}
+	sort.Ints(aOnly)
+
+	bOnly := make([]int, 0)
+	for _, key := range keysBOnly {
+		bOnly = append(bOnly, mapB[key]...)
+	}
+	sort.Ints(bOnly)
+
+	byLeftRow := func(p []pair) {
+		sort.Slice(p, func(i, j int) bool {
+			if p[i].a != p[j].a {
+				return p[i].a < p[j].a
+			}
+			return p[i].b < p[j].b
+		})
+	}
+
+	// indexB is -1 where a left row has no match; indexA is -1 where a
+	// right row has none.
+	var pairs []pair
+	switch how {
+	case JoinInner:
+		pairs = matched
+		byLeftRow(pairs)
+
+	case JoinLeft:
+		pairs = matched
+		for _, a := range aOnly {
+			pairs = append(pairs, pair{a, -1})
+		}
+		byLeftRow(pairs)
+
+	case JoinRight:
+		pairs = matched
+		for _, b := range bOnly {
+			pairs = append(pairs, pair{-1, b})
+		}
+		sort.Slice(pairs, func(i, j int) bool {
+			if pairs[i].b != pairs[j].b {
+				return pairs[i].b < pairs[j].b
+			}
+			return pairs[i].a < pairs[j].a
+		})
+
+	case JoinOuter:
+		pairs = matched
+		for _, a := range aOnly {
+			pairs = append(pairs, pair{a, -1})
+		}
+		byLeftRow(pairs)
+		for _, b := range bOnly {
+			pairs = append(pairs, pair{-1, b})
+		}
+	}
+
+	indicesA := make([]int, len(pairs))
+	indicesB := make([]int, len(pairs))
+	for i, p := range pairs {
+		indicesA[i] = p.a
+		indicesB[i] = p.b
+	}
+
+	// Join columns: the key values come from the side that has every row.
+	// An outer join has no such side, so the left-ordered part comes from
+	// the left frame and the unmatched right rows at the tail from the
+	// right frame.
+	for _, name := range on {
+		var keyCol series.Series
+		switch how {
+		case JoinRight:
+			keyCol = other.Col(name).FilterIntSlice(indicesB, false)
+		case JoinOuter:
+			cut := len(pairs) - len(bOnly)
+			keyCol = df.Col(name).FilterIntSlice(indicesA[:cut], false).
+				Append(other.Col(name).FilterIntSlice(indicesB[cut:], false))
+		default:
+			keyCol = df.Col(name).FilterIntSlice(indicesA, false)
+		}
+		joined = joined.AddSeries(name, keyCol)
+	}
+
+	// The remaining left columns, null where the row exists only in the
+	// right frame.
+	for _, name := range colsDiffA {
+		ser_ := joinGather(df.Col(name), indicesA, df.ctx)
+		if commonCols[name] {
+			name += "_x"
+		}
+		joined = joined.AddSeries(name, ser_)
+	}
+
+	// The remaining right columns, null where the row exists only in the
+	// left frame.
+	for _, name := range colsDiffB {
+		ser_ := joinGather(other.Col(name), indicesB, df.ctx)
+		if commonCols[name] {
+			name += "_y"
+		}
+		joined = joined.AddSeries(name, ser_)
+	}
+
 	return joined
+}
+
+// allNullSeries builds a series of the given type whose elements are all
+// null.
+func allNullSeries(t meta.BaseType, size int, ctx *enchanter.Context) series.Series {
+	mask := make([]bool, size)
+	for i := range mask {
+		mask[i] = true
+	}
+	switch t {
+	case meta.BoolType:
+		return series.NewSeriesBool(make([]bool, size), mask, false, ctx)
+	case meta.IntType:
+		return series.NewSeriesInt(make([]int, size), mask, false, ctx)
+	case meta.Int64Type:
+		return series.NewSeriesInt64(make([]int64, size), mask, false, ctx)
+	case meta.Float64Type:
+		return series.NewSeriesFloat64(make([]float64, size), mask, false, ctx)
+	case meta.StringType:
+		return series.NewSeriesString(make([]string, size), mask, false, ctx)
+	case meta.TimeType:
+		return series.NewSeriesTime(make([]time.Time, size), mask, false, ctx)
+	case meta.DurationType:
+		return series.NewSeriesDuration(make([]time.Duration, size), mask, false, ctx)
+	}
+	return series.Errors{Msg_: fmt.Sprintf("allNullSeries: unsupported type %v", t)}
+}
+
+// joinGather returns the elements of s at the given indices, in order,
+// where index -1 produces a null element. One null element is put in
+// front of a fresh copy of the series, so index v gathers as v+1 and -1
+// lands on the null.
+func joinGather(s series.Series, indices []int, ctx *enchanter.Context) series.Series {
+	hasNull := false
+	for _, v := range indices {
+		if v == -1 {
+			hasNull = true
+			break
+		}
+	}
+	if !hasNull {
+		return s.FilterIntSlice(indices, false)
+	}
+
+	ext := allNullSeries(s.Type(), 1, ctx).Append(s)
+	safe := make([]int, len(indices))
+	for i, v := range indices {
+		safe[i] = v + 1
+	}
+	return ext.FilterIntSlice(safe, false)
 }
 
 // Slice returns the rows in the half-open interval [start, end).
