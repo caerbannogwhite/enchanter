@@ -48,8 +48,7 @@ Ursula,27,65.0,f,Business,4
 Charlie,33,60.0,t,Business,2
 Megan,26,55.0,F,IT,3`
 
-	dataframe.NewDataFrame(enchanter.NewContext()).
-		FromCsv().
+	dataframe.ReadCsv(enchanter.NewContext()).
 		SetReader(strings.NewReader(data1)).
 		Read().
 		Select("department", "age", "weight", "junior").
@@ -94,8 +93,7 @@ All readers and writers share the same builder style:
 // Parquet round trip: types and nulls survive, unlike CSV.
 err := df.ToParquet().SetPath("people.parquet").Write()
 
-df2 := dataframe.NewDataFrame(ctx).
-	FromParquet().
+df2 := dataframe.ReadParquet(ctx).
 	SetPath("people.parquet").
 	Read()
 ```

@@ -38,8 +38,7 @@ Operations,5,250000
 var ctx = enchanter.NewContext()
 
 func Example01() {
-	dataframe.NewDataFrame(ctx).
-		FromCsv().
+	dataframe.ReadCsv(ctx).
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -68,15 +67,13 @@ func Example01() {
 }
 
 func Example02() {
-	employees := dataframe.NewDataFrame(ctx).
-		FromCsv().
+	employees := dataframe.ReadCsv(ctx).
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
 		SetHeader(true).
 		Read()
 
-	departments := dataframe.NewDataFrame(ctx).
-		FromCsv().
+	departments := dataframe.ReadCsv(ctx).
 		SetReader(strings.NewReader(data2)).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -89,8 +86,7 @@ func Example02() {
 }
 
 func Example03() {
-	df := dataframe.NewDataFrame(ctx).
-		FromCsv().
+	df := dataframe.ReadCsv(ctx).
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -124,15 +120,13 @@ a,b
 
 	ppp := dataframe.NewPPrintParams()
 
-	dfX := dataframe.NewDataFrame(ctx).
-		FromCsv().
+	dfX := dataframe.ReadCsv(ctx).
 		SetReader(strings.NewReader(x)).
 		SetDelimiter(',').
 		SetHeader(true).
 		Read()
 
-	dfY := dataframe.NewDataFrame(ctx).
-		FromCsv().
+	dfY := dataframe.ReadCsv(ctx).
 		SetReader(strings.NewReader(y)).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -152,8 +146,7 @@ a,b
 }
 
 func Example05() {
-	dataframe.NewDataFrame(ctx).
-		FromXpt().
+	dataframe.ReadXpt(ctx).
 		SetPath("../testdata/CDBRFS90.XPT").
 		// SetPath("../testdata/xpt_test_mixed.xpt").
 		SetVersion(io.XPT_VERSION_9).
@@ -197,8 +190,7 @@ func Example05() {
 }
 
 func Example06() {
-	df := dataframe.NewDataFrame(ctx).
-		FromCsv().
+	df := dataframe.ReadCsv(ctx).
 		SetNullValues(true).
 		// SetRows(20).
 		SetPath(filepath.Join("..", "testdata", "G1_1e4_1e2_10_0.csv")).

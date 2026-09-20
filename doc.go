@@ -6,8 +6,8 @@
 // and dataframe created from it:
 //
 //	ctx := enchanter.NewContext()
-//	df := dataframe.NewDataFrame(ctx).
-//		FromCsv().SetReader(r).Read().
+//	df := dataframe.ReadCsv(ctx).
+//		SetReader(r).Read().
 //		GroupBy("department").
 //		Agg(dataframe.Mean("salary")).
 //		Run()

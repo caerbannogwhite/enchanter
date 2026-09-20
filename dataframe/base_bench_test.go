@@ -21,8 +21,7 @@ var G1_1e7_1e2_10_0_df *DataFrame
 func read_G1_1e4_1e2_0_0() {
 	f, err := os.OpenFile(filepath.Join(testDataDir, "G1_1e4_1e2_0_0.csv"), os.O_RDONLY, 0666)
 	if err == nil {
-		df := NewDataFrame(ctx).
-			FromCsv().
+		df := ReadCsv(ctx).
 			SetDelimiter(',').
 			SetNullValues(false).
 			SetReader(f).
@@ -39,8 +38,7 @@ func read_G1_1e4_1e2_0_0() {
 func read_G1_1e5_1e2_0_0() {
 	f, err := os.OpenFile(filepath.Join(testDataDir, "G1_1e5_1e2_0_0.csv"), os.O_RDONLY, 0666)
 	if err == nil {
-		df := NewDataFrame(ctx).
-			FromCsv().
+		df := ReadCsv(ctx).
 			SetDelimiter(',').
 			SetNullValues(false).
 			SetReader(f).
@@ -57,8 +55,7 @@ func read_G1_1e5_1e2_0_0() {
 func read_G1_1e6_1e2_0_0() {
 	f, err := os.OpenFile(filepath.Join(testDataDir, "G1_1e6_1e2_0_0.csv"), os.O_RDONLY, 0666)
 	if err == nil {
-		df := NewDataFrame(ctx).
-			FromCsv().
+		df := ReadCsv(ctx).
 			SetDelimiter(',').
 			SetNullValues(false).
 			SetReader(f).
@@ -75,8 +72,7 @@ func read_G1_1e6_1e2_0_0() {
 func read_G1_1e7_1e2_0_0() {
 	f, err := os.OpenFile(filepath.Join(testDataDir, "G1_1e7_1e2_0_0.csv"), os.O_RDONLY, 0666)
 	if err == nil {
-		df := NewDataFrame(ctx).
-			FromCsv().
+		df := ReadCsv(ctx).
 			SetDelimiter(',').
 			SetNullValues(false).
 			SetReader(f).
@@ -93,8 +89,7 @@ func read_G1_1e7_1e2_0_0() {
 func read_G1_1e4_1e2_10_0() {
 	f, err := os.OpenFile(filepath.Join(testDataDir, "G1_1e4_1e2_10_0.csv"), os.O_RDONLY, 0666)
 	if err == nil {
-		df := NewDataFrame(ctx).
-			FromCsv().
+		df := ReadCsv(ctx).
 			SetDelimiter(',').
 			SetNullValues(true).
 			SetReader(f).
@@ -111,8 +106,7 @@ func read_G1_1e4_1e2_10_0() {
 func read_G1_1e5_1e2_10_0() {
 	f, err := os.OpenFile(filepath.Join(testDataDir, "G1_1e5_1e2_10_0.csv"), os.O_RDONLY, 0666)
 	if err == nil {
-		df := NewDataFrame(ctx).
-			FromCsv().
+		df := ReadCsv(ctx).
 			SetDelimiter(',').
 			SetNullValues(true).
 			SetReader(f).
@@ -129,8 +123,7 @@ func read_G1_1e5_1e2_10_0() {
 func read_G1_1e6_1e2_10_0() {
 	f, err := os.OpenFile(filepath.Join(testDataDir, "G1_1e6_1e2_10_0.csv"), os.O_RDONLY, 0666)
 	if err == nil {
-		df := NewDataFrame(ctx).
-			FromCsv().
+		df := ReadCsv(ctx).
 			SetDelimiter(',').
 			SetNullValues(true).
 			SetReader(f).
@@ -147,8 +140,7 @@ func read_G1_1e6_1e2_10_0() {
 func read_G1_1e7_1e2_10_0() {
 	f, err := os.OpenFile(filepath.Join(testDataDir, "G1_1e7_1e2_10_0.csv"), os.O_RDONLY, 0666)
 	if err == nil {
-		df := NewDataFrame(ctx).
-			FromCsv().
+		df := ReadCsv(ctx).
 			SetDelimiter(',').
 			SetNullValues(true).
 			SetReader(f).

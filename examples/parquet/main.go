@@ -36,7 +36,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	back := dataframe.NewDataFrame(ctx).FromParquet().SetPath(path).Read()
+	back := dataframe.ReadParquet(ctx).SetPath(path).Read()
 	if back.Err() != nil {
 		fmt.Fprintln(os.Stderr, "read:", back.Err())
 		os.Exit(1)

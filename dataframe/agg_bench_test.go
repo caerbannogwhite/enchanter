@@ -15,8 +15,7 @@ func loadG1(b *testing.B, name string) DataFrame {
 	}
 	f, _ := os.Open(p)
 	defer f.Close()
-	df := NewDataFrame(enchanter.NewContext()).
-		FromCsv().SetDelimiter(',').SetNullValues(false).SetReader(f).Read()
+	df := ReadCsv(enchanter.NewContext()).SetDelimiter(',').SetNullValues(false).SetReader(f).Read()
 	if df.Err() != nil {
 		b.Skipf("load failed: %v", df.Err())
 	}

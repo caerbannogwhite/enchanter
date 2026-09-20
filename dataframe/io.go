@@ -39,62 +39,65 @@ func (df DataFrame) ToIoData() *encio.IoData {
 
 ////////////////////////			CSV READER
 
-type csvReaderWrapper struct {
+// CsvReader reads CSV data into a DataFrame. Create one with ReadCsv,
+// configure it with the Set methods, then call Read.
+type CsvReader struct {
 	reader *encio.CsvReader
 }
 
-func (df DataFrame) FromCsv() *csvReaderWrapper {
-	return &csvReaderWrapper{
-		reader: encio.NewCsvReader(df.ctx),
+// ReadCsv creates a CSV reader with the given context.
+func ReadCsv(ctx *enchanter.Context) *CsvReader {
+	return &CsvReader{
+		reader: encio.NewCsvReader(ctx),
 	}
 }
 
-func (r *csvReaderWrapper) SetHeader(header bool) *csvReaderWrapper {
+func (r *CsvReader) SetHeader(header bool) *CsvReader {
 	r.reader = r.reader.SetHeader(header)
 	return r
 }
 
-func (r *csvReaderWrapper) SetDelimiter(delimiter rune) *csvReaderWrapper {
+func (r *CsvReader) SetDelimiter(delimiter rune) *CsvReader {
 	r.reader = r.reader.SetDelimiter(delimiter)
 	return r
 }
 
-func (r *csvReaderWrapper) SetGuessDataTypeLen(guessDataTypeLen int) *csvReaderWrapper {
+func (r *CsvReader) SetGuessDataTypeLen(guessDataTypeLen int) *CsvReader {
 	r.reader = r.reader.SetGuessDataTypeLen(guessDataTypeLen)
 	return r
 }
 
-func (r *csvReaderWrapper) SetRows(rows int) *csvReaderWrapper {
+func (r *CsvReader) SetRows(rows int) *CsvReader {
 	r.reader = r.reader.SetRows(rows)
 	return r
 }
 
-func (r *csvReaderWrapper) SetPath(path string) *csvReaderWrapper {
+func (r *CsvReader) SetPath(path string) *CsvReader {
 	r.reader = r.reader.SetPath(path)
 	return r
 }
 
-func (r *csvReaderWrapper) SetNullValues(nullValues bool) *csvReaderWrapper {
+func (r *CsvReader) SetNullValues(nullValues bool) *CsvReader {
 	r.reader = r.reader.SetNullValues(nullValues)
 	return r
 }
 
-func (r *csvReaderWrapper) SetReader(reader io.Reader) *csvReaderWrapper {
+func (r *CsvReader) SetReader(reader io.Reader) *CsvReader {
 	r.reader = r.reader.SetReader(reader)
 	return r
 }
 
-func (r *csvReaderWrapper) SetSchema(schema *meta.Schema) *csvReaderWrapper {
+func (r *CsvReader) SetSchema(schema *meta.Schema) *CsvReader {
 	r.reader = r.reader.SetSchema(schema)
 	return r
 }
 
-func (r *csvReaderWrapper) SetContext(ctx *enchanter.Context) *csvReaderWrapper {
+func (r *CsvReader) SetContext(ctx *enchanter.Context) *CsvReader {
 	r.reader = r.reader.SetContext(ctx)
 	return r
 }
 
-func (r *csvReaderWrapper) Read() DataFrame {
+func (r *CsvReader) Read() DataFrame {
 	iod := r.reader.Read()
 	return FromIoData(iod)
 }
@@ -162,32 +165,35 @@ func (w *csvWriterWrapper) Write() error {
 
 ////////////////////////			JSON READER
 
-type jsonReaderWrapper struct {
+// JsonReader reads JSON data into a DataFrame. Create one with ReadJson,
+// configure it with the Set methods, then call Read.
+type JsonReader struct {
 	reader *encio.JsonReader
 }
 
-func (df DataFrame) FromJson() *jsonReaderWrapper {
-	return &jsonReaderWrapper{
-		reader: encio.NewJsonReader(df.ctx),
+// ReadJson creates a JSON reader with the given context.
+func ReadJson(ctx *enchanter.Context) *JsonReader {
+	return &JsonReader{
+		reader: encio.NewJsonReader(ctx),
 	}
 }
 
-func (r *jsonReaderWrapper) SetPath(path string) *jsonReaderWrapper {
+func (r *JsonReader) SetPath(path string) *JsonReader {
 	r.reader = r.reader.SetPath(path)
 	return r
 }
 
-func (r *jsonReaderWrapper) SetReader(reader io.Reader) *jsonReaderWrapper {
+func (r *JsonReader) SetReader(reader io.Reader) *JsonReader {
 	r.reader = r.reader.SetReader(reader)
 	return r
 }
 
-func (r *jsonReaderWrapper) SetSchema(schema *meta.Schema) *jsonReaderWrapper {
+func (r *JsonReader) SetSchema(schema *meta.Schema) *JsonReader {
 	r.reader = r.reader.SetSchema(schema)
 	return r
 }
 
-func (r *jsonReaderWrapper) Read() DataFrame {
+func (r *JsonReader) Read() DataFrame {
 	iod := r.reader.Read()
 	return FromIoData(iod)
 }
@@ -230,79 +236,85 @@ func (w *jsonWriterWrapper) Write() error {
 
 ////////////////////////			XPT READER
 
-type xptReaderWrapper struct {
+// XptReader reads XPT data into a DataFrame. Create one with ReadXpt,
+// configure it with the Set methods, then call Read.
+type XptReader struct {
 	reader *encio.XptReader
 }
 
-func (df DataFrame) FromXpt() *xptReaderWrapper {
-	return &xptReaderWrapper{
-		reader: encio.NewXptReader(df.ctx),
+// ReadXpt creates a XPT reader with the given context.
+func ReadXpt(ctx *enchanter.Context) *XptReader {
+	return &XptReader{
+		reader: encio.NewXptReader(ctx),
 	}
 }
 
-func (r *xptReaderWrapper) SetMaxObservations(maxObservations int) *xptReaderWrapper {
+func (r *XptReader) SetMaxObservations(maxObservations int) *XptReader {
 	r.reader = r.reader.SetMaxObservations(maxObservations)
 	return r
 }
 
-func (r *xptReaderWrapper) SetVersion(version encio.XptVersionType) *xptReaderWrapper {
+func (r *XptReader) SetVersion(version encio.XptVersionType) *XptReader {
 	r.reader = r.reader.SetVersion(version)
 	return r
 }
 
-func (r *xptReaderWrapper) SetByteOrder(byteOrder binary.ByteOrder) *xptReaderWrapper {
+func (r *XptReader) SetByteOrder(byteOrder binary.ByteOrder) *XptReader {
 	r.reader = r.reader.SetByteOrder(byteOrder)
 	return r
 }
 
-func (r *xptReaderWrapper) SetPath(path string) *xptReaderWrapper {
+func (r *XptReader) SetPath(path string) *XptReader {
 	r.reader = r.reader.SetPath(path)
 	return r
 }
 
-func (r *xptReaderWrapper) SetReader(reader io.Reader) *xptReaderWrapper {
+func (r *XptReader) SetReader(reader io.Reader) *XptReader {
 	r.reader = r.reader.SetReader(reader)
 	return r
 }
 
-func (r *xptReaderWrapper) Read() DataFrame {
+func (r *XptReader) Read() DataFrame {
 	iod := r.reader.Read()
 	return FromIoData(iod)
 }
 
 ////////////////////////			SAS7BDAT READER
 
-type sas7bdatReaderWrapper struct {
+// Sas7bdatReader reads SAS7BDAT data into a DataFrame. Create one with ReadSas7bdat,
+// configure it with the Set methods, then call Read.
+type Sas7bdatReader struct {
 	reader *encio.Sas7bdatReader
 }
 
-func (df DataFrame) FromSas7bdat() *sas7bdatReaderWrapper {
-	return &sas7bdatReaderWrapper{
-		reader: encio.NewSas7bdatReader(df.ctx),
+// ReadSas7bdat creates a SAS7BDAT reader with the given context.
+func ReadSas7bdat(ctx *enchanter.Context) *Sas7bdatReader {
+	return &Sas7bdatReader{
+		reader: encio.NewSas7bdatReader(ctx),
 	}
 }
 
-func (r *sas7bdatReaderWrapper) SetPath(path string) *sas7bdatReaderWrapper {
+func (r *Sas7bdatReader) SetPath(path string) *Sas7bdatReader {
 	r.reader = r.reader.SetPath(path)
 	return r
 }
 
-func (r *sas7bdatReaderWrapper) SetReader(reader io.ReadSeeker) *sas7bdatReaderWrapper {
+func (r *Sas7bdatReader) SetReader(reader io.ReadSeeker) *Sas7bdatReader {
 	r.reader = r.reader.SetReader(reader)
 	return r
 }
 
-func (r *sas7bdatReaderWrapper) SetTrimStrings(trim bool) *sas7bdatReaderWrapper {
+func (r *Sas7bdatReader) SetTrimStrings(trim bool) *Sas7bdatReader {
 	r.reader = r.reader.SetTrimStrings(trim)
 	return r
 }
 
-func (r *sas7bdatReaderWrapper) SetConvertDates(convert bool) *sas7bdatReaderWrapper {
+func (r *Sas7bdatReader) SetConvertDates(convert bool) *Sas7bdatReader {
 	r.reader = r.reader.SetConvertDates(convert)
 	return r
 }
 
-func (r *sas7bdatReaderWrapper) Read() DataFrame {
+func (r *Sas7bdatReader) Read() DataFrame {
 	iod := r.reader.Read()
 	return FromIoData(iod)
 }
@@ -345,52 +357,55 @@ func (w *xptWriterWrapper) Write() error {
 
 ////////////////////////			XLSX READER
 
-type xlsxReaderWrapper struct {
+// XlsxReader reads XLSX data into a DataFrame. Create one with ReadXlsx,
+// configure it with the Set methods, then call Read.
+type XlsxReader struct {
 	reader *encio.XlsxReader
 }
 
-func (df DataFrame) FromXlsx() *xlsxReaderWrapper {
-	return &xlsxReaderWrapper{
-		reader: encio.NewXlsxReader(df.ctx),
+// ReadXlsx creates a XLSX reader with the given context.
+func ReadXlsx(ctx *enchanter.Context) *XlsxReader {
+	return &XlsxReader{
+		reader: encio.NewXlsxReader(ctx),
 	}
 }
 
-func (r *xlsxReaderWrapper) SetPath(path string) *xlsxReaderWrapper {
+func (r *XlsxReader) SetPath(path string) *XlsxReader {
 	r.reader = r.reader.SetPath(path)
 	return r
 }
 
-func (r *xlsxReaderWrapper) SetSheet(sheet string) *xlsxReaderWrapper {
+func (r *XlsxReader) SetSheet(sheet string) *XlsxReader {
 	r.reader = r.reader.SetSheet(sheet)
 	return r
 }
 
-func (r *xlsxReaderWrapper) SetHeader(header int) *xlsxReaderWrapper {
+func (r *XlsxReader) SetHeader(header int) *XlsxReader {
 	r.reader = r.reader.SetHeader(header)
 	return r
 }
 
-func (r *xlsxReaderWrapper) SetRows(rows int) *xlsxReaderWrapper {
+func (r *XlsxReader) SetRows(rows int) *XlsxReader {
 	r.reader = r.reader.SetRows(rows)
 	return r
 }
 
-func (r *xlsxReaderWrapper) SetGuessDataTypeLen(guessDataTypeLen int) *xlsxReaderWrapper {
+func (r *XlsxReader) SetGuessDataTypeLen(guessDataTypeLen int) *XlsxReader {
 	r.reader = r.reader.SetGuessDataTypeLen(guessDataTypeLen)
 	return r
 }
 
-func (r *xlsxReaderWrapper) SetNullValues(nullValues bool) *xlsxReaderWrapper {
+func (r *XlsxReader) SetNullValues(nullValues bool) *XlsxReader {
 	r.reader = r.reader.SetNullValues(nullValues)
 	return r
 }
 
-func (r *xlsxReaderWrapper) SetSchema(schema *meta.Schema) *xlsxReaderWrapper {
+func (r *XlsxReader) SetSchema(schema *meta.Schema) *XlsxReader {
 	r.reader = r.reader.SetSchema(schema)
 	return r
 }
 
-func (r *xlsxReaderWrapper) Read() DataFrame {
+func (r *XlsxReader) Read() DataFrame {
 	iod := r.reader.Read()
 	return FromIoData(iod)
 }
@@ -520,22 +535,25 @@ func (w *markDownWriterWrapper) Write() error {
 
 ////////////////////////			PARQUET READER
 
-type parquetReaderWrapper struct {
+// ParquetReader reads Parquet data into a DataFrame. Create one with ReadParquet,
+// configure it with the Set methods, then call Read.
+type ParquetReader struct {
 	reader *encio.ParquetReader
 }
 
-func (df DataFrame) FromParquet() *parquetReaderWrapper {
-	return &parquetReaderWrapper{
-		reader: encio.NewParquetReader(df.ctx),
+// ReadParquet creates a Parquet reader with the given context.
+func ReadParquet(ctx *enchanter.Context) *ParquetReader {
+	return &ParquetReader{
+		reader: encio.NewParquetReader(ctx),
 	}
 }
 
-func (r *parquetReaderWrapper) SetPath(path string) *parquetReaderWrapper {
+func (r *ParquetReader) SetPath(path string) *ParquetReader {
 	r.reader = r.reader.SetPath(path)
 	return r
 }
 
-func (r *parquetReaderWrapper) Read() DataFrame {
+func (r *ParquetReader) Read() DataFrame {
 	iod := r.reader.Read()
 	return FromIoData(iod)
 }
@@ -563,22 +581,25 @@ func (w *parquetWriterWrapper) Write() error {
 
 ////////////////////////			ARROW IPC READER
 
-type arrowIPCReaderWrapper struct {
+// ArrowIPCReader reads Arrow IPC data into a DataFrame. Create one with ReadArrowIPC,
+// configure it with the Set methods, then call Read.
+type ArrowIPCReader struct {
 	reader *encio.ArrowIPCReader
 }
 
-func (df DataFrame) FromArrowIPC() *arrowIPCReaderWrapper {
-	return &arrowIPCReaderWrapper{
-		reader: encio.NewArrowIPCReader(df.ctx),
+// ReadArrowIPC creates a Arrow IPC reader with the given context.
+func ReadArrowIPC(ctx *enchanter.Context) *ArrowIPCReader {
+	return &ArrowIPCReader{
+		reader: encio.NewArrowIPCReader(ctx),
 	}
 }
 
-func (r *arrowIPCReaderWrapper) SetPath(path string) *arrowIPCReaderWrapper {
+func (r *ArrowIPCReader) SetPath(path string) *ArrowIPCReader {
 	r.reader = r.reader.SetPath(path)
 	return r
 }
 
-func (r *arrowIPCReaderWrapper) Read() DataFrame {
+func (r *ArrowIPCReader) Read() DataFrame {
 	iod := r.reader.Read()
 	return FromIoData(iod)
 }

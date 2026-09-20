@@ -190,7 +190,7 @@ Ursula,27,65.0,f,Business,4
 Charlie,33,60.0,t,Business,2
 `
 
-	df := NewDataFrame(testCtx).FromCsv().
+	df := ReadCsv(testCtx).
 		SetReader(strings.NewReader(testData)).
 		SetDelimiter(',').
 		SetHeader(true).

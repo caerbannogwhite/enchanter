@@ -49,8 +49,7 @@ func readG1(ctx *enchanter.Context, name string) *dataframe.DataFrame {
 		return nil
 	}
 	defer f.Close()
-	df := dataframe.NewDataFrame(ctx).
-		FromCsv().SetDelimiter(',').SetNullValues(false).SetReader(f).Read()
+	df := dataframe.ReadCsv(ctx).SetDelimiter(',').SetNullValues(false).SetReader(f).Read()
 	return &df
 }
 
