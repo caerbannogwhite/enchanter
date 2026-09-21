@@ -642,5 +642,13 @@ var SERIES_FOLDER = filepath.Join("..", "series")
 
 func main() {
 	generateBase()
+
+	// Twice on purpose. The first pass injects the new operator bodies
+	// with no position information, and go/printer can then attach a
+	// neighboring doc comment to the wrong token. The second pass parses
+	// the freshly printed files, where every token has a real position,
+	// and reprints them in the stable layout, so a single go generate
+	// always lands on the fixed point.
+	generateOperations()
 	generateOperations()
 }

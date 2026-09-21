@@ -741,16 +741,15 @@ func (s Times) Le(other any) Series {
 			return NAs{size: resultSize}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for less than or equal to %s and %s", s.Type().String(), o.Type().String())}
-	default
+	default:
+		return Errors{fmt.Sprintf("Cannot compare for less than or equal to %s and %s", s.Type().String(), o.Type().String())}
+	}
 
 	// Coalesce fills the null elements of the series with the corresponding
 	// elements of other: the result takes this series' value where it is not
 	// null and the other operand's value where it is. A result element is null
 	// only when both operands are null there. The body is produced by the code
 	// generator, like every other operator in this file.
-	:
-		return Errors{fmt.Sprintf("Cannot compare for less than or equal to %s and %s", s.Type().String(), o.Type().String())}
-	}
 
 }
 
