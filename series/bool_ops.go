@@ -618,6 +618,22 @@ func (s Bools) Div(other any) Series {
 			return Float64s{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot divide %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot divide %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot divide %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -851,6 +867,22 @@ func (s Bools) Mod(other any) Series {
 			return Float64s{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot use modulo %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot use modulo %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot use modulo %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -1082,6 +1114,22 @@ func (s Bools) Exp(other any) Series {
 				result[i] = float64(math.Pow(b1, float64(o.data[i])))
 			}
 			return Float64s{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		}
+		return Errors{fmt.Sprintf("Cannot use exponentiation %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
 		}
 		return Errors{fmt.Sprintf("Cannot use exponentiation %s and %s", s.Type().String(), o.Type().String())}
 	default:
@@ -1600,6 +1648,22 @@ func (s Bools) Sub(other any) Series {
 			return Float64s{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot subtract %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot subtract %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot subtract %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -1967,6 +2031,22 @@ func (s Bools) Gt(other any) Series {
 			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for greater than %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot compare for greater than %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot compare for greater than %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -2198,6 +2278,22 @@ func (s Bools) Ge(other any) Series {
 				result[i] = b1 >= o.data[i]
 			}
 			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		}
+		return Errors{fmt.Sprintf("Cannot compare for greater than or equal to %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for greater than or equal to %s and %s", s.Type().String(), o.Type().String())}
 	default:
@@ -2433,6 +2529,22 @@ func (s Bools) Lt(other any) Series {
 			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for less than %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot compare for less than %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot compare for less than %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -2664,6 +2776,22 @@ func (s Bools) Le(other any) Series {
 				result[i] = b1 <= o.data[i]
 			}
 			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		}
+		return Errors{fmt.Sprintf("Cannot compare for less than or equal to %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for less than or equal to %s and %s", s.Type().String(), o.Type().String())}
 	default:

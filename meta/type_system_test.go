@@ -94,4 +94,16 @@ func Test_NA_Propagation(t *testing.T) {
 			}
 		}
 	}
+
+	// Symmetry: NA op T and T op NA must agree, so a valid pairing
+	// propagates NA from either side.
+	for _, op := range ops {
+		for _, tp := range types {
+			l := op.GetBinaryOpResultType(Primitive{Base: NullType, Size: 3}, Primitive{Base: tp, Size: 3})
+			r := op.GetBinaryOpResultType(Primitive{Base: tp, Size: 3}, Primitive{Base: NullType, Size: 3})
+			if l.Base != r.Base {
+				t.Errorf("%v: (NA, %v) gives %v but (%v, NA) gives %v", op, tp, l.Base, tp, r.Base)
+			}
+		}
+	}
 }

@@ -265,6 +265,18 @@ func (op OPCODE) IsUnaryOp() bool {
 func (op OPCODE) GetBinaryOpResultType(lop, rop Primitive) Primitive {
 
 	lop, rop = op.CommuteOperands(lop, rop)
+
+	// NA propagation holds from either side: a valid binary operation
+	// with an NA operand yields NA regardless of operand order. The
+	// lop NullType rows below define which pairings are valid, so a
+	// typed-left pair is evaluated with the NA operand on the left.
+	// Without this, only commutative operators reached those rows and
+	// x - NA was an error while NA - x was NA. Coalesce is exempt: it
+	// exists to replace nulls and its own rows handle NA operands.
+	if op != OP_BINARY_COALESCE && rop.Base == NullType && lop.Base != NullType {
+		lop, rop = rop, lop
+	}
+
 	size := op.GetBinaryOpResultSize(lop, rop)
 
 	switch op {

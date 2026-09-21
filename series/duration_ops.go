@@ -289,6 +289,22 @@ func (s Durations) Sub(other any) Series {
 			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot subtract %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot subtract %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot subtract %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -474,6 +490,22 @@ func (s Durations) Gt(other any) Series {
 			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for greater than %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot compare for greater than %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot compare for greater than %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -523,6 +555,22 @@ func (s Durations) Ge(other any) Series {
 				result[i] = s.data[i] >= o.data[i]
 			}
 			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		}
+		return Errors{fmt.Sprintf("Cannot compare for greater than or equal to %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for greater than or equal to %s and %s", s.Type().String(), o.Type().String())}
 	default:
@@ -576,6 +624,22 @@ func (s Durations) Lt(other any) Series {
 			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for less than %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot compare for less than %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot compare for less than %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -627,17 +691,35 @@ func (s Durations) Le(other any) Series {
 			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for less than or equal to %s and %s", s.Type().String(), o.Type().String())}
-	default:
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot compare for less than or equal to %s and %s", s.Type().String(), o.Type().String())}
+	default
+
+	// Coalesce fills the null elements of the series with the corresponding
+	// elements of other: the result takes this series' value where it is not
+	// null and the other operand's value where it is. A result element is null
+	// only when both operands are null there. The body is produced by the code
+	// generator, like every other operator in this file.
+	:
 		return Errors{fmt.Sprintf("Cannot compare for less than or equal to %s and %s", s.Type().String(), o.Type().String())}
 	}
 
 }
 
-// Coalesce fills the null elements of the series with the corresponding
-// elements of other: the result takes this series' value where it is not
-// null and the other operand's value where it is. A result element is null
-// only when both operands are null there. The body is produced by the code
-// generator, like every other operator in this file.
 func (s Durations) Coalesce(other any) Series {
 	var otherSeries Series
 	if _, ok := other.(Series); ok {
