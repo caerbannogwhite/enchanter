@@ -404,6 +404,8 @@ func (df DataFrame) SelectMatching(patterns ...string) DataFrame {
 	}
 }
 
+// SelectAt keeps the columns at the given indices, in the order given.
+// An index outside the frame is an error.
 func (df DataFrame) SelectAt(indices ...int) DataFrame {
 	if df.err != nil {
 		return df
@@ -412,10 +414,10 @@ func (df DataFrame) SelectAt(indices ...int) DataFrame {
 	selected := NewDataFrame(df.ctx)
 	for _, index := range indices {
 		if index < 0 || index >= len(df.series) {
-			selected.AddSeries(df.names[index], df.series[index])
-		} else {
-			return DataFrame{err: fmt.Errorf("DataFrame.SelectAt: index %d out of bounds", index)}
+			df.err = fmt.Errorf("DataFrame.SelectAt: index %d out of bounds", index)
+			return df
 		}
+		selected = selected.AddSeries(df.names[index], df.series[index])
 	}
 
 	return selected
