@@ -218,25 +218,29 @@ columns only match plain Go slices, and arrow-go has no grouped-aggregation
 kernels, so Arrow stays an interop layer (Parquet, IPC, ecosystem handoff). See
 the [storage measurement](docs/superpowers/specs/2026-08-08-arrow-native-storage-migration.md).
 
-**0.4.0 — make it fast** (current). The performance headline, validated by a
-[spike](benchmarking/README.md):
+**0.4.0 — make it fast**. The performance headline, validated by a
+[spike](benchmarking/README.md): single-pass, parallel hash aggregation for
+`GroupBy().Agg()` — on the h2oai-style Q1 sum-by-id benchmark (1e7 rows) it
+went from ~142ms to ~31ms, beating Polars' ~43ms. The remaining performance
+items moved to 0.6.0.
 
-- [x] Single-pass, parallel hash aggregation for `GroupBy().Agg()` — shipped;
-      on the h2oai-style Q1 sum-by-id benchmark (1e7 rows) it went from ~142ms
-      to ~31ms, beating Polars' ~43ms.
-- [ ] Fused combinators for element-wise op chains (no intermediate arrays).
-- [ ] Benchmark-regression tracking so the gains don't rot.
+**0.5.0 — stabilize for 1.0** (current; breaking changes, batched together):
 
-**0.5.0 — stabilize for 1.0** (breaking changes, batched together):
-
-- [ ] Public API: hide internal fields (`Data_`, `NullMask_`), standardize the
-      reader constructors.
+- [x] Public API sealed: the internal series fields (`Data_`, `NullMask_`,
+      `IsNullable_`, ...) are unexported. `Data()` and the typed accessors
+      (`Float64s()`, `Bools()`, ...) are documented views of the backing
+      storage; `Strings` gains `Interned()` for the raw pool pointers and
+      every type gains `PackedNullMask()` for engines that walk the
+      bit-packed mask. `FilterIntSlice` and its bounds-check toggle leave
+      the interface; `TakeIndices` is the validated public path.
+- [x] Broaden test coverage: join order and null-key contracts, dataframe
+      `Slice` / `TakeIndices` / `SelectAt` (fixing SelectAt, whose inverted
+      bounds check made it always fail), a CSV write/read round trip, the
+      data-view contracts, and NA propagation across operators and operand
+      orders (fixing `x - NA`, which errored while `NA - x` was NA).
 - [x] `Select` split into an exact-name `Select` and a pattern-matching
       `SelectMatching`, so a plain column name can no longer silently
       over-select (`"Car"` used to also match `"CarOrigin"`).
-- [ ] Generics to collapse the generated per-type code — *spike-gated* (only if
-      it measurably shrinks the code without regressing speed).
-- [ ] Broaden test coverage.
 - [x] SAS7BDAT: decided — reading is delegated to
       [kshedden/datareader](https://github.com/kshedden/datareader)
       (BSD-3-Clause) rather than finishing the bespoke parser, verified
@@ -270,7 +274,21 @@ the [storage measurement](docs/superpowers/specs/2026-08-08-arrow-native-storage
       `Bool OR NA` no longer copies values — both yield NA); the join row
       order is deterministic and documented.
 
-**1.0 — commit** to the stable API.
+**0.6.0 — make it faster** (the performance items deferred from 0.4.0 and
+0.5.0, every one benchmark-gated):
+
+- [ ] Fused combinators for element-wise op chains (no intermediate arrays).
+- [ ] Benchmark-regression tracking so the gains don't rot.
+- [ ] Column-major / tiled aggregation loop experiment
+      ([#20](https://github.com/caerbannogwhite/enchanter/issues/20)): hoist
+      the per-aggregator dispatch out of the row loop; needs a
+      multi-aggregate benchmark first, and lands only if wide queries win
+      with no single-aggregate regression.
+- [ ] Generics to collapse the generated per-type code — *spike-gated* (only
+      if it measurably shrinks the code without regressing speed).
+
+**1.0 — commit** to the stable API. The gate: the mutation and ownership
+contract of every Series method written down and tested.
 
 Parking lot (unversioned, picked up as they fit): dictionary-encoded (factor)
 strings; pivot longer/wider (in progress on `dev-pivot`); custom aggregators
