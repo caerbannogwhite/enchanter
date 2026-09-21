@@ -244,7 +244,7 @@ func (s Float64s) Slice(start, end int) Series {
 	for i := range indices {
 		indices[i] = start + i
 	}
-	return s.FilterIntSlice(indices, false)
+	return s.filterIntSlice(indices, false)
 }
 
 // TakeIndices returns the elements at the given indices, in the given
@@ -256,7 +256,7 @@ func (s Float64s) TakeIndices(indices []int) Series {
 			return Errors{fmt.Sprintf("Float64s.TakeIndices: index %d is out of range", v)}
 		}
 	}
-	return s.FilterIntSlice(indices, false)
+	return s.filterIntSlice(indices, false)
 }
 
 // Return the elements of the series as a slice.
@@ -300,11 +300,11 @@ func (s Float64s) Filter(mask any) Series {
 	case Bools:
 		return s.filterBoolSlice(mask.data)
 	case Ints:
-		return s.FilterIntSlice(mask.data, true)
+		return s.filterIntSlice(mask.data, true)
 	case []bool:
 		return s.filterBoolSlice(mask)
 	case []int:
-		return s.FilterIntSlice(mask, true)
+		return s.filterIntSlice(mask, true)
 	default:
 		return Errors{fmt.Sprintf("Float64s.Filter: invalid type %T", mask)}
 	}
@@ -358,7 +358,7 @@ func (s Float64s) filterBoolSlice(mask []bool) Series {
 	return s
 }
 
-func (s Float64s) FilterIntSlice(indexes []int, check bool) Series {
+func (s Float64s) filterIntSlice(indexes []int, check bool) Series {
 	if len(indexes) == 0 {
 		s.data = make([]float64, 0)
 		s.nullMask = make([]uint8, 0)

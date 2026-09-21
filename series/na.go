@@ -516,7 +516,7 @@ func (s NAs) Filter(mask any) Series {
 	case []bool:
 		return s.filterBoolSlice(mask)
 	case []int:
-		return s.FilterIntSlice(mask, true)
+		return s.filterIntSlice(mask, true)
 	default:
 		return Errors{fmt.Sprintf("NAs.Filter: invalid type %T", mask)}
 	}
@@ -546,7 +546,7 @@ func (s NAs) filterBoolSlice(mask []bool) Series {
 	return s
 }
 
-func (s NAs) FilterIntSlice(indexes []int, check bool) Series {
+func (s NAs) filterIntSlice(indexes []int, check bool) Series {
 	// check if indexes are in range
 	if check {
 		for _, v := range indexes {
@@ -650,7 +650,7 @@ func (s NAs) Coalesce(other any) Series {
 	case otherSeries.Len() == 1:
 		// Broadcast the scalar to the receiver's length.
 		indices := make([]int, s.Len())
-		return otherSeries.FilterIntSlice(indices, false)
+		return otherSeries.TakeIndices(indices)
 	}
 	return Errors{fmt.Sprintf("Cannot coalesce %s and %s", s.Type().String(), otherSeries.Type().String())}
 }

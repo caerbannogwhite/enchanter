@@ -88,7 +88,6 @@ type Series interface {
 	// Filter out the elements by the given mask.
 	// Mask can be a bool series, a slice of bools or a slice of ints.
 	Filter(mask any) Series
-	FilterIntSlice(mask []int, check bool) Series
 
 	// Apply the given function to each element of the series.
 	Map(f enchanter.MapFunc) Series

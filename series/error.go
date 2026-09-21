@@ -152,7 +152,7 @@ func (s Errors) Filter(mask any) Series {
 	return s
 }
 
-func (s Errors) FilterIntSlice(mask []int, check bool) Series {
+func (s Errors) filterIntSlice(mask []int, check bool) Series {
 	return s
 }
 

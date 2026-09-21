@@ -43,7 +43,7 @@ func NewDataFrame(ctx *enchanter.Context) DataFrame {
 
 ////////////////////////			BASIC ACCESSORS
 
-// GetContext returns the context of the dataframe.
+// Context returns the context of the dataframe.
 func (df DataFrame) Context() *enchanter.Context {
 	return df.ctx
 }
@@ -834,13 +834,13 @@ func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame 
 		var keyCol series.Series
 		switch how {
 		case JoinRight:
-			keyCol = other.Col(name).FilterIntSlice(indicesB, false)
+			keyCol = other.Col(name).TakeIndices(indicesB)
 		case JoinOuter:
 			cut := len(pairs) - len(bOnly)
-			keyCol = df.Col(name).FilterIntSlice(indicesA[:cut], false).
-				Append(other.Col(name).FilterIntSlice(indicesB[cut:], false))
+			keyCol = df.Col(name).TakeIndices(indicesA[:cut]).
+				Append(other.Col(name).TakeIndices(indicesB[cut:]))
 		default:
-			keyCol = df.Col(name).FilterIntSlice(indicesA, false)
+			keyCol = df.Col(name).TakeIndices(indicesA)
 		}
 		joined = joined.AddSeries(name, keyCol)
 	}
@@ -907,7 +907,7 @@ func joinGather(s series.Series, indices []int, ctx *enchanter.Context) series.S
 		}
 	}
 	if !hasNull {
-		return s.FilterIntSlice(indices, false)
+		return s.TakeIndices(indices)
 	}
 
 	ext := allNullSeries(s.Type(), 1, ctx).Append(s)
@@ -915,7 +915,7 @@ func joinGather(s series.Series, indices []int, ctx *enchanter.Context) series.S
 	for i, v := range indices {
 		safe[i] = v + 1
 	}
-	return ext.FilterIntSlice(safe, false)
+	return ext.TakeIndices(safe)
 }
 
 // Slice returns the rows in the half-open interval [start, end).
@@ -955,7 +955,7 @@ func (df DataFrame) TakeIndices(indices []int) DataFrame {
 func (df DataFrame) takeIndices(indices []int) DataFrame {
 	taken := NewDataFrame(df.ctx)
 	for idx, series := range df.series {
-		taken = taken.AddSeries(df.names[idx], series.FilterIntSlice(indices, false))
+		taken = taken.AddSeries(df.names[idx], series.TakeIndices(indices))
 	}
 	return taken
 }
