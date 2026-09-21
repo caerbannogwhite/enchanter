@@ -69,7 +69,9 @@ type Series interface {
 
 	// All-data accessors.
 
-	// Return the actual data of the series.
+	// Data returns the series values as a slice: the backing storage (a
+	// view, not a copy) for every type except Strings, which builds a
+	// fresh []string holding the NA text at null positions.
 	Data() any
 	// Return the nullable data of the series.
 	DataAsNullable() any

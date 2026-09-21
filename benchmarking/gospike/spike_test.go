@@ -75,13 +75,13 @@ func getG1(tb testing.TB, name string) dataframe.DataFrame {
 
 // cols extracts the raw interned key slice (id1) and value slice (v1).
 func cols(df dataframe.DataFrame) (keys []*string, vals []int64) {
-	keys = df.Col("id1").(series.Strings).Data_
+	keys = df.Col("id1").(series.Strings).Interned()
 	switch v := df.Col("v1").(type) {
 	case series.Int64s:
-		vals = v.Data_
+		vals = v.Int64s()
 	case series.Ints:
-		vals = make([]int64, len(v.Data_))
-		for i, x := range v.Data_ {
+		vals = make([]int64, len(v.Ints()))
+		for i, x := range v.Ints() {
 			vals[i] = int64(x)
 		}
 	}

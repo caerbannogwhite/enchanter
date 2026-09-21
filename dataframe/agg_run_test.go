@@ -24,8 +24,8 @@ func TestAggRunSortedAndSkipNullByDefault(t *testing.T) {
 	}
 	// b's null value skipped by default: sum(b) = 1, sample std of single value -> null
 	sum := out.Col("sum(v)").(series.Float64s)
-	if sum.Data_[1] != 1 {
-		t.Fatalf("skip-null sum(b) = %v, want 1", sum.Data_[1])
+	if sum.Float64s()[1] != 1 {
+		t.Fatalf("skip-null sum(b) = %v, want 1", sum.Float64s()[1])
 	}
 	std := out.Col("std(v)").(series.Float64s)
 	if !std.IsNull(1) {
@@ -92,7 +92,7 @@ func TestAggRunStdHandComputed(t *testing.T) {
 		if std.IsNull(i) {
 			t.Fatalf("group %q: std(v) unexpectedly null", key)
 		}
-		if got := std.Data_[i]; math.Abs(got-w) > eps {
+		if got := std.Float64s()[i]; math.Abs(got-w) > eps {
 			t.Fatalf("group %q: std(v) = %v, want %v", key, got, w)
 		}
 	}

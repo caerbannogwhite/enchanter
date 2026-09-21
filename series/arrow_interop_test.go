@@ -32,8 +32,8 @@ func TestArrowArrayToSeriesFloat64(t *testing.T) {
 		t.Fatalf("expected Float64Type, got %v", s.Type())
 	}
 	f := s.(Float64s)
-	if f.Data_[0] != 1.5 || f.Data_[1] != 2.5 || f.Data_[2] != 3.5 {
-		t.Errorf("values mismatch: %v", f.Data_)
+	if f.data[0] != 1.5 || f.data[1] != 2.5 || f.data[2] != 3.5 {
+		t.Errorf("values mismatch: %v", f.data)
 	}
 	if s.IsNullable() {
 		t.Error("should not be nullable")
@@ -82,8 +82,8 @@ func TestArrowArrayToSeriesInt64(t *testing.T) {
 		t.Fatalf("expected Int64Type, got %v", s.Type())
 	}
 	i64 := s.(Int64s)
-	if i64.Data_[0] != 10 || i64.Data_[1] != 20 || i64.Data_[2] != 30 {
-		t.Errorf("values mismatch: %v", i64.Data_)
+	if i64.data[0] != 10 || i64.data[1] != 20 || i64.data[2] != 30 {
+		t.Errorf("values mismatch: %v", i64.data)
 	}
 }
 
@@ -102,8 +102,8 @@ func TestArrowArrayToSeriesBool(t *testing.T) {
 		t.Fatalf("expected BoolType, got %v", s.Type())
 	}
 	b := s.(Bools)
-	if b.Data_[0] != true || b.Data_[1] != false || b.Data_[2] != true {
-		t.Errorf("values mismatch: %v", b.Data_)
+	if b.data[0] != true || b.data[1] != false || b.data[2] != true {
+		t.Errorf("values mismatch: %v", b.data)
 	}
 }
 
@@ -125,8 +125,8 @@ func TestArrowArrayToSeriesString(t *testing.T) {
 		t.Fatalf("expected len 2, got %d", s.Len())
 	}
 	str := s.(Strings)
-	if *str.Data_[0] != "hello" || *str.Data_[1] != "world" {
-		t.Errorf("values mismatch: %v %v", *str.Data_[0], *str.Data_[1])
+	if *str.data[0] != "hello" || *str.data[1] != "world" {
+		t.Errorf("values mismatch: %v %v", *str.data[0], *str.data[1])
 	}
 }
 
@@ -149,11 +149,11 @@ func TestArrowArrayToSeriesTimestamp(t *testing.T) {
 		t.Fatalf("expected TimeType, got %v", s.Type())
 	}
 	ts := s.(Times)
-	if !ts.Data_[0].Equal(t1) {
-		t.Errorf("time 0: expected %v, got %v", t1, ts.Data_[0])
+	if !ts.data[0].Equal(t1) {
+		t.Errorf("time 0: expected %v, got %v", t1, ts.data[0])
 	}
-	if !ts.Data_[1].Equal(t2) {
-		t.Errorf("time 1: expected %v, got %v", t2, ts.Data_[1])
+	if !ts.data[1].Equal(t2) {
+		t.Errorf("time 1: expected %v, got %v", t2, ts.data[1])
 	}
 }
 
@@ -176,11 +176,11 @@ func TestArrowArrayToSeriesDuration(t *testing.T) {
 		t.Fatalf("expected DurationType, got %v", s.Type())
 	}
 	ds := s.(Durations)
-	if ds.Data_[0] != d1 {
-		t.Errorf("duration 0: expected %v, got %v", d1, ds.Data_[0])
+	if ds.data[0] != d1 {
+		t.Errorf("duration 0: expected %v, got %v", d1, ds.data[0])
 	}
-	if ds.Data_[1] != d2 {
-		t.Errorf("duration 1: expected %v, got %v", d2, ds.Data_[1])
+	if ds.data[1] != d2 {
+		t.Errorf("duration 1: expected %v, got %v", d2, ds.data[1])
 	}
 }
 
@@ -217,7 +217,7 @@ func TestArrowArrayToSeriesRoundTrip(t *testing.T) {
 		t.Fatalf("expected len 3, got %d", s.Len())
 	}
 	f := s.(Float64s)
-	if f.Data_[0] != 1.1 || f.Data_[1] != 2.2 || f.Data_[2] != 3.3 {
-		t.Errorf("round-trip values mismatch: %v", f.Data_)
+	if f.data[0] != 1.1 || f.data[1] != 2.2 || f.data[2] != 3.3 {
+		t.Errorf("round-trip values mismatch: %v", f.data)
 	}
 }

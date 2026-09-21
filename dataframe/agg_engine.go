@@ -223,15 +223,15 @@ type aggValueView struct {
 func newAggValueView(col series.Series) aggValueView {
 	switch c := col.(type) {
 	case series.Float64s:
-		return aggValueView{kind: aggValF64, nullable: c.IsNullable_, nullMask: c.NullMask_, f64: c.Data_}
+		return aggValueView{kind: aggValF64, nullable: c.IsNullable(), nullMask: c.PackedNullMask(), f64: c.Float64s()}
 	case series.Int64s:
-		return aggValueView{kind: aggValI64, nullable: c.IsNullable_, nullMask: c.NullMask_, i64: c.Data_}
+		return aggValueView{kind: aggValI64, nullable: c.IsNullable(), nullMask: c.PackedNullMask(), i64: c.Int64s()}
 	case series.Ints:
-		return aggValueView{kind: aggValInt, nullable: c.IsNullable_, nullMask: c.NullMask_, ints: c.Data_}
+		return aggValueView{kind: aggValInt, nullable: c.IsNullable(), nullMask: c.PackedNullMask(), ints: c.Ints()}
 	case series.Bools:
-		return aggValueView{kind: aggValBool, nullable: c.IsNullable_, nullMask: c.NullMask_, bools: c.Data_}
+		return aggValueView{kind: aggValBool, nullable: c.IsNullable(), nullMask: c.PackedNullMask(), bools: c.Bools()}
 	case series.Durations:
-		return aggValueView{kind: aggValDur, nullable: c.IsNullable_, nullMask: c.NullMask_, dur: c.Data_}
+		return aggValueView{kind: aggValDur, nullable: c.IsNullable(), nullMask: c.PackedNullMask(), dur: c.Durations()}
 	default:
 		return aggValueView{kind: aggValUnsupported}
 	}
@@ -667,19 +667,19 @@ func compareKeyCells(col series.Series, ra, rb int) int {
 
 	switch c := col.(type) {
 	case series.Bools:
-		return compareBool(c.Data_[ra], c.Data_[rb])
+		return compareBool(c.Bools()[ra], c.Bools()[rb])
 	case series.Ints:
-		return cmpOrdered(c.Data_[ra], c.Data_[rb])
+		return cmpOrdered(c.Ints()[ra], c.Ints()[rb])
 	case series.Int64s:
-		return cmpOrdered(c.Data_[ra], c.Data_[rb])
+		return cmpOrdered(c.Int64s()[ra], c.Int64s()[rb])
 	case series.Float64s:
-		return cmpOrdered(c.Data_[ra], c.Data_[rb])
+		return cmpOrdered(c.Float64s()[ra], c.Float64s()[rb])
 	case series.Strings:
-		return cmpOrdered(*c.Data_[ra], *c.Data_[rb])
+		return cmpOrdered(*c.Interned()[ra], *c.Interned()[rb])
 	case series.Times:
-		return cmpOrdered(c.Data_[ra].UnixNano(), c.Data_[rb].UnixNano())
+		return cmpOrdered(c.Times()[ra].UnixNano(), c.Times()[rb].UnixNano())
 	case series.Durations:
-		return cmpOrdered(int64(c.Data_[ra]), int64(c.Data_[rb]))
+		return cmpOrdered(int64(c.Durations()[ra]), int64(c.Durations()[rb]))
 	default:
 		return cmpOrdered(col.GetAsString(ra), col.GetAsString(rb))
 	}
@@ -732,49 +732,49 @@ func appendKeyColumns(result DataFrame, df DataFrame, keyCols []series.Series, r
 		case series.Bools:
 			vals := make([]bool, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Bools()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesBool(vals, keyNulls, false, ctx))
 
 		case series.Ints:
 			vals := make([]int, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Ints()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesInt(vals, keyNulls, false, ctx))
 
 		case series.Int64s:
 			vals := make([]int64, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Int64s()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesInt64(vals, keyNulls, false, ctx))
 
 		case series.Float64s:
 			vals := make([]float64, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Float64s()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesFloat64(vals, keyNulls, false, ctx))
 
 		case series.Strings:
 			vals := make([]*string, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Interned()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesStringFromPtrs(vals, keyNulls, false, ctx))
 
 		case series.Times:
 			vals := make([]time.Time, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Times()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesTime(vals, keyNulls, false, ctx))
 
 		case series.Durations:
 			vals := make([]time.Duration, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Durations()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesDuration(vals, keyNulls, false, ctx))
 
@@ -809,40 +809,40 @@ func keyColumnName(df DataFrame, col series.Series, k int) string {
 func seriesBackingPtr(s series.Series) any {
 	switch c := s.(type) {
 	case series.Bools:
-		if len(c.Data_) == 0 {
+		if len(c.Bools()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Bools()[0]
 	case series.Ints:
-		if len(c.Data_) == 0 {
+		if len(c.Ints()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Ints()[0]
 	case series.Int64s:
-		if len(c.Data_) == 0 {
+		if len(c.Int64s()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Int64s()[0]
 	case series.Float64s:
-		if len(c.Data_) == 0 {
+		if len(c.Float64s()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Float64s()[0]
 	case series.Strings:
-		if len(c.Data_) == 0 {
+		if len(c.Interned()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Interned()[0]
 	case series.Times:
-		if len(c.Data_) == 0 {
+		if len(c.Times()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Times()[0]
 	case series.Durations:
-		if len(c.Data_) == 0 {
+		if len(c.Durations()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Durations()[0]
 	default:
 		return nil
 	}

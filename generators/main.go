@@ -45,7 +45,7 @@ func (bi BuildInfo) UpdateScalarInfo(Op1Scalar, Op2Scalar bool) BuildInfo {
 
 // Generate the code that defines the result inner array and computes the
 // result size and null mask. The second return value is the expression the
-// return statement must use for the result's IsNullable_ field.
+// return statement must use for the result's isNullable field.
 //
 // Nullability is resolved at run time by the binaryNullMask helper in the
 // series package, which collapses what used to be four generated variants
@@ -117,7 +117,7 @@ func generateMakeResultStmt(info BuildInfo) ([]ast.Stmt, string) {
 			Tok: token.DEFINE,
 			Rhs: []ast.Expr{
 				&ast.Ident{Name: fmt.Sprintf(
-					"naOperandNullMask(%s.IsNullable_, %s.NullMask_, %v, %s)",
+					"naOperandNullMask(%s.isNullable, %s.nullMask, %v, %s)",
 					nonNullOperand, nonNullOperand, nonNullOperandIsScalar, RESULT_SIZE_VAR_NAME)},
 			},
 		})
@@ -126,7 +126,7 @@ func generateMakeResultStmt(info BuildInfo) ([]ast.Stmt, string) {
 		// with an NA operand has an NAs result and returns above. Coalesce
 		// keeps the typed operand's mask and nullability flag.
 		if info.OpCode == meta.OP_BINARY_COALESCE {
-			return stmts, fmt.Sprintf("%s.IsNullable_", nonNullOperand)
+			return stmts, fmt.Sprintf("%s.isNullable", nonNullOperand)
 		}
 		return stmts, "false"
 	}
@@ -146,7 +146,7 @@ func generateMakeResultStmt(info BuildInfo) ([]ast.Stmt, string) {
 		Tok: token.DEFINE,
 		Rhs: []ast.Expr{
 			&ast.Ident{Name: fmt.Sprintf(
-				"%s(%s.IsNullable_, %s.NullMask_, %v, %s.IsNullable_, %s.NullMask_, %v, %s)",
+				"%s(%s.isNullable, %s.nullMask, %v, %s.isNullable, %s.nullMask, %v, %s)",
 				maskHelper, info.Op1VarName, info.Op1VarName, info.Op1Scalar,
 				info.Op2VarName, info.Op2VarName, info.Op2Scalar, RESULT_SIZE_VAR_NAME)},
 		},
@@ -212,7 +212,7 @@ func generateOperation(info BuildInfo) []ast.Stmt {
 
 	// 1 - Generate the result inner data array, its size and its null mask.
 	// isNullableExpr is the expression the return statement below must use
-	// for the result's IsNullable_ field.
+	// for the result's isNullable field.
 	statements, isNullableExpr := generateMakeResultStmt(info)
 
 	// 2 - Generate the loop to compute the operation
@@ -223,11 +223,11 @@ func generateOperation(info BuildInfo) []ast.Stmt {
 	// 3 - Generate the return statement with the result series
 	params := []ast.Expr{
 		&ast.KeyValueExpr{
-			Key:   &ast.Ident{Name: "IsNullable_"},
+			Key:   &ast.Ident{Name: "isNullable"},
 			Value: &ast.Ident{Name: isNullableExpr},
 		},
 		&ast.KeyValueExpr{
-			Key:   &ast.Ident{Name: "NullMask_"},
+			Key:   &ast.Ident{Name: "nullMask"},
 			Value: &ast.Ident{Name: RESULT_NULL_MASK_VAR_NAME},
 		},
 	}
@@ -246,7 +246,7 @@ func generateOperation(info BuildInfo) []ast.Stmt {
 	// BOOL Memory optimized: convert the result to a binary vector and add the size to the result series
 	case "SeriesBoolMemOpt":
 		params = append(params, &ast.KeyValueExpr{
-			Key:   &ast.Ident{Name: "Data_"},
+			Key:   &ast.Ident{Name: "data"},
 			Value: &ast.Ident{Name: fmt.Sprintf("boolVecToBinVec(%s)", RESULT_VAR_NAME)},
 		})
 
@@ -258,13 +258,13 @@ func generateOperation(info BuildInfo) []ast.Stmt {
 	// Default: just add the data to the result series
 	default:
 		params = append(params, &ast.KeyValueExpr{
-			Key:   &ast.Ident{Name: "Data_"},
+			Key:   &ast.Ident{Name: "data"},
 			Value: &ast.Ident{Name: RESULT_VAR_NAME},
 		})
 
 		params = append(params, &ast.KeyValueExpr{
-			Key:   &ast.Ident{Name: "Ctx_"},
-			Value: &ast.Ident{Name: fmt.Sprintf("%s.Ctx_", info.Op1VarName)},
+			Key:   &ast.Ident{Name: "ctx"},
+			Value: &ast.Ident{Name: fmt.Sprintf("%s.ctx", info.Op1VarName)},
 		})
 	}
 
@@ -351,7 +351,7 @@ func generateSwitchType(
 				&ast.AssignStmt{
 					Lhs: []ast.Expr{ast.NewIdent("otherSeries")},
 					Tok: token.ASSIGN,
-					Rhs: []ast.Expr{ast.NewIdent("NewSeries(other, nil, false, false, s.Ctx_)")},
+					Rhs: []ast.Expr{ast.NewIdent("NewSeries(other, nil, false, false, s.ctx)")},
 				},
 			},
 		},
@@ -360,14 +360,14 @@ func generateSwitchType(
 	// Generate the context check
 	contextCheck := &ast.IfStmt{
 		Cond: &ast.BinaryExpr{
-			X:  &ast.Ident{Name: fmt.Sprintf("%s.Ctx_", op1VarName)},
+			X:  &ast.Ident{Name: fmt.Sprintf("%s.ctx", op1VarName)},
 			Op: token.NEQ,
 			Y:  &ast.Ident{Name: fmt.Sprintf("%s.Context()", "otherSeries")},
 		},
 		Body: &ast.BlockStmt{
 			List: []ast.Stmt{
 				&ast.ReturnStmt{
-					Results: []ast.Expr{ast.NewIdent(fmt.Sprintf("Errors{fmt.Sprintf(\"Cannot operate on series with different contexts: %%v and %%v\", s.Ctx_, %s.Context())}", "otherSeries"))},
+					Results: []ast.Expr{ast.NewIdent(fmt.Sprintf("Errors{fmt.Sprintf(\"Cannot operate on series with different contexts: %%v and %%v\", s.ctx, %s.Context())}", "otherSeries"))},
 				},
 			},
 		},

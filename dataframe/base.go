@@ -276,7 +276,7 @@ func (df DataFrame) Col(name string) series.Series {
 		}
 	}
 
-	return series.Errors{Msg_: fmt.Sprintf("DataFrame.C: series \"%s\" not found", name)}
+	return series.NewSeriesError(fmt.Sprintf("DataFrame.C: series \"%s\" not found", name))
 }
 
 // Returns the series with the given name.
@@ -294,7 +294,7 @@ func (df DataFrame) seriesByName(name string) series.Series {
 // ColAt returns the column at the given index.
 func (df DataFrame) ColAt(index int) series.Series {
 	if index < 0 || index >= len(df.series) {
-		return series.Errors{Msg_: fmt.Sprintf("DataFrame.ColAt: index %d out of bounds", index)}
+		return series.NewSeriesError(fmt.Sprintf("DataFrame.ColAt: index %d out of bounds", index))
 	}
 	return df.series[index]
 }
@@ -891,7 +891,7 @@ func allNullSeries(t meta.BaseType, size int, ctx *enchanter.Context) series.Ser
 	case meta.DurationType:
 		return series.NewSeriesDuration(make([]time.Duration, size), mask, false, ctx)
 	}
-	return series.Errors{Msg_: fmt.Sprintf("allNullSeries: unsupported type %v", t)}
+	return series.NewSeriesError(fmt.Sprintf("allNullSeries: unsupported type %v", t))
 }
 
 // joinGather returns the elements of s at the given indices, in order,

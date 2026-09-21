@@ -77,7 +77,7 @@ func Test_Sas7bdat_ReadAgainstReference(t *testing.T) {
 					t.Fatalf("col %d row %d: got null, reference has %v", j, i, want)
 				}
 				// The reference stores rounded decimals; integers are exact.
-				if got := s.Data_[i]; math.Abs(got-want) > 5e-4 {
+				if got := s.Float64s()[i]; math.Abs(got-want) > 5e-4 {
 					t.Fatalf("col %d row %d: got %v, want %v", j, i, got, want)
 				}
 			}
@@ -101,14 +101,14 @@ func Test_Sas7bdat_ReadAgainstReference(t *testing.T) {
 
 	// Pin a few concrete cells so a systematic offset cannot slip through the
 	// tolerance: the first reference row starts 0.636, pear, 84, 2170.
-	if got := iod.Series[0].(series.Float64s).Data_[0]; math.Abs(got-0.636) > 5e-4 {
+	if got := iod.Series[0].(series.Float64s).Float64s()[0]; math.Abs(got-0.636) > 5e-4 {
 		t.Fatalf("Column1[0]: got %v, want 0.636", got)
 	}
 	if got := iod.Series[1].Get(0).(string); got != "pear" {
 		t.Fatalf("Column2[0]: got %q, want \"pear\"", got)
 	}
 	if s := iod.Series[7].(series.Float64s); !s.IsNull(0) {
-		t.Fatalf("Column8[0]: want null (missing in the reference), got %v", s.Data_[0])
+		t.Fatalf("Column8[0]: want null (missing in the reference), got %v", s.Float64s()[0])
 	}
 }
 
@@ -151,7 +151,7 @@ func Test_Sas7bdat_ConvertDates(t *testing.T) {
 				t.Fatalf("col %d row %d: reference %q is not a day count", j, i, cell)
 			}
 			want := epoch.AddDate(0, 0, days)
-			if got := s.Data_[i]; !got.Equal(want) {
+			if got := s.Times()[i]; !got.Equal(want) {
 				t.Fatalf("col %d (%s) row %d: got %v, want %v (%d days after the SAS epoch)",
 					j, header[j], i, got, want, days)
 			}

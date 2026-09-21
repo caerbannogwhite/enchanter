@@ -171,7 +171,7 @@ func (g *groupTable) idOf(row int) int {
 		if g.strCol.IsNull(row) {
 			return g.nullGroup(row)
 		}
-		p := g.strCol.Data_[row]
+		p := g.strCol.Interned()[row]
 		if id, ok := g.strMap[p]; ok {
 			return id
 		}
@@ -183,20 +183,20 @@ func (g *groupTable) idOf(row int) int {
 		if g.i64Col.IsNull(row) {
 			return g.nullGroup(row)
 		}
-		return g.internInt64(g.i64Col.Data_[row], row)
+		return g.internInt64(g.i64Col.Int64s()[row], row)
 
 	case gtSingleInts:
 		if g.intsCol.IsNull(row) {
 			return g.nullGroup(row)
 		}
-		return g.internInt64(int64(g.intsCol.Data_[row]), row)
+		return g.internInt64(int64(g.intsCol.Ints()[row]), row)
 
 	case gtSingleBool:
 		if g.boolCol.IsNull(row) {
 			return g.nullGroup(row)
 		}
 		v := int64(0)
-		if g.boolCol.Data_[row] {
+		if g.boolCol.Bools()[row] {
 			v = 1
 		}
 		return g.internInt64(v, row)
@@ -207,13 +207,13 @@ func (g *groupTable) idOf(row int) int {
 		}
 		// UnixNano (exact instant), not raw time.Time equality: see
 		// makeCellCoder's series.Times case for why.
-		return g.internInt64(g.timeCol.Data_[row].UnixNano(), row)
+		return g.internInt64(g.timeCol.Times()[row].UnixNano(), row)
 
 	case gtSingleDuration:
 		if g.durationCol.IsNull(row) {
 			return g.nullGroup(row)
 		}
-		return g.internInt64(int64(g.durationCol.Data_[row]), row)
+		return g.internInt64(int64(g.durationCol.Durations()[row]), row)
 
 	case gtSingleFloat64:
 		if g.f64Col.IsNull(row) {
@@ -232,7 +232,7 @@ func (g *groupTable) idOf(row int) int {
 		// each NaN value compares unequal to every other value (including
 		// itself), so every non-null NaN row becomes its own singleton group.
 		// In short: float64 grouping-key semantics differ by key arity.
-		v := math.Float64bits(g.f64Col.Data_[row])
+		v := math.Float64bits(g.f64Col.Float64s()[row])
 		if id, ok := g.f64Map[v]; ok {
 			return id
 		}
@@ -324,7 +324,7 @@ func makeCellCoder(col series.Series) func(int) uint64 {
 			if c.IsNull(row) {
 				return 0
 			}
-			p := c.Data_[row]
+			p := c.Interned()[row]
 			if v, ok := codes[p]; ok {
 				return v
 			}
@@ -339,7 +339,7 @@ func makeCellCoder(col series.Series) func(int) uint64 {
 			if c.IsNull(row) {
 				return 0
 			}
-			cell := c.Data_[row]
+			cell := c.Bools()[row]
 			if v, ok := codes[cell]; ok {
 				return v
 			}
@@ -354,7 +354,7 @@ func makeCellCoder(col series.Series) func(int) uint64 {
 			if c.IsNull(row) {
 				return 0
 			}
-			cell := c.Data_[row]
+			cell := c.Ints()[row]
 			if v, ok := codes[cell]; ok {
 				return v
 			}
@@ -369,7 +369,7 @@ func makeCellCoder(col series.Series) func(int) uint64 {
 			if c.IsNull(row) {
 				return 0
 			}
-			cell := c.Data_[row]
+			cell := c.Int64s()[row]
 			if v, ok := codes[cell]; ok {
 				return v
 			}
@@ -384,7 +384,7 @@ func makeCellCoder(col series.Series) func(int) uint64 {
 			if c.IsNull(row) {
 				return 0
 			}
-			cell := c.Data_[row]
+			cell := c.Float64s()[row]
 			if v, ok := codes[cell]; ok {
 				return v
 			}
@@ -405,7 +405,7 @@ func makeCellCoder(col series.Series) func(int) uint64 {
 			if c.IsNull(row) {
 				return 0
 			}
-			cell := c.Data_[row].UnixNano()
+			cell := c.Times()[row].UnixNano()
 			if v, ok := codes[cell]; ok {
 				return v
 			}
@@ -420,7 +420,7 @@ func makeCellCoder(col series.Series) func(int) uint64 {
 			if c.IsNull(row) {
 				return 0
 			}
-			cell := c.Data_[row]
+			cell := c.Durations()[row]
 			if v, ok := codes[cell]; ok {
 				return v
 			}

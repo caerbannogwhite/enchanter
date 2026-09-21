@@ -452,7 +452,7 @@ func Test_SeriesInt64_Cast(t *testing.T) {
 	castError := s.Cast(meta.ErrorType)
 
 	// Check the message.
-	if castError.(Errors).Msg_ != "Int64s.Cast: invalid type Error" {
+	if castError.(Errors).msg != "Int64s.Cast: invalid type Error" {
 		t.Errorf("Expected error, got %v", castError)
 	}
 }

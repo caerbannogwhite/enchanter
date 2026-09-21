@@ -14,7 +14,7 @@ func f64(t *testing.T, df DataFrame, col string) []float64 {
 	if !ok {
 		t.Fatalf("col %q not Float64s", col)
 	}
-	return s.Data_
+	return s.Float64s()
 }
 
 func TestAggregateSerialSingleKey(t *testing.T) {
@@ -32,7 +32,7 @@ func TestAggregateSerialSingleKey(t *testing.T) {
 	if sum[0] != 30 || sum[1] != 6 { // a: 10+20, b: 1+2+3
 		t.Fatalf("sum = %v, want [30 6]", sum)
 	}
-	n := out.Col("n").(series.Int64s).Data_
+	n := out.Col("n").(series.Int64s).Int64s()
 	if n[0] != 2 || n[1] != 3 {
 		t.Fatalf("count = %v, want [2 3]", n)
 	}
@@ -256,16 +256,16 @@ func TestAggregateParallelNAPropagationCrossChunk(t *testing.T) {
 		if s.IsNull(aIdx) {
 			t.Fatalf("parallel %s[a] isNull = true, want non-null NaN (NA propagation)", col)
 		}
-		if !math.IsNaN(s.Data_[aIdx]) {
-			t.Fatalf("parallel %s[a] = %v, want NaN (NA-propagated)", col, s.Data_[aIdx])
+		if !math.IsNaN(s.Float64s()[aIdx]) {
+			t.Fatalf("parallel %s[a] = %v, want NaN (NA-propagated)", col, s.Float64s()[aIdx])
 		}
 	}
 
 	// Count is unaffected by value nulls: it counts rows, not values.
 	wantCount := int64(n / 4)
 	cnt := par.Col("n").(series.Int64s)
-	if cnt.Data_[aIdx] != wantCount {
-		t.Fatalf("parallel count[a] = %d, want %d", cnt.Data_[aIdx], wantCount)
+	if cnt.Int64s()[aIdx] != wantCount {
+		t.Fatalf("parallel count[a] = %d, want %d", cnt.Int64s()[aIdx], wantCount)
 	}
 
 	// Parallel must match serial exactly for the SAME inputs: same keys in
@@ -284,7 +284,7 @@ func TestAggregateParallelNAPropagationCrossChunk(t *testing.T) {
 			if sSer.IsNull(i) != sPar.IsNull(i) {
 				t.Fatalf("%s[%d] null mask mismatch: serial=%v parallel=%v", col, i, sSer.IsNull(i), sPar.IsNull(i))
 			}
-			sv, pv := sSer.Data_[i], sPar.Data_[i]
+			sv, pv := sSer.Float64s()[i], sPar.Float64s()[i]
 			// NaN-aware equality: NaN != NaN in Go, but NA-propagated cells on
 			// both sides must both be NaN for the rows to agree.
 			if math.IsNaN(sv) || math.IsNaN(pv) {
@@ -301,8 +301,8 @@ func TestAggregateParallelNAPropagationCrossChunk(t *testing.T) {
 	nSer := ser.Col("n").(series.Int64s)
 	nPar := par.Col("n").(series.Int64s)
 	for i := 0; i < ser.NRows(); i++ {
-		if nSer.Data_[i] != nPar.Data_[i] {
-			t.Fatalf("n[%d] serial=%d parallel=%d", i, nSer.Data_[i], nPar.Data_[i])
+		if nSer.Int64s()[i] != nPar.Int64s()[i] {
+			t.Fatalf("n[%d] serial=%d parallel=%d", i, nSer.Int64s()[i], nPar.Int64s()[i])
 		}
 	}
 }
@@ -360,16 +360,16 @@ func TestAggregateParallelInt64ValueNAPropagationCrossChunk(t *testing.T) {
 		if s.IsNull(aIdx) {
 			t.Fatalf("parallel %s[a] isNull = true, want non-null NaN (NA propagation)", col)
 		}
-		if !math.IsNaN(s.Data_[aIdx]) {
-			t.Fatalf("parallel %s[a] = %v, want NaN (NA-propagated)", col, s.Data_[aIdx])
+		if !math.IsNaN(s.Float64s()[aIdx]) {
+			t.Fatalf("parallel %s[a] = %v, want NaN (NA-propagated)", col, s.Float64s()[aIdx])
 		}
 	}
 
 	// Count is unaffected by value nulls: it counts rows, not values.
 	wantCount := int64(n / 4)
 	cnt := par.Col("n").(series.Int64s)
-	if cnt.Data_[aIdx] != wantCount {
-		t.Fatalf("parallel count[a] = %d, want %d", cnt.Data_[aIdx], wantCount)
+	if cnt.Int64s()[aIdx] != wantCount {
+		t.Fatalf("parallel count[a] = %d, want %d", cnt.Int64s()[aIdx], wantCount)
 	}
 
 	// Parallel must match serial exactly for the SAME inputs.
@@ -386,7 +386,7 @@ func TestAggregateParallelInt64ValueNAPropagationCrossChunk(t *testing.T) {
 			if sSer.IsNull(i) != sPar.IsNull(i) {
 				t.Fatalf("%s[%d] null mask mismatch: serial=%v parallel=%v", col, i, sSer.IsNull(i), sPar.IsNull(i))
 			}
-			sv, pv := sSer.Data_[i], sPar.Data_[i]
+			sv, pv := sSer.Float64s()[i], sPar.Float64s()[i]
 			if math.IsNaN(sv) || math.IsNaN(pv) {
 				if !math.IsNaN(sv) || !math.IsNaN(pv) {
 					t.Fatalf("%s[%d] NaN mismatch: serial=%v parallel=%v", col, i, sv, pv)
@@ -401,8 +401,8 @@ func TestAggregateParallelInt64ValueNAPropagationCrossChunk(t *testing.T) {
 	nSer := ser.Col("n").(series.Int64s)
 	nPar := par.Col("n").(series.Int64s)
 	for i := 0; i < ser.NRows(); i++ {
-		if nSer.Data_[i] != nPar.Data_[i] {
-			t.Fatalf("n[%d] serial=%d parallel=%d", i, nSer.Data_[i], nPar.Data_[i])
+		if nSer.Int64s()[i] != nPar.Int64s()[i] {
+			t.Fatalf("n[%d] serial=%d parallel=%d", i, nSer.Int64s()[i], nPar.Int64s()[i])
 		}
 	}
 }
@@ -416,7 +416,7 @@ func TestAggregateAnyAll(t *testing.T) {
 	anyC := out.Col("any(b)").(series.Bools) // sorted: a, b
 	allC := out.Col("all(b)").(series.Bools)
 	if anyC.Get(0) != true || allC.Get(0) != false || anyC.Get(1) != true || allC.Get(1) != true {
-		t.Fatalf("any/all wrong: any=%v all=%v", anyC.Data_, allC.Data_)
+		t.Fatalf("any/all wrong: any=%v all=%v", anyC.Bools(), allC.Bools())
 	}
 }
 

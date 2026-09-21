@@ -10,7 +10,7 @@ import (
 
 // Dummy series for error handling.
 type Errors struct {
-	Msg_ string
+	msg string
 }
 
 // Return the context of the series.
@@ -40,7 +40,7 @@ func (s Errors) SortOrder() enchanter.SeriesSortOrder {
 // Err returns the error carried by the series, built from the stored
 // message on each call.
 func (s Errors) Err() error {
-	return errors.New(s.Msg_)
+	return errors.New(s.msg)
 }
 
 // Makes the series nullable.
@@ -131,7 +131,7 @@ func (s Errors) DataAsNullable() any {
 
 // Returns the data of the series as a slice of strings.
 func (s Errors) DataAsString() []string {
-	return []string{s.Msg_}
+	return []string{s.msg}
 }
 
 // Casts the series to a given type.

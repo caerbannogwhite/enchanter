@@ -83,8 +83,8 @@ func TestParquetMultiRowGroupWithNulls(t *testing.T) {
 		if got.IsNull(i) != fmask[i] {
 			t.Fatalf("f: IsNull(%d) = %v, want %v (nulls in row groups after the first must survive)", i, got.IsNull(i), fmask[i])
 		}
-		if !fmask[i] && gf.Data_[i] != fdata[i] {
-			t.Fatalf("f: value[%d] = %v, want %v", i, gf.Data_[i], fdata[i])
+		if !fmask[i] && gf.Float64s()[i] != fdata[i] {
+			t.Fatalf("f: value[%d] = %v, want %v", i, gf.Float64s()[i], fdata[i])
 		}
 	}
 
@@ -97,8 +97,8 @@ func TestParquetMultiRowGroupWithNulls(t *testing.T) {
 		if gots.IsNull(i) != smask[i] {
 			t.Fatalf("s: IsNull(%d) = %v, want %v (nulls in row groups after the first must survive)", i, gots.IsNull(i), smask[i])
 		}
-		if !smask[i] && *gs.Data_[i] != sdata[i] {
-			t.Fatalf("s: value[%d] = %q, want %q", i, *gs.Data_[i], sdata[i])
+		if !smask[i] && *gs.Interned()[i] != sdata[i] {
+			t.Fatalf("s: value[%d] = %q, want %q", i, *gs.Interned()[i], sdata[i])
 		}
 	}
 }
@@ -133,8 +133,8 @@ func TestMultiChunkToSeriesPreservesNulls(t *testing.T) {
 		if got.IsNull(i) != wantNull[i] {
 			t.Fatalf("IsNull(%d) = %v, want %v (chunk null masks must be merged)", i, got.IsNull(i), wantNull[i])
 		}
-		if !wantNull[i] && g.Data_[i] != float64(i) {
-			t.Fatalf("value[%d] = %v, want %d", i, g.Data_[i], i)
+		if !wantNull[i] && g.Float64s()[i] != float64(i) {
+			t.Fatalf("value[%d] = %v, want %d", i, g.Float64s()[i], i)
 		}
 	}
 
@@ -152,7 +152,7 @@ func TestMultiChunkToSeriesPreservesNulls(t *testing.T) {
 	if gs.Len() != 4 || !gs.IsNull(2) || gs.IsNull(3) {
 		t.Fatalf("string chunks: len=%d IsNull(2)=%v IsNull(3)=%v, want 4/true/false", gs.Len(), gs.IsNull(2), gs.IsNull(3))
 	}
-	if v := *(gs.(series.Strings)).Data_[3]; v != "d" {
+	if v := *(gs.(series.Strings)).Interned()[3]; v != "d" {
 		t.Fatalf("string value[3] = %q, want %q", v, "d")
 	}
 }
@@ -208,8 +208,8 @@ func TestArrowIPCMultiRecordWithNulls(t *testing.T) {
 		if got.IsNull(i) != wantNull[i] {
 			t.Fatalf("IsNull(%d) = %v, want %v (nulls in record batches after the first must survive)", i, got.IsNull(i), wantNull[i])
 		}
-		if !wantNull[i] && g.Data_[i] != float64(i) {
-			t.Fatalf("value[%d] = %v, want %v", i, g.Data_[i], float64(i))
+		if !wantNull[i] && g.Float64s()[i] != float64(i) {
+			t.Fatalf("value[%d] = %v, want %v", i, g.Float64s()[i], float64(i))
 		}
 	}
 }

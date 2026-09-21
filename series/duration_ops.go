@@ -12,10 +12,10 @@ func (s Durations) And(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -29,10 +29,10 @@ func (s Durations) Or(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -46,10 +46,10 @@ func (s Durations) Mul(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -63,10 +63,10 @@ func (s Durations) Div(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -80,10 +80,10 @@ func (s Durations) Mod(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -97,10 +97,10 @@ func (s Durations) Exp(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -114,10 +114,10 @@ func (s Durations) Add(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Strings:
@@ -125,33 +125,33 @@ func (s Durations) Add(other any) Series {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
 			result := make([]*string, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
-			result[0] = o.Ctx_.StringPool.Put(s.Data_[0].String() + *o.Data_[0])
-			return Strings{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = o.ctx.StringPool.Put(s.data[0].String() + *o.data[0])
+			return Strings{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == 1:
 			resultSize := o.Len()
 			result := make([]*string, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = o.Ctx_.StringPool.Put(s.Data_[0].String() + *o.Data_[i])
+				result[i] = o.ctx.StringPool.Put(s.data[0].String() + *o.data[i])
 			}
-			return Strings{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Strings{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case o.Len() == 1:
 			resultSize := s.Len()
 			result := make([]*string, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = o.Ctx_.StringPool.Put(s.Data_[i].String() + *o.Data_[0])
+				result[i] = o.ctx.StringPool.Put(s.data[i].String() + *o.data[0])
 			}
-			return Strings{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Strings{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
 			result := make([]*string, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = o.Ctx_.StringPool.Put(s.Data_[i].String() + *o.Data_[i])
+				result[i] = o.ctx.StringPool.Put(s.data[i].String() + *o.data[i])
 			}
-			return Strings{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Strings{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
 	case Times:
@@ -159,33 +159,33 @@ func (s Durations) Add(other any) Series {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
 			result := make([]time.Time, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
-			result[0] = o.Data_[0].Add(s.Data_[0])
-			return Times{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = o.data[0].Add(s.data[0])
+			return Times{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == 1:
 			resultSize := o.Len()
 			result := make([]time.Time, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = o.Data_[i].Add(s.Data_[0])
+				result[i] = o.data[i].Add(s.data[0])
 			}
-			return Times{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Times{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case o.Len() == 1:
 			resultSize := s.Len()
 			result := make([]time.Time, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = o.Data_[0].Add(s.Data_[i])
+				result[i] = o.data[0].Add(s.data[i])
 			}
-			return Times{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Times{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
 			result := make([]time.Time, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = o.Data_[i].Add(s.Data_[i])
+				result[i] = o.data[i].Add(s.data[i])
 			}
-			return Times{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Times{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
 	case Durations:
@@ -193,33 +193,33 @@ func (s Durations) Add(other any) Series {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
-			result[0] = s.Data_[0] + o.Data_[0]
-			return Durations{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] + o.data[0]
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == 1:
 			resultSize := o.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[0] + o.Data_[i]
+				result[i] = s.data[0] + o.data[i]
 			}
-			return Durations{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case o.Len() == 1:
 			resultSize := s.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] + o.Data_[0]
+				result[i] = s.data[i] + o.data[0]
 			}
-			return Durations{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] + o.Data_[i]
+				result[i] = s.data[i] + o.data[i]
 			}
-			return Durations{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
 	case NAs:
@@ -249,10 +249,10 @@ func (s Durations) Sub(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
@@ -260,33 +260,33 @@ func (s Durations) Sub(other any) Series {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
-			result[0] = s.Data_[0] - o.Data_[0]
-			return Durations{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] - o.data[0]
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == 1:
 			resultSize := o.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[0] - o.Data_[i]
+				result[i] = s.data[0] - o.data[i]
 			}
-			return Durations{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case o.Len() == 1:
 			resultSize := s.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] - o.Data_[0]
+				result[i] = s.data[i] - o.data[0]
 			}
-			return Durations{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] - o.Data_[i]
+				result[i] = s.data[i] - o.data[i]
 			}
-			return Durations{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot subtract %s and %s", s.Type().String(), o.Type().String())}
 	default:
@@ -300,10 +300,10 @@ func (s Durations) Eq(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
@@ -311,33 +311,33 @@ func (s Durations) Eq(other any) Series {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
-			result[0] = s.Data_[0] == o.Data_[0]
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] == o.data[0]
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == 1:
 			resultSize := o.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[0] == o.Data_[i]
+				result[i] = s.data[0] == o.data[i]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case o.Len() == 1:
 			resultSize := s.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] == o.Data_[0]
+				result[i] = s.data[i] == o.data[0]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] == o.Data_[i]
+				result[i] = s.data[i] == o.data[i]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for equality %s and %s", s.Type().String(), o.Type().String())}
 	case NAs:
@@ -367,10 +367,10 @@ func (s Durations) Ne(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
@@ -378,33 +378,33 @@ func (s Durations) Ne(other any) Series {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
-			result[0] = s.Data_[0] != o.Data_[0]
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] != o.data[0]
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == 1:
 			resultSize := o.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[0] != o.Data_[i]
+				result[i] = s.data[0] != o.data[i]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case o.Len() == 1:
 			resultSize := s.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] != o.Data_[0]
+				result[i] = s.data[i] != o.data[0]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] != o.Data_[i]
+				result[i] = s.data[i] != o.data[i]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for inequality %s and %s", s.Type().String(), o.Type().String())}
 	case NAs:
@@ -434,10 +434,10 @@ func (s Durations) Gt(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
@@ -445,33 +445,33 @@ func (s Durations) Gt(other any) Series {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
-			result[0] = s.Data_[0] > o.Data_[0]
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] > o.data[0]
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == 1:
 			resultSize := o.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[0] > o.Data_[i]
+				result[i] = s.data[0] > o.data[i]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case o.Len() == 1:
 			resultSize := s.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] > o.Data_[0]
+				result[i] = s.data[i] > o.data[0]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] > o.Data_[i]
+				result[i] = s.data[i] > o.data[i]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for greater than %s and %s", s.Type().String(), o.Type().String())}
 	default:
@@ -485,10 +485,10 @@ func (s Durations) Ge(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
@@ -496,33 +496,33 @@ func (s Durations) Ge(other any) Series {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
-			result[0] = s.Data_[0] >= o.Data_[0]
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] >= o.data[0]
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == 1:
 			resultSize := o.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[0] >= o.Data_[i]
+				result[i] = s.data[0] >= o.data[i]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case o.Len() == 1:
 			resultSize := s.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] >= o.Data_[0]
+				result[i] = s.data[i] >= o.data[0]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] >= o.Data_[i]
+				result[i] = s.data[i] >= o.data[i]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for greater than or equal to %s and %s", s.Type().String(), o.Type().String())}
 	default:
@@ -536,10 +536,10 @@ func (s Durations) Lt(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
@@ -547,33 +547,33 @@ func (s Durations) Lt(other any) Series {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
-			result[0] = s.Data_[0] < o.Data_[0]
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] < o.data[0]
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == 1:
 			resultSize := o.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[0] < o.Data_[i]
+				result[i] = s.data[0] < o.data[i]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case o.Len() == 1:
 			resultSize := s.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] < o.Data_[0]
+				result[i] = s.data[i] < o.data[0]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] < o.Data_[i]
+				result[i] = s.data[i] < o.data[i]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for less than %s and %s", s.Type().String(), o.Type().String())}
 	default:
@@ -587,10 +587,10 @@ func (s Durations) Le(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
@@ -598,33 +598,33 @@ func (s Durations) Le(other any) Series {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
-			result[0] = s.Data_[0] <= o.Data_[0]
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] <= o.data[0]
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == 1:
 			resultSize := o.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[0] <= o.Data_[i]
+				result[i] = s.data[0] <= o.data[i]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case o.Len() == 1:
 			resultSize := s.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] <= o.Data_[0]
+				result[i] = s.data[i] <= o.data[0]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
 			result := make([]bool, resultSize)
-			resultNullMask, resultIsNullable := binaryNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i] <= o.Data_[i]
+				result[i] = s.data[i] <= o.data[i]
 			}
-			return Bools{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot compare for less than or equal to %s and %s", s.Type().String(), o.Type().String())}
 	default:
@@ -643,10 +643,10 @@ func (s Durations) Coalesce(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.Context() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.Context())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
@@ -654,49 +654,49 @@ func (s Durations) Coalesce(other any) Series {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, true, resultSize)
-			if s.IsNullable_ && s.NullMask_[0]&1 != 0 {
-				result[0] = o.Data_[0]
+			resultNullMask, resultIsNullable := coalesceNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			if s.isNullable && s.nullMask[0]&1 != 0 {
+				result[0] = o.data[0]
 			} else {
-				result[0] = s.Data_[0]
+				result[0] = s.data[0]
 			}
-			return Durations{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == 1:
 			resultSize := o.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, true, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := coalesceNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				if s.IsNullable_ && s.NullMask_[0]&1 != 0 {
-					result[i] = o.Data_[i]
+				if s.isNullable && s.nullMask[0]&1 != 0 {
+					result[i] = o.data[i]
 				} else {
-					result[i] = s.Data_[0]
+					result[i] = s.data[0]
 				}
 			}
-			return Durations{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case o.Len() == 1:
 			resultSize := s.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, true, resultSize)
+			resultNullMask, resultIsNullable := coalesceNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
 			for i := 0; i < resultSize; i++ {
-				if s.IsNullable_ && s.NullMask_[i>>3]&(1<<uint(i%8)) != 0 {
-					result[i] = o.Data_[0]
+				if s.isNullable && s.nullMask[i>>3]&(1<<uint(i%8)) != 0 {
+					result[i] = o.data[0]
 				} else {
-					result[i] = s.Data_[i]
+					result[i] = s.data[i]
 				}
 			}
-			return Durations{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask, resultIsNullable := coalesceNullMask(s.IsNullable_, s.NullMask_, false, o.IsNullable_, o.NullMask_, false, resultSize)
+			resultNullMask, resultIsNullable := coalesceNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				if s.IsNullable_ && s.NullMask_[i>>3]&(1<<uint(i%8)) != 0 {
-					result[i] = o.Data_[i]
+				if s.isNullable && s.nullMask[i>>3]&(1<<uint(i%8)) != 0 {
+					result[i] = o.data[i]
 				} else {
-					result[i] = s.Data_[i]
+					result[i] = s.data[i]
 				}
 			}
-			return Durations{IsNullable_: resultIsNullable, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot coalesce %s and %s", s.Type().String(), o.Type().String())}
 	case NAs:
@@ -704,33 +704,33 @@ func (s Durations) Coalesce(other any) Series {
 		case s.Len() == 1 && o.Len() == 1:
 			resultSize := o.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, true, resultSize)
-			result[0] = s.Data_[0]
-			return Durations{IsNullable_: s.IsNullable_, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			resultNullMask := naOperandNullMask(s.isNullable, s.nullMask, true, resultSize)
+			result[0] = s.data[0]
+			return Durations{isNullable: s.isNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == 1:
 			resultSize := o.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, true, resultSize)
+			resultNullMask := naOperandNullMask(s.isNullable, s.nullMask, true, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[0]
+				result[i] = s.data[0]
 			}
-			return Durations{IsNullable_: s.IsNullable_, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Durations{isNullable: s.isNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case o.Len() == 1:
 			resultSize := s.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, false, resultSize)
+			resultNullMask := naOperandNullMask(s.isNullable, s.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i]
+				result[i] = s.data[i]
 			}
-			return Durations{IsNullable_: s.IsNullable_, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Durations{isNullable: s.isNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		case s.Len() == o.Len():
 			resultSize := s.Len()
 			result := make([]time.Duration, resultSize)
-			resultNullMask := naOperandNullMask(s.IsNullable_, s.NullMask_, false, resultSize)
+			resultNullMask := naOperandNullMask(s.isNullable, s.nullMask, false, resultSize)
 			for i := 0; i < resultSize; i++ {
-				result[i] = s.Data_[i]
+				result[i] = s.data[i]
 			}
-			return Durations{IsNullable_: s.IsNullable_, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
+			return Durations{isNullable: s.isNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
 		return Errors{fmt.Sprintf("Cannot coalesce %s and %s", s.Type().String(), o.Type().String())}
 	default:

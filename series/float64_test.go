@@ -354,7 +354,7 @@ func Test_SeriesFloat64_Cast(t *testing.T) {
 	castError := s.Cast(meta.ErrorType)
 
 	// Check the message.
-	if castError.(Errors).Msg_ != "Float64s.Cast: invalid type Error" {
+	if castError.(Errors).msg != "Float64s.Cast: invalid type Error" {
 		t.Errorf("Expected error, got %v", castError)
 	}
 }
