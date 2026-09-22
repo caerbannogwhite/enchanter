@@ -19,7 +19,7 @@
 //   - dataframe: the DataFrame type — select, filter, group by, join,
 //     sort, aggregate — plus Apache Arrow record conversion.
 //   - io: readers and writers for CSV, XLSX, XPT (SAS), JSON, HTML,
-//     Markdown, Parquet and Arrow IPC.
+//     Markdown, Parquet and Arrow IPC, plus a read-only SAS7BDAT reader.
 //   - arrowutil: conversion helpers between enchanter null masks and Arrow
 //     validity bitmaps.
 //   - meta: the type system shared by the packages above.
