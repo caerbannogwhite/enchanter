@@ -53,8 +53,8 @@ func forEachLenPattern(t *testing.T, fn func(t *testing.T, n int, pat func(i, n 
 
 func checkRoundTripNulls(t *testing.T, got Series, n int, pat func(i, n int) bool) {
 	t.Helper()
-	if got.IsError() {
-		t.Fatalf("round trip returned error series: %s", got.GetError())
+	if got.Err() != nil {
+		t.Fatalf("round trip returned error series: %s", got.Err())
 	}
 	if got.Len() != n {
 		t.Fatalf("length: got %d, want %d", got.Len(), n)
@@ -83,8 +83,8 @@ func TestArrowRoundTripFloat64(t *testing.T) {
 		checkRoundTripNulls(t, got, n, pat)
 		g := got.(Float64s)
 		for i := 0; i < n; i++ {
-			if !rtIsNull(pat, i, n) && g.Data_[i] != data[i] {
-				t.Fatalf("value[%d]: got %v, want %v", i, g.Data_[i], data[i])
+			if !rtIsNull(pat, i, n) && g.data[i] != data[i] {
+				t.Fatalf("value[%d]: got %v, want %v", i, g.data[i], data[i])
 			}
 		}
 	})
@@ -104,8 +104,8 @@ func TestArrowRoundTripInt64(t *testing.T) {
 		checkRoundTripNulls(t, got, n, pat)
 		g := got.(Int64s)
 		for i := 0; i < n; i++ {
-			if !rtIsNull(pat, i, n) && g.Data_[i] != data[i] {
-				t.Fatalf("value[%d]: got %v, want %v", i, g.Data_[i], data[i])
+			if !rtIsNull(pat, i, n) && g.data[i] != data[i] {
+				t.Fatalf("value[%d]: got %v, want %v", i, g.data[i], data[i])
 			}
 		}
 	})
@@ -130,8 +130,8 @@ func TestArrowRoundTripInt(t *testing.T) {
 			t.Fatalf("expected Int64s after round trip, got %T", got)
 		}
 		for i := 0; i < n; i++ {
-			if !rtIsNull(pat, i, n) && g.Data_[i] != int64(data[i]) {
-				t.Fatalf("value[%d]: got %v, want %v", i, g.Data_[i], data[i])
+			if !rtIsNull(pat, i, n) && g.data[i] != int64(data[i]) {
+				t.Fatalf("value[%d]: got %v, want %v", i, g.data[i], data[i])
 			}
 		}
 	})
@@ -151,8 +151,8 @@ func TestArrowRoundTripBool(t *testing.T) {
 		checkRoundTripNulls(t, got, n, pat)
 		g := got.(Bools)
 		for i := 0; i < n; i++ {
-			if !rtIsNull(pat, i, n) && g.Data_[i] != data[i] {
-				t.Fatalf("value[%d]: got %v, want %v", i, g.Data_[i], data[i])
+			if !rtIsNull(pat, i, n) && g.data[i] != data[i] {
+				t.Fatalf("value[%d]: got %v, want %v", i, g.data[i], data[i])
 			}
 		}
 	})
@@ -172,8 +172,8 @@ func TestArrowRoundTripString(t *testing.T) {
 		checkRoundTripNulls(t, got, n, pat)
 		g := got.(Strings)
 		for i := 0; i < n; i++ {
-			if !rtIsNull(pat, i, n) && *g.Data_[i] != data[i] {
-				t.Fatalf("value[%d]: got %q, want %q", i, *g.Data_[i], data[i])
+			if !rtIsNull(pat, i, n) && *g.data[i] != data[i] {
+				t.Fatalf("value[%d]: got %q, want %q", i, *g.data[i], data[i])
 			}
 		}
 	})
@@ -194,8 +194,8 @@ func TestArrowRoundTripTime(t *testing.T) {
 		checkRoundTripNulls(t, got, n, pat)
 		g := got.(Times)
 		for i := 0; i < n; i++ {
-			if !rtIsNull(pat, i, n) && !g.Data_[i].Equal(data[i]) {
-				t.Fatalf("value[%d]: got %v, want %v", i, g.Data_[i], data[i])
+			if !rtIsNull(pat, i, n) && !g.data[i].Equal(data[i]) {
+				t.Fatalf("value[%d]: got %v, want %v", i, g.data[i], data[i])
 			}
 		}
 	})
@@ -215,8 +215,8 @@ func TestArrowRoundTripDuration(t *testing.T) {
 		checkRoundTripNulls(t, got, n, pat)
 		g := got.(Durations)
 		for i := 0; i < n; i++ {
-			if !rtIsNull(pat, i, n) && g.Data_[i] != data[i] {
-				t.Fatalf("value[%d]: got %v, want %v", i, g.Data_[i], data[i])
+			if !rtIsNull(pat, i, n) && g.data[i] != data[i] {
+				t.Fatalf("value[%d]: got %v, want %v", i, g.data[i], data[i])
 			}
 		}
 	})
@@ -224,7 +224,7 @@ func TestArrowRoundTripDuration(t *testing.T) {
 
 // Regression tests: a series created FROM an Arrow array must not serve a
 // stale Arrow representation after its data is mutated (Sort/Set mutate
-// Data_ in place).
+// data in place).
 
 func TestArrowBornSeriesSortNotStale(t *testing.T) {
 	ctx := enchanter.NewContext()
@@ -238,8 +238,8 @@ func TestArrowBornSeriesSortNotStale(t *testing.T) {
 	got := ArrowArrayToSeries(arr, ctx).(Float64s)
 	want := []float64{1, 2, 3}
 	for i, w := range want {
-		if got.Data_[i] != w {
-			t.Fatalf("stale Arrow array after Sort(): got %v, want %v", got.Data_, want)
+		if got.data[i] != w {
+			t.Fatalf("stale Arrow array after Sort(): got %v, want %v", got.data, want)
 		}
 	}
 }
@@ -254,7 +254,7 @@ func TestArrowBornSeriesSetNotStale(t *testing.T) {
 	arr := updated.ArrowArray()
 	defer arr.Release()
 	got := ArrowArrayToSeries(arr, ctx).(Int64s)
-	if got.Data_[1] != 99 {
-		t.Fatalf("stale Arrow array after Set(): got %v, want [10 99 30]", got.Data_)
+	if got.data[1] != 99 {
+		t.Fatalf("stale Arrow array after Set(): got %v, want [10 99 30]", got.data)
 	}
 }

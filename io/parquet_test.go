@@ -72,8 +72,8 @@ func TestParquetRoundTrip(t *testing.T) {
 		t.Fatalf("col 0 len: expected 3, got %d", s0.Len())
 	}
 	f64 := s0.(series.Float64s)
-	if f64.Data_[0] != 1.1 || f64.Data_[1] != 2.2 || f64.Data_[2] != 3.3 {
-		t.Errorf("col 0 values mismatch: %v", f64.Data_)
+	if f64.Float64s()[0] != 1.1 || f64.Float64s()[1] != 2.2 || f64.Float64s()[2] != 3.3 {
+		t.Errorf("col 0 values mismatch: %v", f64.Float64s())
 	}
 }
 

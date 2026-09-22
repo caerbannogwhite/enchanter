@@ -11,26 +11,26 @@ import (
 
 // Bools represents a series of bools.
 type Bools struct {
-	IsNullable_ bool
-	Sorted_     enchanter.SeriesSortOrder
-	Data_       []bool
-	NullMask_   []uint8
-	Partition_  *SeriesBoolPartition
-	Ctx_        *enchanter.Context
+	isNullable bool
+	sorted     enchanter.SeriesSortOrder
+	data       []bool
+	nullMask   []uint8
+	partition  *SeriesBoolPartition
+	ctx        *enchanter.Context
 }
 
 // ArrowArray builds and returns a fresh Arrow array from the series data.
 // The caller owns the returned array; releasing it is optional under
 // GC-backed allocators (see enchanter.Context.Allocator).
 func (s Bools) ArrowArray() arrow.Array {
-	return buildArrowBoolean(s.Ctx_.Allocator, s.Data_, s.IsNullable_, s.NullMask_)
+	return buildArrowBoolean(s.ctx.Allocator, s.data, s.isNullable, s.nullMask)
 }
 
 // Get the element at index i as a string.
 func (s Bools) GetAsString(i int) string {
-	if s.IsNullable_ && s.NullMask_[i>>3]&(1<<uint(i%8)) != 0 {
+	if s.isNullable && s.nullMask[i>>3]&(1<<uint(i%8)) != 0 {
 		return enchanter.NA_TEXT
-	} else if s.Data_[i] {
+	} else if s.data[i] {
 		return enchanter.BOOL_TRUE_TEXT
 	} else {
 		return enchanter.BOOL_FALSE_TEXT
@@ -39,74 +39,74 @@ func (s Bools) GetAsString(i int) string {
 
 // Set the element at index i. The value must be of type bool or NullableBool.
 func (s Bools) Set(i int, v any) Series {
-	if s.Partition_ != nil {
+	if s.partition != nil {
 		return Errors{"Bools.Set: cannot set values in a grouped series"}
 	}
 
 	switch v := v.(type) {
 	case nil:
 		s = s.MakeNullable().(Bools)
-		s.NullMask_[i>>3] |= 1 << uint(i%8)
+		s.nullMask[i>>3] |= 1 << uint(i%8)
 
 	case bool:
-		s.Data_[i] = v
+		s.data[i] = v
 
 	case enchanter.NullableBool:
 		s = s.MakeNullable().(Bools)
 		if v.Valid {
-			s.Data_[i] = v.Value
+			s.data[i] = v.Value
 		} else {
-			s.NullMask_[i>>3] |= 1 << uint(i%8)
-			s.Data_[i] = false
+			s.nullMask[i>>3] |= 1 << uint(i%8)
+			s.data[i] = false
 		}
 
 	default:
 		return Errors{fmt.Sprintf("Bools.Set: invalid type %T", v)}
 	}
 
-	s.Sorted_ = enchanter.SORTED_NONE
+	s.sorted = enchanter.SORTED_NONE
 	return s
 }
 
 ////////////////////////			ALL DATA ACCESSORS
 
-// Return the underlying Data_ as a slice of bools.
+// Return the underlying data as a slice of bools.
 func (s Bools) Bools() []bool {
-	return s.Data_
+	return s.data
 }
 
-// Return the underlying Data_ as a slice of NullableBool.
+// Return the underlying data as a slice of NullableBool.
 func (s Bools) DataAsNullable() any {
-	Data_ := make([]enchanter.NullableBool, len(s.Data_))
-	for i, v := range s.Data_ {
-		Data_[i] = enchanter.NullableBool{Valid: !s.IsNull(i), Value: v}
+	data := make([]enchanter.NullableBool, len(s.data))
+	for i, v := range s.data {
+		data[i] = enchanter.NullableBool{Valid: !s.IsNull(i), Value: v}
 	}
-	return Data_
+	return data
 }
 
-// Return the Data_ as a slice of strings.
+// Return the data as a slice of strings.
 func (s Bools) DataAsString() []string {
-	Data_ := make([]string, len(s.Data_))
-	if s.IsNullable_ {
-		for i, v := range s.Data_ {
+	data := make([]string, len(s.data))
+	if s.isNullable {
+		for i, v := range s.data {
 			if s.IsNull(i) {
-				Data_[i] = enchanter.NA_TEXT
+				data[i] = enchanter.NA_TEXT
 			} else if v {
-				Data_[i] = enchanter.BOOL_TRUE_TEXT
+				data[i] = enchanter.BOOL_TRUE_TEXT
 			} else {
-				Data_[i] = enchanter.BOOL_FALSE_TEXT
+				data[i] = enchanter.BOOL_FALSE_TEXT
 			}
 		}
 	} else {
-		for i, v := range s.Data_ {
+		for i, v := range s.data {
 			if v {
-				Data_[i] = enchanter.BOOL_TRUE_TEXT
+				data[i] = enchanter.BOOL_TRUE_TEXT
 			} else {
-				Data_[i] = enchanter.BOOL_FALSE_TEXT
+				data[i] = enchanter.BOOL_FALSE_TEXT
 			}
 		}
 	}
-	return Data_
+	return data
 }
 
 // Cast the series to a given type.
@@ -116,90 +116,90 @@ func (s Bools) Cast(t meta.BaseType) Series {
 		return s
 
 	case meta.IntType:
-		Data_ := make([]int, len(s.Data_))
-		for i, v := range s.Data_ {
+		data := make([]int, len(s.data))
+		for i, v := range s.data {
 			if v {
-				Data_[i] = 1
+				data[i] = 1
 			}
 		}
 
 		return Ints{
-			IsNullable_: s.IsNullable_,
-			Sorted_:     s.Sorted_,
-			Data_:       Data_,
-			NullMask_:   s.NullMask_,
-			Partition_:  nil,
-			Ctx_:        s.Ctx_,
+			isNullable: s.isNullable,
+			sorted:     s.sorted,
+			data:       data,
+			nullMask:   s.nullMask,
+			partition:  nil,
+			ctx:        s.ctx,
 		}
 
 	case meta.Int64Type:
-		Data_ := make([]int64, len(s.Data_))
-		for i, v := range s.Data_ {
+		data := make([]int64, len(s.data))
+		for i, v := range s.data {
 			if v {
-				Data_[i] = 1
+				data[i] = 1
 			}
 		}
 
 		return Int64s{
-			IsNullable_: s.IsNullable_,
-			Sorted_:     s.Sorted_,
-			Data_:       Data_,
-			NullMask_:   s.NullMask_,
-			Partition_:  nil,
-			Ctx_:        s.Ctx_,
+			isNullable: s.isNullable,
+			sorted:     s.sorted,
+			data:       data,
+			nullMask:   s.nullMask,
+			partition:  nil,
+			ctx:        s.ctx,
 		}
 
 	case meta.Float64Type:
-		Data_ := make([]float64, len(s.Data_))
-		for i, v := range s.Data_ {
+		data := make([]float64, len(s.data))
+		for i, v := range s.data {
 			if v {
-				Data_[i] = 1
+				data[i] = 1
 			}
 		}
 
 		return Float64s{
-			IsNullable_: s.IsNullable_,
-			Sorted_:     s.Sorted_,
-			Data_:       Data_,
-			NullMask_:   s.NullMask_,
-			Partition_:  nil,
-			Ctx_:        s.Ctx_,
+			isNullable: s.isNullable,
+			sorted:     s.sorted,
+			data:       data,
+			nullMask:   s.nullMask,
+			partition:  nil,
+			ctx:        s.ctx,
 		}
 
 	case meta.StringType:
-		Data_ := make([]*string, len(s.Data_))
+		data := make([]*string, len(s.data))
 
-		naTextPtr := s.Ctx_.StringPool.Put(enchanter.NA_TEXT)
-		trueTextPtr := s.Ctx_.StringPool.Put(enchanter.BOOL_TRUE_TEXT)
-		falseTextPtr := s.Ctx_.StringPool.Put(enchanter.BOOL_FALSE_TEXT)
+		naTextPtr := s.ctx.StringPool.Put(enchanter.NA_TEXT)
+		trueTextPtr := s.ctx.StringPool.Put(enchanter.BOOL_TRUE_TEXT)
+		falseTextPtr := s.ctx.StringPool.Put(enchanter.BOOL_FALSE_TEXT)
 
-		if s.IsNullable_ {
-			for i, v := range s.Data_ {
+		if s.isNullable {
+			for i, v := range s.data {
 				if s.IsNull(i) {
-					Data_[i] = naTextPtr
+					data[i] = naTextPtr
 				} else if v {
-					Data_[i] = trueTextPtr
+					data[i] = trueTextPtr
 				} else {
-					Data_[i] = falseTextPtr
+					data[i] = falseTextPtr
 				}
 			}
 		} else {
-			for i, v := range s.Data_ {
+			for i, v := range s.data {
 				if v {
-					Data_[i] = trueTextPtr
+					data[i] = trueTextPtr
 				} else {
-					Data_[i] = falseTextPtr
+					data[i] = falseTextPtr
 				}
 			}
 		}
 
 		return Strings{
-			IsNullable_: s.IsNullable_,
-			Sorted_:     s.Sorted_,
-			Data_:       Data_,
-			NullMask_:   s.NullMask_,
-			Partition_:  nil,
-			Ctx_:        s.Ctx_,
+			isNullable: s.isNullable,
+			sorted:     s.sorted,
+			data:       data,
+			nullMask:   s.nullMask,
+			partition:  nil,
+			ctx:        s.ctx,
 		}
 
 	default:
@@ -209,19 +209,19 @@ func (s Bools) Cast(t meta.BaseType) Series {
 
 ////////////////////////			GROUPING OPERATIONS
 
-// A SeriesBoolPartition is a Partition_ of a Bools.
+// A SeriesBoolPartition is a partition of a Bools.
 // Each key is a hash of a bool value, and each value is a slice of indices
 // of the original series that are set to that value.
 type SeriesBoolPartition struct {
-	Partition_ map[int64][]int
+	partition map[int64][]int
 }
 
 func (gp *SeriesBoolPartition) GetSize() int {
-	return len(gp.Partition_)
+	return len(gp.partition)
 }
 
 func (gp *SeriesBoolPartition) GetMap() map[int64][]int {
-	return gp.Partition_
+	return gp.partition
 }
 
 func (s Bools) Group() Series {
@@ -229,7 +229,7 @@ func (s Bools) Group() Series {
 	// Define the worker callback
 	worker := func(threadNum, start, end int, map_ map[int64][]int) {
 		for i := start; i < end; i++ {
-			if s.Data_[i] {
+			if s.data[i] {
 				map_[1] = append(map_[1], i)
 			} else {
 				map_[0] = append(map_[0], i)
@@ -242,7 +242,7 @@ func (s Bools) Group() Series {
 		for i := start; i < end; i++ {
 			if s.IsNull(i) {
 				(*nulls) = append((*nulls), i)
-			} else if s.Data_[i] {
+			} else if s.data[i] {
 				map_[1] = append(map_[1], i)
 			} else {
 				map_[0] = append(map_[0], i)
@@ -251,20 +251,20 @@ func (s Bools) Group() Series {
 		}
 	}
 
-	Partition_ := SeriesBoolPartition{
-		Partition_: __series_groupby(
+	partition := SeriesBoolPartition{
+		partition: seriesGroupBy(
 			enchanter.THREADS_NUMBER, enchanter.MINIMUM_PARALLEL_SIZE_1, s.Len(), s.HasNull(),
 			worker, workerNulls),
 	}
 
-	s.Partition_ = &Partition_
+	s.partition = &partition
 
 	return s
 }
 
-func (s Bools) GroupBy(Partition_ SeriesPartition) Series {
+func (s Bools) GroupBy(partition SeriesPartition) Series {
 	// collect all keys
-	otherIndeces := Partition_.GetMap()
+	otherIndeces := partition.GetMap()
 	keys := make([]int64, len(otherIndeces))
 	i := 0
 	for k := range otherIndeces {
@@ -277,7 +277,7 @@ func (s Bools) GroupBy(Partition_ SeriesPartition) Series {
 		var newHash int64
 		for _, h := range keys[start:end] { // keys is defined outside the function
 			for _, index := range otherIndeces[h] { // otherIndeces is defined outside the function
-				if s.Data_[index] {
+				if s.data[index] {
 					newHash = (1 + enchanter.HASH_MAGIC_NUMBER) + (h << 13) + (h >> 4)
 				} else {
 					newHash = enchanter.HASH_MAGIC_NUMBER + (h << 13) + (h >> 4)
@@ -294,7 +294,7 @@ func (s Bools) GroupBy(Partition_ SeriesPartition) Series {
 			for _, index := range otherIndeces[h] { // otherIndeces is defined outside the function
 				if s.IsNull(index) {
 					newHash = enchanter.HASH_MAGIC_NUMBER_NULL + (h << 13) + (h >> 4)
-				} else if s.Data_[index] {
+				} else if s.data[index] {
 					newHash = (1 + enchanter.HASH_MAGIC_NUMBER) + (h << 13) + (h >> 4)
 				} else {
 					newHash = enchanter.HASH_MAGIC_NUMBER + (h << 13) + (h >> 4)
@@ -305,12 +305,12 @@ func (s Bools) GroupBy(Partition_ SeriesPartition) Series {
 	}
 
 	newPartition := SeriesBoolPartition{
-		Partition_: __series_groupby(
+		partition: seriesGroupBy(
 			enchanter.THREADS_NUMBER, enchanter.MINIMUM_PARALLEL_SIZE_1, len(keys), s.HasNull(),
 			worker, workerNulls),
 	}
 
-	s.Partition_ = &newPartition
+	s.partition = &newPartition
 
 	return s
 }
@@ -318,60 +318,60 @@ func (s Bools) GroupBy(Partition_ SeriesPartition) Series {
 ////////////////////////			SORTING OPERATIONS
 
 func (s Bools) Less(i, j int) bool {
-	if s.IsNullable_ {
-		if s.NullMask_[i>>3]&(1<<uint(i%8)) > 0 {
+	if s.isNullable {
+		if s.nullMask[i>>3]&(1<<uint(i%8)) > 0 {
 			return false
 		}
-		if s.NullMask_[j>>3]&(1<<uint(j%8)) > 0 {
+		if s.nullMask[j>>3]&(1<<uint(j%8)) > 0 {
 			return true
 		}
 	}
-	return !s.Data_[i] && s.Data_[j]
+	return !s.data[i] && s.data[j]
 }
 
 func (s Bools) Equal(i, j int) bool {
-	if s.IsNullable_ {
-		if (s.NullMask_[i>>3] & (1 << uint(i%8))) > 0 {
-			return (s.NullMask_[j>>3] & (1 << uint(j%8))) > 0
+	if s.isNullable {
+		if (s.nullMask[i>>3] & (1 << uint(i%8))) > 0 {
+			return (s.nullMask[j>>3] & (1 << uint(j%8))) > 0
 		}
-		if (s.NullMask_[j>>3] & (1 << uint(j%8))) > 0 {
+		if (s.nullMask[j>>3] & (1 << uint(j%8))) > 0 {
 			return false
 		}
 	}
 
-	return s.Data_[i] == s.Data_[j]
+	return s.data[i] == s.data[j]
 }
 
 func (s Bools) Swap(i, j int) {
-	if s.IsNullable_ {
+	if s.isNullable {
 		// i is null, j is not null
-		if s.NullMask_[i>>3]&(1<<uint(i%8)) > 0 && s.NullMask_[j>>3]&(1<<uint(j%8)) == 0 {
-			s.NullMask_[i>>3] &= ^(1 << uint(i%8))
-			s.NullMask_[j>>3] |= 1 << uint(j%8)
+		if s.nullMask[i>>3]&(1<<uint(i%8)) > 0 && s.nullMask[j>>3]&(1<<uint(j%8)) == 0 {
+			s.nullMask[i>>3] &= ^(1 << uint(i%8))
+			s.nullMask[j>>3] |= 1 << uint(j%8)
 		} else
 
 		// i is not null, j is null
-		if s.NullMask_[i>>3]&(1<<uint(i%8)) == 0 && s.NullMask_[j>>3]&(1<<uint(j%8)) > 0 {
-			s.NullMask_[i>>3] |= 1 << uint(i%8)
-			s.NullMask_[j>>3] &= ^(1 << uint(j%8))
+		if s.nullMask[i>>3]&(1<<uint(i%8)) == 0 && s.nullMask[j>>3]&(1<<uint(j%8)) > 0 {
+			s.nullMask[i>>3] |= 1 << uint(i%8)
+			s.nullMask[j>>3] &= ^(1 << uint(j%8))
 		}
 	}
 
-	s.Data_[i], s.Data_[j] = s.Data_[j], s.Data_[i]
+	s.data[i], s.data[j] = s.data[j], s.data[i]
 }
 
 func (s Bools) Sort() Series {
-	if s.Sorted_ != enchanter.SORTED_ASC {
+	if s.sorted != enchanter.SORTED_ASC {
 		sort.Sort(s)
-		s.Sorted_ = enchanter.SORTED_ASC
+		s.sorted = enchanter.SORTED_ASC
 	}
 	return s
 }
 
 func (s Bools) SortRev() Series {
-	if s.Sorted_ != enchanter.SORTED_DESC {
+	if s.sorted != enchanter.SORTED_DESC {
 		sort.Sort(sort.Reverse(s))
-		s.Sorted_ = enchanter.SORTED_DESC
+		s.sorted = enchanter.SORTED_DESC
 	}
 	return s
 }

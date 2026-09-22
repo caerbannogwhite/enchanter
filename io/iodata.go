@@ -140,7 +140,7 @@ func (iod *IoData) Types() []meta.BaseType {
 	return types
 }
 
-func (iod *IoData) GetContext() *enchanter.Context {
+func (iod *IoData) Context() *enchanter.Context {
 	return iod.ctx
 }
 
@@ -202,4 +202,8 @@ func FromXlsx(ctx *enchanter.Context) *XlsxReader {
 
 func FromXpt(ctx *enchanter.Context) *XptReader {
 	return NewXptReader(ctx)
+}
+
+func FromSas7bdat(ctx *enchanter.Context) *Sas7bdatReader {
+	return NewSas7bdatReader(ctx)
 }

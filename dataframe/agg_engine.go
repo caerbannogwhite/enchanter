@@ -45,7 +45,7 @@ const aggMinParallel = 1 << 16
 // a null mask from the finalize isNull flags.
 //
 // len(keyCols) == 0 is handled as a single group with no key columns.
-func aggregateSerial(df BaseDataFrame, keyCols []series.Series, aggs []aggregator, removeNAs bool) DataFrame {
+func aggregateSerial(df DataFrame, keyCols []series.Series, aggs []aggregator, removeNAs bool) DataFrame {
 	nRows := df.NRows()
 	views, isHol := prepAggValueColumns(df, aggs)
 
@@ -78,7 +78,7 @@ func aggregateSerial(df BaseDataFrame, keyCols []series.Series, aggs []aggregato
 //     group): a group NA-propagated in any one chunk is NA-propagated in the merged
 //     result. This matches the serial engine's per-row NA propagation exactly,
 //     since an NA-propagated group there stays NA-propagated once any row in it is null.
-func aggregate(df BaseDataFrame, keyCols []series.Series, aggs []aggregator, removeNAs bool) DataFrame {
+func aggregate(df DataFrame, keyCols []series.Series, aggs []aggregator, removeNAs bool) DataFrame {
 	nRows := df.NRows()
 	views, isHol := prepAggValueColumns(df, aggs)
 
@@ -188,7 +188,7 @@ type aggValueKind uint8
 const (
 	// aggValUnsupported marks a value column whose type none of the other
 	// kinds cover (e.g. Strings). Reading such a view mirrors the previous
-	// behavior of __gdl_stats_preprocess returning nil for unsupported
+	// behavior of the former stats-preprocessing helper, which returned nil for unsupported
 	// types, which made accumulateChunk panic with an out-of-range index on
 	// the first row read; see accumulateChunk's default case.
 	aggValUnsupported aggValueKind = iota
@@ -219,19 +219,19 @@ type aggValueView struct {
 
 // newAggValueView builds the typed view for col. Unsupported column types
 // (anything but Float64s/Int64s/Ints/Bools/Durations — the same set
-// __gdl_stats_preprocess supported) yield aggValUnsupported.
+// the former stats-preprocessing helper supported) yield aggValUnsupported.
 func newAggValueView(col series.Series) aggValueView {
 	switch c := col.(type) {
 	case series.Float64s:
-		return aggValueView{kind: aggValF64, nullable: c.IsNullable_, nullMask: c.NullMask_, f64: c.Data_}
+		return aggValueView{kind: aggValF64, nullable: c.IsNullable(), nullMask: c.PackedNullMask(), f64: c.Float64s()}
 	case series.Int64s:
-		return aggValueView{kind: aggValI64, nullable: c.IsNullable_, nullMask: c.NullMask_, i64: c.Data_}
+		return aggValueView{kind: aggValI64, nullable: c.IsNullable(), nullMask: c.PackedNullMask(), i64: c.Int64s()}
 	case series.Ints:
-		return aggValueView{kind: aggValInt, nullable: c.IsNullable_, nullMask: c.NullMask_, ints: c.Data_}
+		return aggValueView{kind: aggValInt, nullable: c.IsNullable(), nullMask: c.PackedNullMask(), ints: c.Ints()}
 	case series.Bools:
-		return aggValueView{kind: aggValBool, nullable: c.IsNullable_, nullMask: c.NullMask_, bools: c.Data_}
+		return aggValueView{kind: aggValBool, nullable: c.IsNullable(), nullMask: c.PackedNullMask(), bools: c.Bools()}
 	case series.Durations:
-		return aggValueView{kind: aggValDur, nullable: c.IsNullable_, nullMask: c.NullMask_, dur: c.Data_}
+		return aggValueView{kind: aggValDur, nullable: c.IsNullable(), nullMask: c.PackedNullMask(), dur: c.Durations()}
 	default:
 		return aggValueView{kind: aggValUnsupported}
 	}
@@ -241,7 +241,7 @@ func newAggValueView(col series.Series) aggValueView {
 // front (Count needs no value column). The returned slice is read-only from
 // this point on and safe to share across accumulateChunk calls running
 // concurrently over disjoint row ranges — no per-op []float64 copy is made.
-func prepAggValueColumns(df BaseDataFrame, aggs []aggregator) (views []aggValueView, isHol []bool) {
+func prepAggValueColumns(df DataFrame, aggs []aggregator) (views []aggValueView, isHol []bool) {
 	views = make([]aggValueView, len(aggs))
 	isHol = make([]bool, len(aggs))
 	for j, agg := range aggs {
@@ -249,7 +249,7 @@ func prepAggValueColumns(df BaseDataFrame, aggs []aggregator) (views []aggValueV
 		if agg.type_ == AGGREGATE_COUNT {
 			continue
 		}
-		views[j] = newAggValueView(df.C(agg.name))
+		views[j] = newAggValueView(df.Col(agg.name))
 	}
 	return views, isHol
 }
@@ -450,7 +450,7 @@ func finalizeReducible(st *reducibleState, gid int, t AggregateType, ddof int) (
 // A value at (j, row) is missing iff views[j].nullable and the column's own
 // null mask says row is null, OR — for a Float64 value column only —
 // math.IsNaN(views[j].f64[row]). The Float64 case preserves the historical
-// behavior of __gdl_stats_preprocess mapping nulls to NaN and the engine
+// behavior of the former stats-preprocessing helper, which mapped nulls to NaN, with the engine
 // detecting missing values with math.IsNaN: a genuine NaN stored in a
 // Float64 column (as opposed to a null cell) is therefore still treated as
 // missing, exactly as before. For every other kind, only the null mask
@@ -516,7 +516,7 @@ func accumulateChunk(keyCols []series.Series, aggs []aggregator, views []aggValu
 					vj = float64(view.dur[row])
 				default:
 					// Unsupported value column type: mirrors the previous
-					// __gdl_stats_preprocess(nil)[row] out-of-range panic.
+					// out-of-range panic the former stats-preprocessing helper produced.
 					vj = view.f64[row]
 				}
 			}
@@ -549,14 +549,14 @@ func accumulateChunk(keyCols []series.Series, aggs []aggregator, views []aggValu
 // other aggregate as Float64s with a null mask from the per-row isNull flags
 // (NA-propagated groups under removeNAs == false surface as non-null NaN,
 // matching aggregateSerial).
-func finalizeAggregate(df BaseDataFrame, keyCols []series.Series, aggs []aggregator, isHol []bool, removeNAs bool, gt *groupTable, states []*reducibleState, cols [][]collector, propagated [][]bool) DataFrame {
-	ctx := df.GetContext()
+func finalizeAggregate(df DataFrame, keyCols []series.Series, aggs []aggregator, isHol []bool, removeNAs bool, gt *groupTable, states []*reducibleState, cols [][]collector, propagated [][]bool) DataFrame {
+	ctx := df.Context()
 	nGroups := gt.numGroups()
 	reps := gt.representativeRows()
 	order := sortGroupOrder(keyCols, reps)
 
 	// Build the result: key columns first, then one aggregate column per agg.
-	result := NewBaseDataFrame(ctx)
+	result := NewDataFrame(ctx)
 	result = appendKeyColumns(result, df, keyCols, reps, order)
 
 	for j, agg := range aggs {
@@ -667,19 +667,19 @@ func compareKeyCells(col series.Series, ra, rb int) int {
 
 	switch c := col.(type) {
 	case series.Bools:
-		return compareBool(c.Data_[ra], c.Data_[rb])
+		return compareBool(c.Bools()[ra], c.Bools()[rb])
 	case series.Ints:
-		return cmpOrdered(c.Data_[ra], c.Data_[rb])
+		return cmpOrdered(c.Ints()[ra], c.Ints()[rb])
 	case series.Int64s:
-		return cmpOrdered(c.Data_[ra], c.Data_[rb])
+		return cmpOrdered(c.Int64s()[ra], c.Int64s()[rb])
 	case series.Float64s:
-		return cmpOrdered(c.Data_[ra], c.Data_[rb])
+		return cmpOrdered(c.Float64s()[ra], c.Float64s()[rb])
 	case series.Strings:
-		return cmpOrdered(*c.Data_[ra], *c.Data_[rb])
+		return cmpOrdered(*c.Interned()[ra], *c.Interned()[rb])
 	case series.Times:
-		return cmpOrdered(c.Data_[ra].UnixNano(), c.Data_[rb].UnixNano())
+		return cmpOrdered(c.Times()[ra].UnixNano(), c.Times()[rb].UnixNano())
 	case series.Durations:
-		return cmpOrdered(int64(c.Data_[ra]), int64(c.Data_[rb]))
+		return cmpOrdered(int64(c.Durations()[ra]), int64(c.Durations()[rb]))
 	default:
 		return cmpOrdered(col.GetAsString(ra), col.GetAsString(rb))
 	}
@@ -713,8 +713,8 @@ func compareBool(a, b bool) int {
 // from the group's representative row, with the groups laid out in the sorted
 // order. The type switch covers the same key types as the former groupHelper;
 // the representative row's null flag is carried into the emitted column.
-func appendKeyColumns(result DataFrame, df BaseDataFrame, keyCols []series.Series, reps, order []int) DataFrame {
-	ctx := df.GetContext()
+func appendKeyColumns(result DataFrame, df DataFrame, keyCols []series.Series, reps, order []int) DataFrame {
+	ctx := df.Context()
 	n := len(order)
 
 	for k, col := range keyCols {
@@ -732,49 +732,49 @@ func appendKeyColumns(result DataFrame, df BaseDataFrame, keyCols []series.Serie
 		case series.Bools:
 			vals := make([]bool, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Bools()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesBool(vals, keyNulls, false, ctx))
 
 		case series.Ints:
 			vals := make([]int, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Ints()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesInt(vals, keyNulls, false, ctx))
 
 		case series.Int64s:
 			vals := make([]int64, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Int64s()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesInt64(vals, keyNulls, false, ctx))
 
 		case series.Float64s:
 			vals := make([]float64, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Float64s()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesFloat64(vals, keyNulls, false, ctx))
 
 		case series.Strings:
 			vals := make([]*string, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Interned()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesStringFromPtrs(vals, keyNulls, false, ctx))
 
 		case series.Times:
 			vals := make([]time.Time, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Times()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesTime(vals, keyNulls, false, ctx))
 
 		case series.Durations:
 			vals := make([]time.Duration, n)
 			for i, gid := range order {
-				vals[i] = c.Data_[reps[gid]]
+				vals[i] = c.Durations()[reps[gid]]
 			}
 			result = result.AddSeries(name, series.NewSeriesDuration(vals, keyNulls, false, ctx))
 
@@ -791,7 +791,7 @@ func appendKeyColumns(result DataFrame, df BaseDataFrame, keyCols []series.Serie
 // called with keyCols drawn from df.series (see buildGroupKeyCols), so the
 // column is matched back to its name by the identity of its backing data array.
 // The k-based fallback is defensive: it is unreachable when keyCols come from df.
-func keyColumnName(df BaseDataFrame, col series.Series, k int) string {
+func keyColumnName(df DataFrame, col series.Series, k int) string {
 	if p := seriesBackingPtr(col); p != nil {
 		for i, s := range df.series {
 			if seriesBackingPtr(s) == p {
@@ -809,40 +809,40 @@ func keyColumnName(df BaseDataFrame, col series.Series, k int) string {
 func seriesBackingPtr(s series.Series) any {
 	switch c := s.(type) {
 	case series.Bools:
-		if len(c.Data_) == 0 {
+		if len(c.Bools()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Bools()[0]
 	case series.Ints:
-		if len(c.Data_) == 0 {
+		if len(c.Ints()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Ints()[0]
 	case series.Int64s:
-		if len(c.Data_) == 0 {
+		if len(c.Int64s()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Int64s()[0]
 	case series.Float64s:
-		if len(c.Data_) == 0 {
+		if len(c.Float64s()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Float64s()[0]
 	case series.Strings:
-		if len(c.Data_) == 0 {
+		if len(c.Interned()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Interned()[0]
 	case series.Times:
-		if len(c.Data_) == 0 {
+		if len(c.Times()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Times()[0]
 	case series.Durations:
-		if len(c.Data_) == 0 {
+		if len(c.Durations()) == 0 {
 			return nil
 		}
-		return &c.Data_[0]
+		return &c.Durations()[0]
 	default:
 		return nil
 	}

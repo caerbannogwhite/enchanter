@@ -1,3 +1,38 @@
+v0.5.0: the-others
+ - [Changed] The one-implementation DataFrame interface is collapsed into the concrete type: NewDataFrame, NewDataFrameFromArrowRecord
+ - [Changed] Error accessors are the standard Err() error on Series and DataFrame (replacing IsError/GetError/IsErrored)
+ - [Changed] Accessor renames: Context, Partition, NullMask, ColIndex (the Get prefix is dropped); IsSorted is SortOrder; the column accessors are Col, ColAt, NameAt, ColIndex (replacing C and At); the join constants are JoinInner/JoinLeft/JoinRight/JoinOuter on JoinType
+ - [Changed] The variadic Take is replaced by Slice(start, end) and TakeIndices(indices) on Series and DataFrame
+ - [Changed] Reading starts from package-level constructors (dataframe.ReadCsv(ctx), ReadParquet, ...); writers are WriteCsv, WriteParquet, ...; the builder types are exported
+ - [Changed] Select matches exact names only; pattern selection moved to SelectMatching (unanchored regular expressions)
+ - [Changed] The internal series fields (Data_, NullMask_, ...) are unexported. Data() and the typed accessors (Float64s(), Bools(), ...) are documented views of the backing storage; Strings gains Interned(), every type gains PackedNullMask(); FilterIntSlice and the sort internals (Less, Equal, Swap) leave the Series interface; TakeIndices is the validated path
+ - [Changed] NA propagation holds for every binary operator and both operand orders: String + NA and Bool OR NA yield NA (no more NA-text concatenation or value copying), and x - NA is NA instead of an error. Coalesce is the documented exception
+ - [Changed] Join output row order is part of the contract: rows follow the left frame's row order, a right join follows the right frame, and an outer join puts the unmatched right rows last. The order was nondeterministic before (#24)
+ - [Feature] Coalesce on every series type: fill null elements from another series or a scalar; a result element is null only when both operands are null there
+ - [Feature] Not is callable through the Series interface on every type
+ - [Feature] SAS7BDAT reading via kshedden/datareader (read-only; use XPT to hand data to SAS)
+ - [Removed] The SeriesNumeric interface: nothing implemented or used it
+ - [BugFix] SelectAt kept only out-of-bounds indices (inverted bounds check) and always failed
+ - [Improved] The generated operator code is flattened from ~44k to ~13k lines with byte-identical behavior; the generator output is gofmt-canonical and stable under a single go generate
+ - [Improved] The legacy double-underscore helper names are retired
+ - [Improved] grpc, thrift and x/net raised past known vulnerabilities
+ - [Improved] New tests: the join contract, Slice/TakeIndices/SelectAt, a CSV write/read round trip, the data-view contracts, NA propagation across operators
+
+v0.4.2: fifth-and-sixth-fish
+ - [BugFix] CSV writer: overwriting an existing file truncates it first, in every writer path, so a shorter write no longer leaves the old tail behind (#22, thanks @sjh9714)
+ - [BugFix] CSV writer: write errors are reported instead of silently ignored
+
+v0.4.1: not-much
+ - [BugFix] meta.SYMBOL_BINARY_AND was "not" instead of "and"
+ - [Improved] Select documents that its patterns are unanchored regular expressions
+
+v0.4.0: what-s-new
+ - [Feature] Single-pass, parallel hash aggregation behind GroupBy().Agg(): the Q1 sum-by-id benchmark (1e7 rows) goes from ~142ms to ~31ms
+ - [Feature] Any/All bool aggregators (Bools result, skip-null default)
+ - [Changed] Agg results are sorted by group key (ascending, nulls last); nulls are skipped by default and RemoveNAs(false) makes an NA in a group turn that group's result NA
+ - [Changed] GroupBy is lazy: partitions are built on demand
+ - [Changed] Terminology: "NaN-poisoning" is now "NA propagation" in the docs and internals
+
 v0.3.0: fourth-fish
  - [Changed] Arrow interop uses arrow.RecordBatch (DataFrame.ToArrowRecord and NewBaseDataFrameFromArrowRecord); arrow.Record was deprecated upstream
  - [BugFix] Aggregations: grouped std used the average group size as divisor; ungrouped mean/std under removeNAs divided by the total length instead of the non-null count

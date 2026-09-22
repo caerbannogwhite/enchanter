@@ -10,24 +10,24 @@ import (
 
 func TestAggRunSortedAndSkipNullByDefault(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"b", "a", "b"}, nil, false, ctx)).
 		AddSeries("v", series.NewSeriesFloat64([]float64{1, 5, 0}, []bool{false, false, true}, false, ctx))
 
 	out := df.GroupBy("g").Agg(Sum("v"), Std("v", WithDDoF(1))).Run()
-	if out.IsErrored() {
-		t.Fatalf("agg errored: %v", out.GetError())
+	if out.Err() != nil {
+		t.Fatalf("agg errored: %v", out.Err())
 	}
 	// sorted: a, b
-	if out.C("g").(series.Strings).GetAsString(0) != "a" {
+	if out.Col("g").(series.Strings).GetAsString(0) != "a" {
 		t.Fatalf("not sorted by key")
 	}
 	// b's null value skipped by default: sum(b) = 1, sample std of single value -> null
-	sum := out.C("sum(v)").(series.Float64s)
-	if sum.Data_[1] != 1 {
-		t.Fatalf("skip-null sum(b) = %v, want 1", sum.Data_[1])
+	sum := out.Col("sum(v)").(series.Float64s)
+	if sum.Float64s()[1] != 1 {
+		t.Fatalf("skip-null sum(b) = %v, want 1", sum.Float64s()[1])
 	}
-	std := out.C("std(v)").(series.Float64s)
+	std := out.Col("std(v)").(series.Float64s)
 	if !std.IsNull(1) {
 		t.Fatalf("sample std of single non-null should be null")
 	}
@@ -39,15 +39,15 @@ func TestAggRunSortedAndSkipNullByDefault(t *testing.T) {
 // catch it up front and return an errored frame instead.
 func TestAggRunUnsupportedValueTypeErrors(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"a", "a", "b"}, nil, false, ctx)).
 		AddSeries("v", series.NewSeriesString([]string{"x", "y", "z"}, nil, false, ctx))
 
 	out := df.GroupBy("g").Agg(Sum("v")).Run()
-	if !out.IsErrored() {
+	if out.Err() == nil {
 		t.Fatalf("expected error for Sum over a Strings column, got none")
 	}
-	if out.GetError() == nil {
+	if out.Err() == nil {
 		t.Fatalf("expected non-nil GetError() for Sum over a Strings column")
 	}
 }
@@ -63,13 +63,13 @@ func TestAggRunUnsupportedValueTypeErrors(t *testing.T) {
 //	C: [10]       mean=10  variance=0/1 = 0 (single point, ddof=0)  std=0
 func TestAggRunStdHandComputed(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"A", "A", "B", "B", "B", "C"}, nil, false, ctx)).
 		AddSeries("v", series.NewSeriesFloat64([]float64{2, 4, 1, 2, 3, 10}, nil, false, ctx))
 
 	out := df.GroupBy("g").Agg(Std("v")).Run()
-	if out.IsErrored() {
-		t.Fatalf("agg errored: %v", out.GetError())
+	if out.Err() != nil {
+		t.Fatalf("agg errored: %v", out.Err())
 	}
 
 	const eps = 1e-9
@@ -78,8 +78,8 @@ func TestAggRunStdHandComputed(t *testing.T) {
 		"B": math.Sqrt(2.0 / 3.0),
 		"C": 0.0,
 	}
-	g := out.C("g").(series.Strings)
-	std := out.C("std(v)").(series.Float64s)
+	g := out.Col("g").(series.Strings)
+	std := out.Col("std(v)").(series.Float64s)
 	if out.NRows() != 3 {
 		t.Fatalf("NRows = %d, want 3", out.NRows())
 	}
@@ -92,7 +92,7 @@ func TestAggRunStdHandComputed(t *testing.T) {
 		if std.IsNull(i) {
 			t.Fatalf("group %q: std(v) unexpectedly null", key)
 		}
-		if got := std.Data_[i]; math.Abs(got-w) > eps {
+		if got := std.Float64s()[i]; math.Abs(got-w) > eps {
 			t.Fatalf("group %q: std(v) = %v, want %v", key, got, w)
 		}
 	}
@@ -100,11 +100,11 @@ func TestAggRunStdHandComputed(t *testing.T) {
 
 func TestAggRunOptionValidation(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("g", series.NewSeriesString([]string{"a"}, nil, false, ctx)).
 		AddSeries("v", series.NewSeriesFloat64([]float64{1}, nil, false, ctx))
 	out := df.GroupBy("g").Agg(Sum("v", WithDDoF(1))).Run() // ddof on Sum → error
-	if !out.IsErrored() {
+	if out.Err() == nil {
 		t.Fatalf("expected error for WithDDoF on Sum")
 	}
 	_ = math.Inf

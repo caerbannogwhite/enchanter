@@ -24,25 +24,25 @@ id,name,department,salary,active
 
 func TestJoin_EmptyDataFrames(t *testing.T) {
 	// Test joining with empty dataframes
-	dfEmpty := NewBaseDataFrame(testCtx)
-	dfNormal := NewBaseDataFrame(testCtx).
+	dfEmpty := NewDataFrame(testCtx)
+	dfNormal := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2}, nil, false).
 		AddSeriesFromStrings("name", []string{"Alice", "Bob"}, nil, false)
 
 	// Empty left dataframe
-	result := dfEmpty.Join(INNER_JOIN, dfNormal, "id")
-	if result.GetError() == nil {
+	result := dfEmpty.Join(JoinInner, dfNormal, "id")
+	if result.Err() == nil {
 		t.Error("Expected error when joining empty dataframe without common columns")
 	}
 
 	// Test with properly structured empty dataframe
-	dfEmptyStructured := NewBaseDataFrame(testCtx).
+	dfEmptyStructured := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{}, nil, false).
 		AddSeriesFromStrings("name", []string{}, nil, false)
 
-	result = dfEmptyStructured.Join(INNER_JOIN, dfNormal, "id")
-	if result.GetError() != nil {
-		t.Error("Should handle empty structured dataframe:", result.GetError())
+	result = dfEmptyStructured.Join(JoinInner, dfNormal, "id")
+	if result.Err() != nil {
+		t.Error("Should handle empty structured dataframe:", result.Err())
 	}
 	if result.NRows() != 0 {
 		t.Errorf("Expected 0 rows from empty join, got %d", result.NRows())
@@ -50,20 +50,20 @@ func TestJoin_EmptyDataFrames(t *testing.T) {
 }
 
 func TestJoin_MultipleColumns(t *testing.T) {
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("dept_id", []int64{1, 1, 2, 2, 3}, nil, false).
 		AddSeriesFromStrings("category", []string{"A", "B", "A", "B", "A"}, nil, false).
 		AddSeriesFromStrings("name", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("dept_id", []int64{1, 1, 2, 4}, nil, false).
 		AddSeriesFromStrings("category", []string{"A", "B", "A", "A"}, nil, false).
 		AddSeriesFromFloat64s("budget", []float64{10000, 15000, 12000, 8000}, nil, false)
 
 	// Multi-column join
-	result := df1.Join(INNER_JOIN, df2, "dept_id", "category")
-	if result.GetError() != nil {
-		t.Error("Multi-column join failed:", result.GetError())
+	result := df1.Join(JoinInner, df2, "dept_id", "category")
+	if result.Err() != nil {
+		t.Error("Multi-column join failed:", result.Err())
 	}
 
 	expectedRows := 3 // (1,A), (1,B), (2,A)
@@ -72,8 +72,8 @@ func TestJoin_MultipleColumns(t *testing.T) {
 	}
 
 	// Verify the results
-	names := result.C("name").Data().([]string)
-	budgets := result.C("budget").Data().([]float64)
+	names := result.Col("name").Data().([]string)
+	budgets := result.Col("budget").Data().([]float64)
 	expectedNames := []string{"Alice", "Bob", "Charlie"}
 	expectedBudgets := []float64{10000, 15000, 12000}
 
@@ -88,19 +88,19 @@ func TestJoin_MultipleColumns(t *testing.T) {
 func TestJoin_WithNullValues(t *testing.T) {
 	// Create dataframes with null values
 	nullMask1 := []bool{false, false, true, false} // Charlie has null department
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3, 4}, nil, false).
 		AddSeriesFromStrings("department", []string{"HR", "IT", "", "Finance"}, nullMask1, false)
 
 	nullMask2 := []bool{false, false, true, false} // id=3 has null salary
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3, 5}, nil, false).
 		AddSeriesFromFloat64s("salary", []float64{50000, 60000, 0, 45000}, nullMask2, false)
 
 	// Inner join should handle nulls properly
-	result := df1.Join(INNER_JOIN, df2, "id")
-	if result.GetError() != nil {
-		t.Error("Join with nulls failed:", result.GetError())
+	result := df1.Join(JoinInner, df2, "id")
+	if result.Err() != nil {
+		t.Error("Join with nulls failed:", result.Err())
 	}
 
 	if result.NRows() != 3 { // ids 1, 2, 3 should match
@@ -109,43 +109,43 @@ func TestJoin_WithNullValues(t *testing.T) {
 }
 
 func TestJoin_TypeMismatch(t *testing.T) {
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromStrings("id", []string{"1", "2", "3"}, nil, false) // Different type
 
-	result := df1.Join(INNER_JOIN, df2, "id")
-	if result.GetError() == nil {
+	result := df1.Join(JoinInner, df2, "id")
+	if result.Err() == nil {
 		t.Error("Expected error when joining columns with different types")
 	}
 }
 
 func TestJoin_AllJoinTypes(t *testing.T) {
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3, 4}, nil, false).
 		AddSeriesFromStrings("name", []string{"Alice", "Bob", "Charlie", "David"}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{2, 3, 4, 5}, nil, false).
 		AddSeriesFromFloat64s("salary", []float64{60000, 50000, 55000, 65000}, nil, false)
 
 	// Test all join types
 	tests := []struct {
-		joinType     DataFrameJoinType
+		joinType     JoinType
 		expectedRows int
 		name         string
 	}{
-		{INNER_JOIN, 3, "Inner Join"}, // ids 2, 3, 4
-		{LEFT_JOIN, 4, "Left Join"},   // all from df1
-		{RIGHT_JOIN, 4, "Right Join"}, // all from df2
-		{OUTER_JOIN, 5, "Outer Join"}, // ids 1, 2, 3, 4, 5
+		{JoinInner, 3, "Inner Join"}, // ids 2, 3, 4
+		{JoinLeft, 4, "Left Join"},   // all from df1
+		{JoinRight, 4, "Right Join"}, // all from df2
+		{JoinOuter, 5, "Outer Join"}, // ids 1, 2, 3, 4, 5
 	}
 
 	for _, test := range tests {
 		result := df1.Join(test.joinType, df2, "id")
-		if result.GetError() != nil {
-			t.Errorf("%s failed: %v", test.name, result.GetError())
+		if result.Err() != nil {
+			t.Errorf("%s failed: %v", test.name, result.Err())
 			continue
 		}
 		if result.NRows() != test.expectedRows {
@@ -155,17 +155,17 @@ func TestJoin_AllJoinTypes(t *testing.T) {
 }
 
 func TestJoin_ColumnNameCollisions(t *testing.T) {
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3}, nil, false).
 		AddSeriesFromStrings("value", []string{"A", "B", "C"}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3}, nil, false).
 		AddSeriesFromStrings("value", []string{"X", "Y", "Z"}, nil, false) // Same column name
 
-	result := df1.Join(INNER_JOIN, df2, "id")
-	if result.GetError() != nil {
-		t.Error("Join with column name collision failed:", result.GetError())
+	result := df1.Join(JoinInner, df2, "id")
+	if result.Err() != nil {
+		t.Error("Join with column name collision failed:", result.Err())
 	}
 
 	// Should have value_x and value_y columns
@@ -190,15 +190,15 @@ Ursula,27,65.0,f,Business,4
 Charlie,33,60.0,t,Business,2
 `
 
-	df := NewBaseDataFrame(testCtx).FromCsv().
+	df := ReadCsv(testCtx).
 		SetReader(strings.NewReader(testData)).
 		SetDelimiter(',').
 		SetHeader(true).
 		SetGuessDataTypeLen(3).
 		Read()
 
-	if df.GetError() != nil {
-		t.Error("Failed to create test dataframe:", df.GetError())
+	if df.Err() != nil {
+		t.Error("Failed to create test dataframe:", df.Err())
 	}
 
 	// Test all aggregation functions including Min and Max
@@ -206,8 +206,8 @@ Charlie,33,60.0,t,Business,2
 		Agg(Count(), Sum("age"), Mean("age"), Min("age"), Max("age"), Std("age")).
 		Run()
 
-	if result.GetError() != nil {
-		t.Error("GroupBy with all aggregations failed:", result.GetError())
+	if result.Err() != nil {
+		t.Error("GroupBy with all aggregations failed:", result.Err())
 	}
 
 	// Verify we have the expected columns
@@ -219,11 +219,11 @@ Charlie,33,60.0,t,Business,2
 
 	// Test specific values for IT department
 	for i := 0; i < result.NRows(); i++ {
-		dept := result.C("department").Get(i).(string)
+		dept := result.Col("department").Get(i).(string)
 		if dept == "IT" {
-			count := result.C("n").Get(i).(int64)
-			minAge := result.C("min(age)").Get(i).(float64)
-			maxAge := result.C("max(age)").Get(i).(float64)
+			count := result.Col("n").Get(i).(int64)
+			minAge := result.Col("min(age)").Get(i).(float64)
+			maxAge := result.Col("max(age)").Get(i).(float64)
 
 			if count != 4 {
 				t.Errorf("IT department: expected count 4, got %d", count)
@@ -243,21 +243,21 @@ func TestGroupBy_WithNullValues(t *testing.T) {
 	nullMaskSalary := []bool{false, false, true, false, false} // Charlie has null salary
 	nullMaskDept := []bool{false, false, false, true, false}   // David has null department
 
-	df := NewBaseDataFrame(testCtx).
+	df := NewDataFrame(testCtx).
 		AddSeriesFromStrings("name", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, nil, false).
 		AddSeriesFromStrings("department", []string{"HR", "IT", "IT", "", "HR"}, nullMaskDept, false).
 		AddSeriesFromFloat64s("salary", []float64{50000, 60000, 0, 55000, 52000}, nullMaskSalary, false)
 
 	// Group by department with null handling
 	result := df.GroupBy("department").Agg(Count(), Sum("salary"), Mean("salary")).Run()
-	if result.GetError() != nil {
-		t.Error("GroupBy with nulls failed:", result.GetError())
+	if result.Err() != nil {
+		t.Error("GroupBy with nulls failed:", result.Err())
 	}
 
 	// Test with RemoveNAs
 	resultNoNAs := df.GroupBy("department").Agg(Count(), Sum("salary"), Mean("salary")).RemoveNAs(true).Run()
-	if resultNoNAs.GetError() != nil {
-		t.Error("GroupBy with RemoveNAs failed:", resultNoNAs.GetError())
+	if resultNoNAs.Err() != nil {
+		t.Error("GroupBy with RemoveNAs failed:", resultNoNAs.Err())
 	}
 
 	// Verify the results handle nulls appropriately
@@ -267,15 +267,15 @@ func TestGroupBy_WithNullValues(t *testing.T) {
 }
 
 func TestGroupBy_MultipleColumns(t *testing.T) {
-	df := NewBaseDataFrame(testCtx).
+	df := NewDataFrame(testCtx).
 		AddSeriesFromStrings("department", []string{"IT", "IT", "HR", "HR", "IT", "HR"}, nil, false).
 		AddSeriesFromBools("senior", []bool{true, false, true, false, true, true}, nil, false).
 		AddSeriesFromFloat64s("salary", []float64{70000, 50000, 65000, 45000, 75000, 68000}, nil, false)
 
 	// Multi-column grouping
 	result := df.GroupBy("department", "senior").Agg(Count(), Mean("salary")).Run()
-	if result.GetError() != nil {
-		t.Error("Multi-column GroupBy failed:", result.GetError())
+	if result.Err() != nil {
+		t.Error("Multi-column GroupBy failed:", result.Err())
 	}
 
 	expectedRows := 4 // (IT,true), (IT,false), (HR,true), (HR,false)
@@ -293,13 +293,13 @@ func TestGroupBy_MultipleColumns(t *testing.T) {
 
 func TestGroupBy_EmptyGroups(t *testing.T) {
 	// Test with a dataframe that could result in empty groups
-	df := NewBaseDataFrame(testCtx).
+	df := NewDataFrame(testCtx).
 		AddSeriesFromStrings("category", []string{"A", "A", "B", "B"}, nil, false).
 		AddSeriesFromInt64s("value", []int64{1, 2, 3, 4}, nil, false)
 
 	result := df.GroupBy("category").Agg(Count(), Sum("value")).Run()
-	if result.GetError() != nil {
-		t.Error("GroupBy with potential empty groups failed:", result.GetError())
+	if result.Err() != nil {
+		t.Error("GroupBy with potential empty groups failed:", result.Err())
 	}
 
 	if result.NRows() != 2 { // Should have A and B groups
@@ -315,45 +315,45 @@ func TestGroupBy_AllDataTypes(t *testing.T) {
 		time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC),
 	}
 
-	df := NewBaseDataFrame(testCtx).
+	df := NewDataFrame(testCtx).
 		AddSeriesFromBools("active", []bool{true, true, false}, nil, false).
 		AddSeriesFromTimes("date", timeData, nil, false).
 		AddSeriesFromInt64s("count", []int64{5, 3, 8}, nil, false)
 
 	// Group by boolean
 	result1 := df.GroupBy("active").Agg(Count(), Sum("count")).Run()
-	if result1.GetError() != nil {
-		t.Error("GroupBy boolean failed:", result1.GetError())
+	if result1.Err() != nil {
+		t.Error("GroupBy boolean failed:", result1.Err())
 	}
 
 	// Group by time
 	result2 := df.GroupBy("date").Agg(Count(), Sum("count")).Run()
-	if result2.GetError() != nil {
-		t.Error("GroupBy time failed:", result2.GetError())
+	if result2.Err() != nil {
+		t.Error("GroupBy time failed:", result2.Err())
 	}
 }
 
 func TestJoinThenGroupBy(t *testing.T) {
 	// Test combination: join then group by
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("emp_id", []int64{1, 2, 3, 4}, nil, false).
 		AddSeriesFromStrings("name", []string{"Alice", "Bob", "Charlie", "David"}, nil, false).
 		AddSeriesFromStrings("department", []string{"HR", "IT", "IT", "HR"}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("emp_id", []int64{1, 2, 3, 4, 5}, nil, false).
 		AddSeriesFromFloat64s("salary", []float64{50000, 60000, 55000, 52000, 65000}, nil, false)
 
 	// Join first
-	joined := df1.Join(INNER_JOIN, df2, "emp_id")
-	if joined.GetError() != nil {
-		t.Error("Join failed:", joined.GetError())
+	joined := df1.Join(JoinInner, df2, "emp_id")
+	if joined.Err() != nil {
+		t.Error("Join failed:", joined.Err())
 	}
 
 	// Then group by
 	result := joined.GroupBy("department").Agg(Count(), Mean("salary")).Run()
-	if result.GetError() != nil {
-		t.Error("GroupBy after join failed:", result.GetError())
+	if result.Err() != nil {
+		t.Error("GroupBy after join failed:", result.Err())
 	}
 
 	if result.NRows() != 2 { // HR and IT departments
@@ -363,49 +363,49 @@ func TestJoinThenGroupBy(t *testing.T) {
 
 func TestGroupByThenJoin(t *testing.T) {
 	// Test combination: group by then join (should fail as grouped dataframes can't be joined)
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromStrings("department", []string{"HR", "IT", "IT", "HR"}, nil, false).
 		AddSeriesFromFloat64s("salary", []float64{50000, 60000, 55000, 52000}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromStrings("department", []string{"HR", "IT", "Finance"}, nil, false).
 		AddSeriesFromFloat64s("budget", []float64{100000, 150000, 80000}, nil, false)
 
 	// Group first
 	grouped := df1.GroupBy("department").Agg(Mean("salary")).Run()
-	if grouped.GetError() != nil {
-		t.Error("GroupBy failed:", grouped.GetError())
+	if grouped.Err() != nil {
+		t.Error("GroupBy failed:", grouped.Err())
 	}
 
 	// Try to join grouped dataframe - this should work now since grouped result is ungrouped
-	result := grouped.Join(INNER_JOIN, df2, "department")
-	if result.GetError() != nil {
-		t.Error("Join after GroupBy failed:", result.GetError())
+	result := grouped.Join(JoinInner, df2, "department")
+	if result.Err() != nil {
+		t.Error("Join after GroupBy failed:", result.Err())
 	}
 }
 
 func TestErrorConditions(t *testing.T) {
-	df1 := NewBaseDataFrame(testCtx).
+	df1 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3}, nil, false)
 
-	df2 := NewBaseDataFrame(testCtx).
+	df2 := NewDataFrame(testCtx).
 		AddSeriesFromInt64s("id", []int64{1, 2, 3}, nil, false)
 
 	// Test joining non-existent columns
-	result := df1.Join(INNER_JOIN, df2, "nonexistent")
-	if result.GetError() == nil {
+	result := df1.Join(JoinInner, df2, "nonexistent")
+	if result.Err() == nil {
 		t.Error("Expected error when joining on non-existent column")
 	}
 
 	// Test grouping by non-existent column
 	result2 := df1.GroupBy("nonexistent").Agg(Count()).Run()
-	if result2.GetError() == nil {
+	if result2.Err() == nil {
 		t.Error("Expected error when grouping by non-existent column")
 	}
 
 	// Test aggregating non-existent column
 	result3 := df1.GroupBy("id").Agg(Sum("nonexistent")).Run()
-	if result3.GetError() == nil {
+	if result3.Err() == nil {
 		t.Error("Expected error when aggregating non-existent column")
 	}
 }

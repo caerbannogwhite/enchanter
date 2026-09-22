@@ -69,8 +69,8 @@ func (r *ArrowIPCReader) Read() *IoData {
 			allSeries = make([]series.Series, rec.NumCols())
 			for j := 0; j < int(rec.NumCols()); j++ {
 				allSeries[j] = series.ArrowArrayToSeries(rec.Column(j), r.ctx)
-				if allSeries[j].IsError() {
-					iod.Error = fmt.Errorf("ArrowIPCReader.Read: column %q: %s", schema.Field(j).Name, allSeries[j].GetError())
+				if allSeries[j].Err() != nil {
+					iod.Error = fmt.Errorf("ArrowIPCReader.Read: column %q: %w", schema.Field(j).Name, allSeries[j].Err())
 					return iod
 				}
 			}
@@ -78,8 +78,8 @@ func (r *ArrowIPCReader) Read() *IoData {
 			// Append subsequent records
 			for j := 0; j < int(rec.NumCols()); j++ {
 				chunk := series.ArrowArrayToSeries(rec.Column(j), r.ctx)
-				if chunk.IsError() {
-					iod.Error = fmt.Errorf("ArrowIPCReader.Read: column %q record %d: %s", schema.Field(j).Name, i, chunk.GetError())
+				if chunk.Err() != nil {
+					iod.Error = fmt.Errorf("ArrowIPCReader.Read: column %q record %d: %w", schema.Field(j).Name, i, chunk.Err())
 					return iod
 				}
 				// Append the series (not its raw data) so the chunk's null

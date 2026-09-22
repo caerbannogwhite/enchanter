@@ -16,18 +16,18 @@ func TestArrowRecordRoundTripNoLeaks(t *testing.T) {
 	ctx.Allocator = mem
 	defer mem.AssertSize(t, 0)
 
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeries("a", series.NewSeriesFloat64([]float64{1, 2, 3}, []bool{false, true, false}, false, ctx)).
 		AddSeries("b", series.NewSeriesString([]string{"x", "y", "z"}, nil, false, ctx))
-	if df.IsErrored() {
-		t.Fatal(df.GetError())
+	if df.Err() != nil {
+		t.Fatal(df.Err())
 	}
 
 	rec := df.ToArrowRecord()
-	df2 := NewBaseDataFrameFromArrowRecord(rec, ctx)
+	df2 := NewDataFrameFromArrowRecord(rec, ctx)
 	rec.Release()
-	if df2.IsErrored() {
-		t.Fatal(df2.GetError())
+	if df2.Err() != nil {
+		t.Fatal(df2.Err())
 	}
 	if df2.NRows() != 3 || df2.NCols() != 2 {
 		t.Fatalf("round trip shape: got %dx%d, want 3x2", df2.NRows(), df2.NCols())

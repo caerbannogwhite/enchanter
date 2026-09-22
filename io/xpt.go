@@ -256,7 +256,7 @@ func guessXptVersion(reader io.Reader, ctx *enchanter.Context) (XptVersionType, 
 // Technical documentation:
 // https://support.sas.com/content/dam/SAS/support/en/technical-papers/record-layout-of-a-sas-version-5-or-6-data-set-in-sas-transport-xport-format.pdf
 
-type __NAMESTRv56 struct {
+type namestrV56 struct {
 	ntype  int16    // VARIABLE TYPE: 1=NUMERIC, 2=CHAR 	(bytes: 000 to 002)
 	nhfun  int16    // HASH OF NNAME (always 0)				(bytes: 002 to 004)
 	nlng   int16    // LENGTH OF VARIABLE IN OBSERVATION	(bytes: 004 to 006)
@@ -277,8 +277,8 @@ type __NAMESTRv56 struct {
 	isDate bool
 }
 
-func NewNamestrV56() *__NAMESTRv56 {
-	return &__NAMESTRv56{
+func NewNamestrV56() *namestrV56 {
+	return &namestrV56{
 		ntype: 0,
 		nhfun: 0,
 		nlng:  0,
@@ -304,7 +304,7 @@ func NewNamestrV56() *__NAMESTRv56 {
 	}
 }
 
-func (nms *__NAMESTRv56) FromBinary(buffer []byte, byteOrder binary.ByteOrder) {
+func (nms *namestrV56) FromBinary(buffer []byte, byteOrder binary.ByteOrder) {
 	nms.ntype = int16(byteOrder.Uint16(buffer[0:2]))
 	nms.nhfun = int16(byteOrder.Uint16(buffer[2:4]))
 	nms.nlng = int16(byteOrder.Uint16(buffer[4:6]))
@@ -327,7 +327,7 @@ func (nms *__NAMESTRv56) FromBinary(buffer []byte, byteOrder binary.ByteOrder) {
 	}
 }
 
-func (nms *__NAMESTRv56) ToBinary(byteOrder binary.ByteOrder) []byte {
+func (nms *namestrV56) ToBinary(byteOrder binary.ByteOrder) []byte {
 	buffer := make([]byte, 140)
 
 	byteOrder.PutUint16(buffer[0:2], uint16(nms.ntype))
@@ -350,7 +350,7 @@ func (nms *__NAMESTRv56) ToBinary(byteOrder binary.ByteOrder) []byte {
 	return buffer
 }
 
-func (nms *__NAMESTRv56) ToString() string {
+func (nms *namestrV56) ToString() string {
 	return fmt.Sprintf(
 		"NAMESTRv56[\n"+
 			"\tntype:  %d\n"+
@@ -510,7 +510,7 @@ func (r *XptReader) readXptV56() *IoData {
 	// 7	Namestr records
 
 	seriesMeta := make([]SeriesMeta, variablesNumber)
-	namestrs := make([]__NAMESTRv56, variablesNumber)
+	namestrs := make([]namestrV56, variablesNumber)
 
 	// read namestr
 	for i := 0; i < variablesNumber; i++ {
@@ -661,7 +661,7 @@ func (w *XptWriter) writeXptV56() error {
 // Technical documentation:
 // https://support.sas.com/content/dam/SAS/support/en/technical-papers/record-layout-of-a-sas-version-8-or-9-data-set-in-sas-transport-format.pdf
 
-type __NAMESTRv89 struct {
+type namestrV89 struct {
 	ntype    int16    // VARIABLE TYPE: 1=NUMERIC, 2=CHAR	(bytes: 000 to 002)
 	nhfun    int16    // HASH OF NNAME (always 0)			(bytes: 002 to 004)
 	nlng     int16    // LENGTH OF VARIABLE IN OBSERVATION	(bytes: 004 to 006)
@@ -684,8 +684,8 @@ type __NAMESTRv89 struct {
 	isDate bool
 }
 
-func NewNamestrV89() *__NAMESTRv89 {
-	return &__NAMESTRv89{
+func NewNamestrV89() *namestrV89 {
+	return &namestrV89{
 		ntype: 0,
 		nhfun: 0,
 		nlng:  0,
@@ -711,7 +711,7 @@ func NewNamestrV89() *__NAMESTRv89 {
 	}
 }
 
-func (nms *__NAMESTRv89) FromBinary(buffer []byte, byteOrder binary.ByteOrder) {
+func (nms *namestrV89) FromBinary(buffer []byte, byteOrder binary.ByteOrder) {
 	nms.ntype = int16(byteOrder.Uint16(buffer[0:2]))
 	nms.nhfun = int16(byteOrder.Uint16(buffer[2:4]))
 	nms.nlng = int16(byteOrder.Uint16(buffer[4:6]))
@@ -736,7 +736,7 @@ func (nms *__NAMESTRv89) FromBinary(buffer []byte, byteOrder binary.ByteOrder) {
 	}
 }
 
-func (nms *__NAMESTRv89) ToBinary(byteOrder binary.ByteOrder) []byte {
+func (nms *namestrV89) ToBinary(byteOrder binary.ByteOrder) []byte {
 	buffer := make([]byte, 140)
 
 	byteOrder.PutUint16(buffer[0:2], uint16(nms.ntype))
@@ -761,7 +761,7 @@ func (nms *__NAMESTRv89) ToBinary(byteOrder binary.ByteOrder) []byte {
 	return buffer
 }
 
-func (nms *__NAMESTRv89) String() string {
+func (nms *namestrV89) String() string {
 	return fmt.Sprintf(
 		"NAMESTRv89[\n"+
 			"\tntype:    %d\n"+
@@ -818,7 +818,7 @@ func parseSize(content []byte) (int, error) {
 	return 0, fmt.Errorf("invalid size")
 }
 
-type __LABELSTRv8 struct {
+type labelstrV8 struct {
 	varNumber int
 	nameLen   int
 	labelLen  int
@@ -826,7 +826,7 @@ type __LABELSTRv8 struct {
 	label     string
 }
 
-func (l *__LABELSTRv8) String() string {
+func (l *labelstrV8) String() string {
 	return fmt.Sprintf(
 		"LABELSTRv8[\n"+
 			"\tvarNumber: %d\n"+
@@ -843,8 +843,8 @@ func (l *__LABELSTRv8) String() string {
 	)
 }
 
-func parseLabelV8(content []byte, offset int, byteOrder binary.ByteOrder) (*__LABELSTRv8, int, error) {
-	label := &__LABELSTRv8{}
+func parseLabelV8(content []byte, offset int, byteOrder binary.ByteOrder) (*labelstrV8, int, error) {
+	label := &labelstrV8{}
 
 	label.varNumber = int(byteOrder.Uint16(content[offset+0 : offset+2]))
 	label.nameLen = int(byteOrder.Uint16(content[offset+2 : offset+4]))
@@ -856,7 +856,7 @@ func parseLabelV8(content []byte, offset int, byteOrder binary.ByteOrder) (*__LA
 	return label, totBytes, nil
 }
 
-type __LABELSTRv9 struct {
+type labelstrV9 struct {
 	varNumber int
 	nameLen   int
 	labelLen  int
@@ -868,7 +868,7 @@ type __LABELSTRv9 struct {
 	inform    string
 }
 
-func (l *__LABELSTRv9) String() string {
+func (l *labelstrV9) String() string {
 	return fmt.Sprintf(
 		"LABELSTRv9[\n"+
 			"\tvarNumber: %d\n"+
@@ -889,8 +889,8 @@ func (l *__LABELSTRv9) String() string {
 	)
 }
 
-func parseLabelV9(content []byte, offset int, byteOrder binary.ByteOrder) (*__LABELSTRv9, int, error) {
-	label := &__LABELSTRv9{}
+func parseLabelV9(content []byte, offset int, byteOrder binary.ByteOrder) (*labelstrV9, int, error) {
+	label := &labelstrV9{}
 
 	label.varNumber = int(byteOrder.Uint16(content[offset+0 : offset+2]))
 	label.nameLen = int(byteOrder.Uint16(content[offset+2 : offset+4]))
@@ -1043,7 +1043,7 @@ func (r *XptReader) readXptV89() *IoData {
 	// 7	Namestr records
 
 	seriesMeta := make([]SeriesMeta, variablesNumber)
-	namestrs := make([]__NAMESTRv89, variablesNumber)
+	namestrs := make([]namestrV89, variablesNumber)
 
 	// read namestr
 	for i := 0; i < variablesNumber; i++ {
@@ -1070,8 +1070,8 @@ func (r *XptReader) readXptV89() *IoData {
 
 	///////////////////////////////////////
 	// 7.1	Label header record V8
-	var labelsV8 []__LABELSTRv8
-	var labelsV9 []__LABELSTRv9
+	var labelsV8 []labelstrV8
+	var labelsV9 []labelstrV9
 
 	if string(r.content[offset:offset+41]) == labelHeaderV8Start {
 		labelsNumber, err := parseSize(r.content[offset+41 : offset+80])
@@ -1080,7 +1080,7 @@ func (r *XptReader) readXptV89() *IoData {
 		}
 		offset += 80
 
-		labelsV8 = make([]__LABELSTRv8, labelsNumber)
+		labelsV8 = make([]labelstrV8, labelsNumber)
 		totBytes := 0
 		for i := 0; i < labelsNumber; i++ {
 			label, totLen, err := parseLabelV8(r.content, offset, r.byteOrder)
@@ -1105,7 +1105,7 @@ func (r *XptReader) readXptV89() *IoData {
 
 		offset += 80
 
-		labelsV9 = make([]__LABELSTRv9, labelsNumber)
+		labelsV9 = make([]labelstrV9, labelsNumber)
 		totBytes := 0
 		for i := 0; i < labelsNumber; i++ {
 			label, totLen, err := parseLabelV9(r.content, offset, r.byteOrder)

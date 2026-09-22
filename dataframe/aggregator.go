@@ -7,7 +7,7 @@ import (
 )
 
 type aggregatorBuilder struct {
-	df          BaseDataFrame
+	df          DataFrame
 	removeNAs   bool
 	aggregators []aggregator
 }
@@ -33,15 +33,15 @@ func (ab aggregatorBuilder) Run() DataFrame {
 
 		// Check if output names are unique
 		if aggNewNames[agg.newName] {
-			df.err = fmt.Errorf("BaseDataFrame.Agg: aggregator output names must be unique")
+			df.err = fmt.Errorf("DataFrame.Agg: aggregator output names must be unique")
 			return df
 		}
 		aggNewNames[agg.newName] = true
 
 		// CASE: aggregator count doesn't need an input series
 		if agg.type_ != AGGREGATE_COUNT {
-			if df.__series(agg.name) == nil {
-				df.err = fmt.Errorf("BaseDataFrame.Agg: series \"%s\" not found", agg.name)
+			if df.seriesByName(agg.name) == nil {
+				df.err = fmt.Errorf("DataFrame.Agg: series \"%s\" not found", agg.name)
 				return df
 			}
 
@@ -50,8 +50,8 @@ func (ab aggregatorBuilder) Run() DataFrame {
 			// Anything else (e.g. Strings) would otherwise reach
 			// accumulateChunk's aggValUnsupported default case and panic with
 			// an out-of-range slice index.
-			if newAggValueView(df.C(agg.name)).kind == aggValUnsupported {
-				df.err = fmt.Errorf("BaseDataFrame.Agg: series \"%s\" has unsupported type %s for aggregator \"%s\"", agg.name, df.C(agg.name).Type(), agg.newName)
+			if newAggValueView(df.Col(agg.name)).kind == aggValUnsupported {
+				df.err = fmt.Errorf("DataFrame.Agg: series \"%s\" has unsupported type %s for aggregator \"%s\"", agg.name, df.Col(agg.name).Type(), agg.newName)
 				return df
 			}
 		}
@@ -61,11 +61,11 @@ func (ab aggregatorBuilder) Run() DataFrame {
 	// interpolation only applies to Median/Quantile.
 	for _, agg := range ab.aggregators {
 		if agg.ddofSet && agg.type_ != AGGREGATE_STD && agg.type_ != AGGREGATE_VARIANCE {
-			df.err = fmt.Errorf("BaseDataFrame.Agg: WithDDoF is only applicable to Std/Variance, not to \"%s\"", agg.newName)
+			df.err = fmt.Errorf("DataFrame.Agg: WithDDoF is only applicable to Std/Variance, not to \"%s\"", agg.newName)
 			return df
 		}
 		if agg.interpSet && agg.type_ != AGGREGATE_MEDIAN && agg.type_ != AGGREGATE_QUANTILE {
-			df.err = fmt.Errorf("BaseDataFrame.Agg: WithInterpolation is only applicable to Median/Quantile, not to \"%s\"", agg.newName)
+			df.err = fmt.Errorf("DataFrame.Agg: WithInterpolation is only applicable to Median/Quantile, not to \"%s\"", agg.newName)
 			return df
 		}
 	}

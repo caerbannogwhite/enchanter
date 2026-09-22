@@ -7,7 +7,7 @@ import (
 	"github.com/caerbannogwhite/enchanter"
 )
 
-func __series_groupby(
+func seriesGroupBy(
 	threadNum, minParallelSize, dataLen int, hasNulls bool,
 	worker func(threadNum, start, end int, map_ map[int64][]int),
 	workerNulls func(threadNum, start, end int, map_ map[int64][]int, nulls *[]int),
@@ -22,7 +22,7 @@ func __series_groupby(
 
 			// Add the nulls to the map
 			if len(nulls) > 0 {
-				nullKey := __series_get_nullkey(map_, enchanter.HASH_NULL_KEY)
+				nullKey := seriesNullKey(map_, enchanter.HASH_NULL_KEY)
 				map_[nullKey] = nulls
 			}
 		} else {
@@ -171,14 +171,14 @@ func __series_groupby(
 
 	// Add the nulls to the map
 	if hasNulls && len(nulls[0]) > 0 {
-		nullKey := __series_get_nullkey(maps[0], enchanter.HASH_NULL_KEY)
+		nullKey := seriesNullKey(maps[0], enchanter.HASH_NULL_KEY)
 		maps[0][nullKey] = nulls[0]
 	}
 
 	return maps[0]
 }
 
-func __series_groupby_multithreaded(
+func seriesGroupByMultithreaded(
 	threadNum, dataLen int, maps []map[int64][]int, nulls [][]int,
 	worker func(threadNum, start, end int),
 ) {
@@ -266,7 +266,7 @@ func __series_groupby_multithreaded(
 	wg[len(wg)-1][0].Wait()
 }
 
-func __series_get_nullkey(map_ map[int64][]int, seed int64) int64 {
+func seriesNullKey(map_ map[int64][]int, seed int64) int64 {
 	for {
 		if _, ok := map_[seed]; !ok {
 			break

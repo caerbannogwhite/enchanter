@@ -5,8 +5,6 @@ package series
 import (
 	"fmt"
 	"time"
-
-	"github.com/caerbannogwhite/enchanter/utils"
 )
 
 func (s Durations) And(other any) Series {
@@ -14,10 +12,10 @@ func (s Durations) And(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -31,10 +29,10 @@ func (s Durations) Or(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -48,10 +46,10 @@ func (s Durations) Mul(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -65,10 +63,10 @@ func (s Durations) Div(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -82,10 +80,10 @@ func (s Durations) Mod(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -99,10 +97,10 @@ func (s Durations) Exp(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	default:
@@ -116,508 +114,130 @@ func (s Durations) Add(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Strings:
-		if s.Len() == 1 {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSS(s.NullMask_, o.NullMask_, resultNullMask)
-						result[0] = o.Ctx_.StringPool.Put(s.Data_[0].String() + *o.Data_[0])
-						return Strings{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						result[0] = o.Ctx_.StringPool.Put(s.Data_[0].String() + *o.Data_[0])
-						return Strings{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						result[0] = o.Ctx_.StringPool.Put(s.Data_[0].String() + *o.Data_[0])
-						return Strings{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						result[0] = o.Ctx_.StringPool.Put(s.Data_[0].String() + *o.Data_[0])
-						return Strings{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Ctx_.StringPool.Put(s.Data_[0].String() + *o.Data_[i])
-						}
-						return Strings{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Ctx_.StringPool.Put(s.Data_[0].String() + *o.Data_[i])
-						}
-						return Strings{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Ctx_.StringPool.Put(s.Data_[0].String() + *o.Data_[i])
-						}
-						return Strings{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Ctx_.StringPool.Put(s.Data_[0].String() + *o.Data_[i])
-						}
-						return Strings{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]*string, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = o.ctx.StringPool.Put(s.data[0].String() + *o.data[0])
+			return Strings{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]*string, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = o.ctx.StringPool.Put(s.data[0].String() + *o.data[i])
 			}
-		} else {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVS(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Ctx_.StringPool.Put(s.Data_[i].String() + *o.Data_[0])
-						}
-						return Strings{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Ctx_.StringPool.Put(s.Data_[i].String() + *o.Data_[0])
-						}
-						return Strings{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Ctx_.StringPool.Put(s.Data_[i].String() + *o.Data_[0])
-						}
-						return Strings{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Ctx_.StringPool.Put(s.Data_[i].String() + *o.Data_[0])
-						}
-						return Strings{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else if s.Len() == o.Len() {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Ctx_.StringPool.Put(s.Data_[i].String() + *o.Data_[i])
-						}
-						return Strings{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Ctx_.StringPool.Put(s.Data_[i].String() + *o.Data_[i])
-						}
-						return Strings{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Ctx_.StringPool.Put(s.Data_[i].String() + *o.Data_[i])
-						}
-						return Strings{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]*string, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Ctx_.StringPool.Put(s.Data_[i].String() + *o.Data_[i])
-						}
-						return Strings{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+			return Strings{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]*string, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = o.ctx.StringPool.Put(s.data[i].String() + *o.data[0])
 			}
-			return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
+			return Strings{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]*string, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = o.ctx.StringPool.Put(s.data[i].String() + *o.data[i])
+			}
+			return Strings{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
+		return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
 	case Times:
-		if s.Len() == 1 {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSS(s.NullMask_, o.NullMask_, resultNullMask)
-						result[0] = o.Data_[0].Add(s.Data_[0])
-						return Times{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						result[0] = o.Data_[0].Add(s.Data_[0])
-						return Times{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						result[0] = o.Data_[0].Add(s.Data_[0])
-						return Times{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						result[0] = o.Data_[0].Add(s.Data_[0])
-						return Times{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Data_[i].Add(s.Data_[0])
-						}
-						return Times{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Data_[i].Add(s.Data_[0])
-						}
-						return Times{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Data_[i].Add(s.Data_[0])
-						}
-						return Times{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Data_[i].Add(s.Data_[0])
-						}
-						return Times{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]time.Time, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = o.data[0].Add(s.data[0])
+			return Times{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]time.Time, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = o.data[i].Add(s.data[0])
 			}
-		} else {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVS(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Data_[0].Add(s.Data_[i])
-						}
-						return Times{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Data_[0].Add(s.Data_[i])
-						}
-						return Times{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Data_[0].Add(s.Data_[i])
-						}
-						return Times{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Data_[0].Add(s.Data_[i])
-						}
-						return Times{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else if s.Len() == o.Len() {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Data_[i].Add(s.Data_[i])
-						}
-						return Times{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Data_[i].Add(s.Data_[i])
-						}
-						return Times{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Data_[i].Add(s.Data_[i])
-						}
-						return Times{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]time.Time, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = o.Data_[i].Add(s.Data_[i])
-						}
-						return Times{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+			return Times{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]time.Time, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = o.data[0].Add(s.data[i])
 			}
-			return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
+			return Times{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]time.Time, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = o.data[i].Add(s.data[i])
+			}
+			return Times{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
+		return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
 	case Durations:
-		if s.Len() == 1 {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSS(s.NullMask_, o.NullMask_, resultNullMask)
-						result[0] = s.Data_[0] + o.Data_[0]
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						result[0] = s.Data_[0] + o.Data_[0]
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						result[0] = s.Data_[0] + o.Data_[0]
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						result[0] = s.Data_[0] + o.Data_[0]
-						return Durations{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] + o.Data_[i]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] + o.Data_[i]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] + o.Data_[i]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] + o.Data_[i]
-						}
-						return Durations{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] + o.data[0]
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[0] + o.data[i]
 			}
-		} else {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVS(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] + o.Data_[0]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] + o.Data_[0]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] + o.Data_[0]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] + o.Data_[0]
-						}
-						return Durations{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else if s.Len() == o.Len() {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] + o.Data_[i]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] + o.Data_[i]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] + o.Data_[i]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] + o.Data_[i]
-						}
-						return Durations{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] + o.data[0]
 			}
-			return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] + o.data[i]
+			}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
+		return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
 	case NAs:
-		if s.Len() == 1 {
-			if o.Len() == 1 {
-				resultSize := o.Len()
-				return NAs{size: resultSize}
-			} else {
-				resultSize := o.Len()
-				return NAs{size: resultSize}
-			}
-		} else {
-			if o.Len() == 1 {
-				resultSize := s.Len()
-				return NAs{size: resultSize}
-			} else if s.Len() == o.Len() {
-				resultSize := s.Len()
-				return NAs{size: resultSize}
-			}
-			return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
 		}
+		return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot sum %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -629,171 +249,62 @@ func (s Durations) Sub(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
-		if s.Len() == 1 {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSS(s.NullMask_, o.NullMask_, resultNullMask)
-						result[0] = s.Data_[0] - o.Data_[0]
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						result[0] = s.Data_[0] - o.Data_[0]
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						result[0] = s.Data_[0] - o.Data_[0]
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						result[0] = s.Data_[0] - o.Data_[0]
-						return Durations{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] - o.Data_[i]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] - o.Data_[i]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] - o.Data_[i]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] - o.Data_[i]
-						}
-						return Durations{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] - o.data[0]
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[0] - o.data[i]
 			}
-		} else {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVS(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] - o.Data_[0]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] - o.Data_[0]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] - o.Data_[0]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] - o.Data_[0]
-						}
-						return Durations{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else if s.Len() == o.Len() {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] - o.Data_[i]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] - o.Data_[i]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] - o.Data_[i]
-						}
-						return Durations{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]time.Duration, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] - o.Data_[i]
-						}
-						return Durations{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] - o.data[0]
 			}
-			return Errors{fmt.Sprintf("Cannot subtract %s and %s", s.Type().String(), o.Type().String())}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] - o.data[i]
+			}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
+		return Errors{fmt.Sprintf("Cannot subtract %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot subtract %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot subtract %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -805,190 +316,62 @@ func (s Durations) Eq(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
-		if s.Len() == 1 {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSS(s.NullMask_, o.NullMask_, resultNullMask)
-						result[0] = s.Data_[0] == o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						result[0] = s.Data_[0] == o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						result[0] = s.Data_[0] == o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						result[0] = s.Data_[0] == o.Data_[0]
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] == o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] == o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] == o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] == o.Data_[i]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] == o.data[0]
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[0] == o.data[i]
 			}
-		} else {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVS(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] == o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] == o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] == o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] == o.Data_[0]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else if s.Len() == o.Len() {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] == o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] == o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] == o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] == o.Data_[i]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] == o.data[0]
 			}
-			return Errors{fmt.Sprintf("Cannot compare for equality %s and %s", s.Type().String(), o.Type().String())}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] == o.data[i]
+			}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
+		return Errors{fmt.Sprintf("Cannot compare for equality %s and %s", s.Type().String(), o.Type().String())}
 	case NAs:
-		if s.Len() == 1 {
-			if o.Len() == 1 {
-				resultSize := o.Len()
-				return NAs{size: resultSize}
-			} else {
-				resultSize := o.Len()
-				return NAs{size: resultSize}
-			}
-		} else {
-			if o.Len() == 1 {
-				resultSize := s.Len()
-				return NAs{size: resultSize}
-			} else if s.Len() == o.Len() {
-				resultSize := s.Len()
-				return NAs{size: resultSize}
-			}
-			return Errors{fmt.Sprintf("Cannot compare for equality %s and %s", s.Type().String(), o.Type().String())}
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
 		}
+		return Errors{fmt.Sprintf("Cannot compare for equality %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot compare for equality %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -1000,190 +383,62 @@ func (s Durations) Ne(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
-		if s.Len() == 1 {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSS(s.NullMask_, o.NullMask_, resultNullMask)
-						result[0] = s.Data_[0] != o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						result[0] = s.Data_[0] != o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						result[0] = s.Data_[0] != o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						result[0] = s.Data_[0] != o.Data_[0]
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] != o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] != o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] != o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] != o.Data_[i]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] != o.data[0]
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[0] != o.data[i]
 			}
-		} else {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVS(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] != o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] != o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] != o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] != o.Data_[0]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else if s.Len() == o.Len() {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] != o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] != o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] != o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] != o.Data_[i]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] != o.data[0]
 			}
-			return Errors{fmt.Sprintf("Cannot compare for inequality %s and %s", s.Type().String(), o.Type().String())}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] != o.data[i]
+			}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
+		return Errors{fmt.Sprintf("Cannot compare for inequality %s and %s", s.Type().String(), o.Type().String())}
 	case NAs:
-		if s.Len() == 1 {
-			if o.Len() == 1 {
-				resultSize := o.Len()
-				return NAs{size: resultSize}
-			} else {
-				resultSize := o.Len()
-				return NAs{size: resultSize}
-			}
-		} else {
-			if o.Len() == 1 {
-				resultSize := s.Len()
-				return NAs{size: resultSize}
-			} else if s.Len() == o.Len() {
-				resultSize := s.Len()
-				return NAs{size: resultSize}
-			}
-			return Errors{fmt.Sprintf("Cannot compare for inequality %s and %s", s.Type().String(), o.Type().String())}
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
 		}
+		return Errors{fmt.Sprintf("Cannot compare for inequality %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot compare for inequality %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -1195,171 +450,62 @@ func (s Durations) Gt(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
-		if s.Len() == 1 {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSS(s.NullMask_, o.NullMask_, resultNullMask)
-						result[0] = s.Data_[0] > o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						result[0] = s.Data_[0] > o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						result[0] = s.Data_[0] > o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						result[0] = s.Data_[0] > o.Data_[0]
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] > o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] > o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] > o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] > o.Data_[i]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] > o.data[0]
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[0] > o.data[i]
 			}
-		} else {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVS(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] > o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] > o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] > o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] > o.Data_[0]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else if s.Len() == o.Len() {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] > o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] > o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] > o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] > o.Data_[i]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] > o.data[0]
 			}
-			return Errors{fmt.Sprintf("Cannot compare for greater than %s and %s", s.Type().String(), o.Type().String())}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] > o.data[i]
+			}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
+		return Errors{fmt.Sprintf("Cannot compare for greater than %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot compare for greater than %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot compare for greater than %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -1371,171 +517,62 @@ func (s Durations) Ge(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
-		if s.Len() == 1 {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSS(s.NullMask_, o.NullMask_, resultNullMask)
-						result[0] = s.Data_[0] >= o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						result[0] = s.Data_[0] >= o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						result[0] = s.Data_[0] >= o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						result[0] = s.Data_[0] >= o.Data_[0]
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] >= o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] >= o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] >= o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] >= o.Data_[i]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] >= o.data[0]
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[0] >= o.data[i]
 			}
-		} else {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVS(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] >= o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] >= o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] >= o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] >= o.Data_[0]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else if s.Len() == o.Len() {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] >= o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] >= o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] >= o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] >= o.Data_[i]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] >= o.data[0]
 			}
-			return Errors{fmt.Sprintf("Cannot compare for greater than or equal to %s and %s", s.Type().String(), o.Type().String())}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] >= o.data[i]
+			}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
+		return Errors{fmt.Sprintf("Cannot compare for greater than or equal to %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot compare for greater than or equal to %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot compare for greater than or equal to %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -1547,171 +584,62 @@ func (s Durations) Lt(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
-		if s.Len() == 1 {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSS(s.NullMask_, o.NullMask_, resultNullMask)
-						result[0] = s.Data_[0] < o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						result[0] = s.Data_[0] < o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						result[0] = s.Data_[0] < o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						result[0] = s.Data_[0] < o.Data_[0]
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] < o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] < o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] < o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] < o.Data_[i]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] < o.data[0]
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[0] < o.data[i]
 			}
-		} else {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVS(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] < o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] < o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] < o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] < o.Data_[0]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else if s.Len() == o.Len() {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] < o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] < o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] < o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] < o.Data_[i]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] < o.data[0]
 			}
-			return Errors{fmt.Sprintf("Cannot compare for less than %s and %s", s.Type().String(), o.Type().String())}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] < o.data[i]
+			}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
+		return Errors{fmt.Sprintf("Cannot compare for less than %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot compare for less than %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot compare for less than %s and %s", s.Type().String(), o.Type().String())}
 	}
@@ -1723,173 +651,177 @@ func (s Durations) Le(other any) Series {
 	if _, ok := other.(Series); ok {
 		otherSeries = other.(Series)
 	} else {
-		otherSeries = NewSeries(other, nil, false, false, s.Ctx_)
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
 	}
-	if s.Ctx_ != otherSeries.GetContext() {
-		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.Ctx_, otherSeries.GetContext())}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
 	}
 	switch o := otherSeries.(type) {
 	case Durations:
-		if s.Len() == 1 {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSS(s.NullMask_, o.NullMask_, resultNullMask)
-						result[0] = s.Data_[0] <= o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						result[0] = s.Data_[0] <= o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						result[0] = s.Data_[0] <= o.Data_[0]
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						result[0] = s.Data_[0] <= o.Data_[0]
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrSV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] <= o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, s.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] <= o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] <= o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := o.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[0] <= o.Data_[i]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			result[0] = s.data[0] <= o.data[0]
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[0] <= o.data[i]
 			}
-		} else {
-			if o.Len() == 1 {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVS(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] <= o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] <= o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, o.NullMask_[0] == 1)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] <= o.Data_[0]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] <= o.Data_[0]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
-			} else if s.Len() == o.Len() {
-				if s.IsNullable_ {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						utils.BinVecOrVV(s.NullMask_, o.NullMask_, resultNullMask)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] <= o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, s.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] <= o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				} else {
-					if o.IsNullable_ {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(resultSize, false)
-						copy(resultNullMask, o.NullMask_)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] <= o.Data_[i]
-						}
-						return Bools{IsNullable_: true, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					} else {
-						resultSize := s.Len()
-						result := make([]bool, resultSize)
-						resultNullMask := utils.BinVecInit(0, false)
-						for i := 0; i < resultSize; i++ {
-							result[i] = s.Data_[i] <= o.Data_[i]
-						}
-						return Bools{IsNullable_: false, NullMask_: resultNullMask, Data_: result, Ctx_: s.Ctx_}
-					}
-				}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] <= o.data[0]
 			}
-			return Errors{fmt.Sprintf("Cannot compare for less than or equal to %s and %s", s.Type().String(), o.Type().String())}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]bool, resultSize)
+			resultNullMask, resultIsNullable := binaryNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i] <= o.data[i]
+			}
+			return Bools{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
 		}
+		return Errors{fmt.Sprintf("Cannot compare for less than or equal to %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			return NAs{size: resultSize}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			return NAs{size: resultSize}
+		}
+		return Errors{fmt.Sprintf("Cannot compare for less than or equal to %s and %s", s.Type().String(), o.Type().String())}
 	default:
 		return Errors{fmt.Sprintf("Cannot compare for less than or equal to %s and %s", s.Type().String(), o.Type().String())}
 	}
 
+	// Coalesce fills the null elements of the series with the corresponding
+	// elements of other: the result takes this series' value where it is not
+	// null and the other operand's value where it is. A result element is null
+	// only when both operands are null there. The body is produced by the code
+	// generator, like every other operator in this file.
+
+}
+
+func (s Durations) Coalesce(other any) Series {
+	var otherSeries Series
+	if _, ok := other.(Series); ok {
+		otherSeries = other.(Series)
+	} else {
+		otherSeries = NewSeries(other, nil, false, false, s.ctx)
+	}
+	if s.ctx != otherSeries.Context() {
+		return Errors{fmt.Sprintf("Cannot operate on series with different contexts: %v and %v", s.ctx, otherSeries.Context())}
+	}
+	switch o := otherSeries.(type) {
+	case Durations:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask, resultIsNullable := coalesceNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, true, resultSize)
+			if s.isNullable && s.nullMask[0]&1 != 0 {
+				result[0] = o.data[0]
+			} else {
+				result[0] = s.data[0]
+			}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask, resultIsNullable := coalesceNullMask(s.isNullable, s.nullMask, true, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				if s.isNullable && s.nullMask[0]&1 != 0 {
+					result[i] = o.data[i]
+				} else {
+					result[i] = s.data[0]
+				}
+			}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask, resultIsNullable := coalesceNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				if s.isNullable && s.nullMask[i>>3]&(1<<uint(i%8)) != 0 {
+					result[i] = o.data[0]
+				} else {
+					result[i] = s.data[i]
+				}
+			}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask, resultIsNullable := coalesceNullMask(s.isNullable, s.nullMask, false, o.isNullable, o.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				if s.isNullable && s.nullMask[i>>3]&(1<<uint(i%8)) != 0 {
+					result[i] = o.data[i]
+				} else {
+					result[i] = s.data[i]
+				}
+			}
+			return Durations{isNullable: resultIsNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		}
+		return Errors{fmt.Sprintf("Cannot coalesce %s and %s", s.Type().String(), o.Type().String())}
+	case NAs:
+		switch {
+		case s.Len() == 1 && o.Len() == 1:
+			resultSize := o.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask := naOperandNullMask(s.isNullable, s.nullMask, true, resultSize)
+			result[0] = s.data[0]
+			return Durations{isNullable: s.isNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == 1:
+			resultSize := o.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask := naOperandNullMask(s.isNullable, s.nullMask, true, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[0]
+			}
+			return Durations{isNullable: s.isNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case o.Len() == 1:
+			resultSize := s.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask := naOperandNullMask(s.isNullable, s.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i]
+			}
+			return Durations{isNullable: s.isNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		case s.Len() == o.Len():
+			resultSize := s.Len()
+			result := make([]time.Duration, resultSize)
+			resultNullMask := naOperandNullMask(s.isNullable, s.nullMask, false, resultSize)
+			for i := 0; i < resultSize; i++ {
+				result[i] = s.data[i]
+			}
+			return Durations{isNullable: s.isNullable, nullMask: resultNullMask, data: result, ctx: s.ctx}
+		}
+		return Errors{fmt.Sprintf("Cannot coalesce %s and %s", s.Type().String(), o.Type().String())}
+	default:
+		return Errors{fmt.Sprintf("Cannot coalesce %s and %s", s.Type().String(), o.Type().String())}
+	}
+
+}
+
+// Not is the logical negation of a boolean series. Only Bools and NAs
+// support it, so on this type it returns an error series.
+func (s Durations) Not() Series {
+	return Errors{fmt.Sprintf("Cannot NOT %s", s.Type().String())}
 }

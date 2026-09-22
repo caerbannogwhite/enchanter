@@ -247,7 +247,8 @@ func (op OPCODE) IsBinaryOp() bool {
 	switch op {
 	case OP_BINARY_ADD, OP_BINARY_SUB, OP_BINARY_MUL, OP_BINARY_DIV, OP_BINARY_MOD, OP_BINARY_EXP,
 		OP_BINARY_AND, OP_BINARY_OR, OP_BINARY_XOR, OP_BINARY_LSHIFT, OP_BINARY_RSHIFT,
-		OP_BINARY_EQ, OP_BINARY_NE, OP_BINARY_LT, OP_BINARY_LE, OP_BINARY_GT, OP_BINARY_GE:
+		OP_BINARY_EQ, OP_BINARY_NE, OP_BINARY_LT, OP_BINARY_LE, OP_BINARY_GT, OP_BINARY_GE,
+		OP_BINARY_COALESCE:
 		return true
 	}
 	return false
@@ -264,6 +265,18 @@ func (op OPCODE) IsUnaryOp() bool {
 func (op OPCODE) GetBinaryOpResultType(lop, rop Primitive) Primitive {
 
 	lop, rop = op.CommuteOperands(lop, rop)
+
+	// NA propagation holds from either side: a valid binary operation
+	// with an NA operand yields NA regardless of operand order. The
+	// lop NullType rows below define which pairings are valid, so a
+	// typed-left pair is evaluated with the NA operand on the left.
+	// Without this, only commutative operators reached those rows and
+	// x - NA was an error while NA - x was NA. Coalesce is exempt: it
+	// exists to replace nulls and its own rows handle NA operands.
+	if op != OP_BINARY_COALESCE && rop.Base == NullType && lop.Base != NullType {
+		lop, rop = rop, lop
+	}
+
 	size := op.GetBinaryOpResultSize(lop, rop)
 
 	switch op {
@@ -547,10 +560,8 @@ func (op OPCODE) GetBinaryOpResultType(lop, rop Primitive) Primitive {
 		switch lop.Base {
 		case NullType:
 			switch rop.Base {
-			case NullType, BoolType, IntType, Int64Type, Float32Type, Float64Type, TimeType, DurationType:
+			case NullType, BoolType, IntType, Int64Type, Float32Type, Float64Type, StringType, TimeType, DurationType:
 				return Primitive{Base: NullType, Size: size}
-			case StringType:
-				return Primitive{Base: StringType, Size: size}
 			default:
 				return Primitive{Base: ErrorType}
 			}
@@ -1210,6 +1221,89 @@ func (op OPCODE) GetBinaryOpResultType(lop, rop Primitive) Primitive {
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	///////////////////				BINARY AND
+	/////////////////////////////////////////////////////////////////////////////////////
+	///////////////////				BINARY COALESCE
+
+	// Coalesce takes the left value where it is not null and the right value
+	// where it is. Both operand orders carry the same result type: the same
+	// type keeps the type, mixed numeric types widen, and an NA operand
+	// yields the other operand's type.
+	case OP_BINARY_COALESCE:
+		switch lop.Base {
+		case NullType:
+			switch rop.Base {
+			case NullType, BoolType, IntType, Int64Type, Float64Type, StringType, TimeType, DurationType:
+				return Primitive{Base: rop.Base, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case BoolType:
+			switch rop.Base {
+			case NullType, BoolType:
+				return Primitive{Base: BoolType, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case IntType:
+			switch rop.Base {
+			case NullType, IntType:
+				return Primitive{Base: IntType, Size: size}
+			case Int64Type:
+				return Primitive{Base: Int64Type, Size: size}
+			case Float64Type:
+				return Primitive{Base: Float64Type, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case Int64Type:
+			switch rop.Base {
+			case NullType, IntType, Int64Type:
+				return Primitive{Base: Int64Type, Size: size}
+			case Float64Type:
+				return Primitive{Base: Float64Type, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case Float64Type:
+			switch rop.Base {
+			case NullType, IntType, Int64Type, Float64Type:
+				return Primitive{Base: Float64Type, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case StringType:
+			switch rop.Base {
+			case NullType, StringType:
+				return Primitive{Base: StringType, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case TimeType:
+			switch rop.Base {
+			case NullType, TimeType:
+				return Primitive{Base: TimeType, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		case DurationType:
+			switch rop.Base {
+			case NullType, DurationType:
+				return Primitive{Base: DurationType, Size: size}
+			default:
+				return Primitive{Base: ErrorType}
+			}
+
+		default:
+			return Primitive{Base: ErrorType}
+		}
+
 	case OP_BINARY_AND:
 		switch lop.Base {
 		case NullType:
@@ -1237,10 +1331,8 @@ func (op OPCODE) GetBinaryOpResultType(lop, rop Primitive) Primitive {
 		switch lop.Base {
 		case NullType:
 			switch rop.Base {
-			case NullType:
+			case NullType, BoolType:
 				return Primitive{Base: NullType, Size: size}
-			case BoolType:
-				return Primitive{Base: BoolType, Size: size}
 			default:
 				return Primitive{Base: ErrorType}
 			}

@@ -14,12 +14,12 @@ import (
 func main() {
 	ctx := enchanter.NewContext()
 
-	df := dataframe.NewBaseDataFrame(ctx).
+	df := dataframe.NewDataFrame(ctx).
 		AddSeries("name", series.NewSeriesString([]string{"Alice", "Bob", "Charlie", "Dana"}, nil, false, ctx)).
 		AddSeries("age", series.NewSeriesInt64([]int64{29, 31, 0, 25}, []bool{false, false, true, false}, false, ctx)).
 		AddSeries("score", series.NewSeriesFloat64([]float64{7.5, 8.25, 9.0, 6.75}, nil, false, ctx))
-	if df.IsErrored() {
-		fmt.Fprintln(os.Stderr, df.GetError())
+	if df.Err() != nil {
+		fmt.Fprintln(os.Stderr, df.Err())
 		os.Exit(1)
 	}
 
@@ -31,14 +31,14 @@ func main() {
 	defer os.RemoveAll(dir)
 	path := filepath.Join(dir, "people.parquet")
 
-	if err := df.ToParquet().SetPath(path).Write(); err != nil {
+	if err := df.WriteParquet().SetPath(path).Write(); err != nil {
 		fmt.Fprintln(os.Stderr, "write:", err)
 		os.Exit(1)
 	}
 
-	back := dataframe.NewBaseDataFrame(ctx).FromParquet().SetPath(path).Read()
-	if back.IsErrored() {
-		fmt.Fprintln(os.Stderr, "read:", back.GetError())
+	back := dataframe.ReadParquet(ctx).SetPath(path).Read()
+	if back.Err() != nil {
+		fmt.Fprintln(os.Stderr, "read:", back.Err())
 		os.Exit(1)
 	}
 

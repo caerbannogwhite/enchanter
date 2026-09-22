@@ -17,105 +17,112 @@ import (
 
 // Strings represents a series of strings.
 type Strings struct {
-	IsNullable_ bool
-	Sorted_     enchanter.SeriesSortOrder
-	Data_       []*string
-	NullMask_   []uint8
-	Partition_  *SeriesStringPartition
-	Ctx_        *enchanter.Context
+	isNullable bool
+	sorted     enchanter.SeriesSortOrder
+	data       []*string
+	nullMask   []uint8
+	partition  *SeriesStringPartition
+	ctx        *enchanter.Context
 }
 
 // ArrowArray builds and returns a fresh Arrow array from the series data.
 // The caller owns the returned array; releasing it is optional under
 // GC-backed allocators (see enchanter.Context.Allocator).
 func (s Strings) ArrowArray() arrow.Array {
-	return buildArrowString(s.Ctx_.Allocator, s.Data_, s.IsNullable_, s.NullMask_)
+	return buildArrowString(s.ctx.Allocator, s.data, s.isNullable, s.nullMask)
 }
 
 // Get the element at index i as a string.
 func (s Strings) GetAsString(i int) string {
-	return *s.Data_[i]
+	return *s.data[i]
 }
 
 // Set the element at index i. The value v must be of type string or NullableString.
 func (s Strings) Set(i int, v any) Series {
-	if s.Partition_ != nil {
+	if s.partition != nil {
 		return Errors{"Strings.Set: cannot set values on a grouped Series"}
 	}
 
 	switch v := v.(type) {
 	case nil:
 		s = s.MakeNullable().(Strings)
-		s.Data_[i] = s.Ctx_.StringPool.Put(enchanter.NA_TEXT)
-		s.NullMask_[i>>3] |= 1 << uint(i%8)
+		s.data[i] = s.ctx.StringPool.Put(enchanter.NA_TEXT)
+		s.nullMask[i>>3] |= 1 << uint(i%8)
 
 	case string:
-		s.Data_[i] = s.Ctx_.StringPool.Put(v)
+		s.data[i] = s.ctx.StringPool.Put(v)
 
 	case enchanter.NullableString:
 		s = s.MakeNullable().(Strings)
 		if v.Valid {
-			s.Data_[i] = s.Ctx_.StringPool.Put(v.Value)
+			s.data[i] = s.ctx.StringPool.Put(v.Value)
 		} else {
-			s.Data_[i] = s.Ctx_.StringPool.Put(enchanter.NA_TEXT)
-			s.NullMask_[i>>3] |= 1 << uint(i%8)
+			s.data[i] = s.ctx.StringPool.Put(enchanter.NA_TEXT)
+			s.nullMask[i>>3] |= 1 << uint(i%8)
 		}
 
 	default:
 		return Errors{fmt.Sprintf("Strings.Set: invalid type %T", v)}
 	}
 
-	s.Sorted_ = enchanter.SORTED_NONE
+	s.sorted = enchanter.SORTED_NONE
 	return s
 }
 
 ////////////////////////			ALL DATA ACCESSORS
 
-// Return the underlying Data_ as a slice of string.
+// Return the underlying data as a slice of string.
+// Interned returns the backing slice of interned string pointers as a
+// view. Null elements hold the interned NA text. Callers must not
+// modify it.
+func (s Strings) Interned() []*string {
+	return s.data
+}
+
 func (s Strings) Strings() []string {
-	Data_ := make([]string, len(s.Data_))
-	if s.IsNullable_ {
-		for i, v := range s.Data_ {
+	data := make([]string, len(s.data))
+	if s.isNullable {
+		for i, v := range s.data {
 			if s.IsNull(i) {
-				Data_[i] = enchanter.NA_TEXT
+				data[i] = enchanter.NA_TEXT
 			} else {
-				Data_[i] = *v
+				data[i] = *v
 			}
 		}
 	} else {
-		for i, v := range s.Data_ {
-			Data_[i] = *v
+		for i, v := range s.data {
+			data[i] = *v
 		}
 	}
-	return Data_
+	return data
 }
 
-// Return the underlying Data_ as a slice of NullableString.
+// Return the underlying data as a slice of NullableString.
 func (s Strings) DataAsNullable() any {
-	Data_ := make([]enchanter.NullableString, len(s.Data_))
-	for i, v := range s.Data_ {
-		Data_[i] = enchanter.NullableString{Valid: !s.IsNull(i), Value: *v}
+	data := make([]enchanter.NullableString, len(s.data))
+	for i, v := range s.data {
+		data[i] = enchanter.NullableString{Valid: !s.IsNull(i), Value: *v}
 	}
-	return Data_
+	return data
 }
 
-// Return the underlying Data_ as a slice of string.
+// Return the underlying data as a slice of string.
 func (s Strings) DataAsString() []string {
-	Data_ := make([]string, len(s.Data_))
-	if s.IsNullable_ {
-		for i, v := range s.Data_ {
+	data := make([]string, len(s.data))
+	if s.isNullable {
+		for i, v := range s.data {
 			if s.IsNull(i) {
-				Data_[i] = enchanter.NA_TEXT
+				data[i] = enchanter.NA_TEXT
 			} else {
-				Data_[i] = *v
+				data[i] = *v
 			}
 		}
 	} else {
-		for i, v := range s.Data_ {
-			Data_[i] = *v
+		for i, v := range s.data {
+			data[i] = *v
 		}
 	}
-	return Data_
+	return data
 }
 
 func atoBool(s string) (bool, error) {
@@ -134,153 +141,153 @@ func atoBool(s string) (bool, error) {
 func (s Strings) Cast(t meta.BaseType) Series {
 	switch t {
 	case meta.BoolType:
-		Data_ := make([]bool, len(s.Data_))
-		NullMask_ := utils.BinVecInit(len(s.Data_), false)
-		if s.IsNullable_ {
-			copy(NullMask_, s.NullMask_)
+		data := make([]bool, len(s.data))
+		nullMask := utils.BinVecInit(len(s.data), false)
+		if s.isNullable {
+			copy(nullMask, s.nullMask)
 		}
 
-		if s.IsNullable_ {
-			for i, v := range s.Data_ {
+		if s.isNullable {
+			for i, v := range s.data {
 				if !s.IsNull(i) {
 					b, err := atoBool(*v)
 					if err != nil {
-						NullMask_[i>>3] |= (1 << uint(i%8))
+						nullMask[i>>3] |= (1 << uint(i%8))
 					}
-					Data_[i] = b
+					data[i] = b
 				}
 			}
 		} else {
-			for i, v := range s.Data_ {
+			for i, v := range s.data {
 				b, err := atoBool(*v)
 				if err != nil {
-					NullMask_[i>>3] |= (1 << uint(i%8))
+					nullMask[i>>3] |= (1 << uint(i%8))
 				}
-				Data_[i] = b
+				data[i] = b
 			}
 		}
 
 		return Bools{
-			IsNullable_: true,
-			Sorted_:     enchanter.SORTED_NONE,
-			Data_:       Data_,
-			NullMask_:   NullMask_,
-			Partition_:  nil,
-			Ctx_:        s.Ctx_,
+			isNullable: true,
+			sorted:     enchanter.SORTED_NONE,
+			data:       data,
+			nullMask:   nullMask,
+			partition:  nil,
+			ctx:        s.ctx,
 		}
 
 	case meta.IntType:
-		Data_ := make([]int, len(s.Data_))
-		NullMask_ := utils.BinVecInit(len(s.Data_), false)
-		if s.IsNullable_ {
-			copy(NullMask_, s.NullMask_)
+		data := make([]int, len(s.data))
+		nullMask := utils.BinVecInit(len(s.data), false)
+		if s.isNullable {
+			copy(nullMask, s.nullMask)
 		}
 
-		if s.IsNullable_ {
-			for i, v := range s.Data_ {
+		if s.isNullable {
+			for i, v := range s.data {
 				if !s.IsNull(i) {
 					d, err := strconv.Atoi(*v)
 					if err != nil {
-						NullMask_[i>>3] |= (1 << uint(i%8))
+						nullMask[i>>3] |= (1 << uint(i%8))
 					} else {
-						Data_[i] = int(d)
+						data[i] = int(d)
 					}
 				}
 			}
 		} else {
-			for i, v := range s.Data_ {
+			for i, v := range s.data {
 				d, err := strconv.Atoi(*v)
 				if err != nil {
-					NullMask_[i>>3] |= (1 << uint(i%8))
+					nullMask[i>>3] |= (1 << uint(i%8))
 				} else {
-					Data_[i] = int(d)
+					data[i] = int(d)
 				}
 			}
 		}
 
 		return Ints{
-			IsNullable_: true,
-			Sorted_:     enchanter.SORTED_NONE,
-			Data_:       Data_,
-			NullMask_:   NullMask_,
-			Partition_:  nil,
-			Ctx_:        s.Ctx_,
+			isNullable: true,
+			sorted:     enchanter.SORTED_NONE,
+			data:       data,
+			nullMask:   nullMask,
+			partition:  nil,
+			ctx:        s.ctx,
 		}
 
 	case meta.Int64Type:
-		Data_ := make([]int64, len(s.Data_))
-		NullMask_ := utils.BinVecInit(len(s.Data_), false)
-		if s.IsNullable_ {
-			copy(NullMask_, s.NullMask_)
+		data := make([]int64, len(s.data))
+		nullMask := utils.BinVecInit(len(s.data), false)
+		if s.isNullable {
+			copy(nullMask, s.nullMask)
 		}
 
-		if s.IsNullable_ {
-			for i, v := range s.Data_ {
+		if s.isNullable {
+			for i, v := range s.data {
 				if !s.IsNull(i) {
 					d, err := strconv.ParseInt(*v, 10, 64)
 					if err != nil {
-						NullMask_[i>>3] |= (1 << uint(i%8))
+						nullMask[i>>3] |= (1 << uint(i%8))
 					} else {
-						Data_[i] = d
+						data[i] = d
 					}
 				}
 			}
 		} else {
-			for i, v := range s.Data_ {
+			for i, v := range s.data {
 				d, err := strconv.ParseInt(*v, 10, 64)
 				if err != nil {
-					NullMask_[i>>3] |= (1 << uint(i%8))
+					nullMask[i>>3] |= (1 << uint(i%8))
 				} else {
-					Data_[i] = d
+					data[i] = d
 				}
 			}
 		}
 
 		return Int64s{
-			IsNullable_: true,
-			Sorted_:     enchanter.SORTED_NONE,
-			Data_:       Data_,
-			NullMask_:   NullMask_,
-			Partition_:  nil,
-			Ctx_:        s.Ctx_,
+			isNullable: true,
+			sorted:     enchanter.SORTED_NONE,
+			data:       data,
+			nullMask:   nullMask,
+			partition:  nil,
+			ctx:        s.ctx,
 		}
 
 	case meta.Float64Type:
-		Data_ := make([]float64, len(s.Data_))
-		NullMask_ := utils.BinVecInit(len(s.Data_), false)
-		if s.IsNullable_ {
-			copy(NullMask_, s.NullMask_)
+		data := make([]float64, len(s.data))
+		nullMask := utils.BinVecInit(len(s.data), false)
+		if s.isNullable {
+			copy(nullMask, s.nullMask)
 		}
 
-		if s.IsNullable_ {
-			for i, v := range s.Data_ {
+		if s.isNullable {
+			for i, v := range s.data {
 				if !s.IsNull(i) {
 					f, err := strconv.ParseFloat(*v, 64)
 					if err != nil {
-						NullMask_[i>>3] |= (1 << uint(i%8))
+						nullMask[i>>3] |= (1 << uint(i%8))
 					} else {
-						Data_[i] = f
+						data[i] = f
 					}
 				}
 			}
 		} else {
-			for i, v := range s.Data_ {
+			for i, v := range s.data {
 				f, err := strconv.ParseFloat(*v, 64)
 				if err != nil {
-					NullMask_[i>>3] |= (1 << uint(i%8))
+					nullMask[i>>3] |= (1 << uint(i%8))
 				} else {
-					Data_[i] = f
+					data[i] = f
 				}
 			}
 		}
 
 		return Float64s{
-			IsNullable_: true,
-			Sorted_:     enchanter.SORTED_NONE,
-			Data_:       Data_,
-			NullMask_:   NullMask_,
-			Partition_:  nil,
-			Ctx_:        s.Ctx_,
+			isNullable: true,
+			sorted:     enchanter.SORTED_NONE,
+			data:       data,
+			nullMask:   nullMask,
+			partition:  nil,
+			ctx:        s.ctx,
 		}
 
 	case meta.StringType:
@@ -296,50 +303,50 @@ func (s Strings) Cast(t meta.BaseType) Series {
 
 // Parse the series as a time series.
 func (s Strings) ParseTime(layout string) Series {
-	Data_ := make([]time.Time, len(s.Data_))
-	NullMask_ := utils.BinVecInit(len(s.Data_), false)
-	if s.IsNullable_ {
-		copy(NullMask_, s.NullMask_)
+	data := make([]time.Time, len(s.data))
+	nullMask := utils.BinVecInit(len(s.data), false)
+	if s.isNullable {
+		copy(nullMask, s.nullMask)
 	}
 
-	for i, v := range s.Data_ {
-		if s.IsNullable_ && s.IsNull(i) {
+	for i, v := range s.data {
+		if s.isNullable && s.IsNull(i) {
 			continue
 		}
 		t, err := time.Parse(layout, *v)
 		if err != nil {
-			NullMask_[i>>3] |= (1 << uint(i%8))
+			nullMask[i>>3] |= (1 << uint(i%8))
 		} else {
-			Data_[i] = t
+			data[i] = t
 		}
 	}
 
 	return Times{
-		IsNullable_: true,
-		Sorted_:     enchanter.SORTED_NONE,
-		Data_:       Data_,
-		NullMask_:   NullMask_,
-		Partition_:  nil,
-		Ctx_:        s.Ctx_,
+		isNullable: true,
+		sorted:     enchanter.SORTED_NONE,
+		data:       data,
+		nullMask:   nullMask,
+		partition:  nil,
+		ctx:        s.ctx,
 	}
 }
 
 ////////////////////////			GROUPING OPERATIONS
 
-// A SeriesStringPartition is a Partition_ of a Strings.
+// A SeriesStringPartition is a partition of a Strings.
 // Each key is a hash of a bool value, and each value is a slice of indices
 // of the original series that are set to that value.
 type SeriesStringPartition struct {
-	Partition_ map[int64][]int
-	Ctx_       *enchanter.Context
+	partition map[int64][]int
+	ctx       *enchanter.Context
 }
 
 func (gp *SeriesStringPartition) GetSize() int {
-	return len(gp.Partition_)
+	return len(gp.partition)
 }
 
 func (gp *SeriesStringPartition) GetMap() map[int64][]int {
-	return gp.Partition_
+	return gp.partition
 }
 
 func (s Strings) Group() Series {
@@ -348,7 +355,7 @@ func (s Strings) Group() Series {
 	worker := func(threadNum, start, end int, map_ map[int64][]int) {
 		var ptr unsafe.Pointer
 		for i := start; i < end; i++ {
-			ptr = unsafe.Pointer(s.Data_[i])
+			ptr = unsafe.Pointer(s.data[i])
 			map_[(*(*int64)(unsafe.Pointer(&ptr)))] = append(map_[(*(*int64)(unsafe.Pointer(&ptr)))], i)
 		}
 	}
@@ -360,27 +367,27 @@ func (s Strings) Group() Series {
 			if s.IsNull(i) {
 				(*nulls) = append((*nulls), i)
 			} else {
-				ptr = unsafe.Pointer(s.Data_[i])
+				ptr = unsafe.Pointer(s.data[i])
 				map_[(*(*int64)(unsafe.Pointer(&ptr)))] = append(map_[(*(*int64)(unsafe.Pointer(&ptr)))], i)
 			}
 		}
 	}
 
-	Partition_ := SeriesStringPartition{
-		Partition_: __series_groupby(
-			enchanter.THREADS_NUMBER, enchanter.MINIMUM_PARALLEL_SIZE_1, len(s.Data_), s.HasNull(),
+	partition := SeriesStringPartition{
+		partition: seriesGroupBy(
+			enchanter.THREADS_NUMBER, enchanter.MINIMUM_PARALLEL_SIZE_1, len(s.data), s.HasNull(),
 			worker, workerNulls),
-		Ctx_: s.Ctx_,
+		ctx: s.ctx,
 	}
 
-	s.Partition_ = &Partition_
+	s.partition = &partition
 
 	return s
 }
 
-func (s Strings) GroupBy(Partition_ SeriesPartition) Series {
+func (s Strings) GroupBy(partition SeriesPartition) Series {
 	// collect all keys
-	otherIndeces := Partition_.GetMap()
+	otherIndeces := partition.GetMap()
 	keys := make([]int64, len(otherIndeces))
 	i := 0
 	for k := range otherIndeces {
@@ -394,7 +401,7 @@ func (s Strings) GroupBy(Partition_ SeriesPartition) Series {
 		var ptr unsafe.Pointer
 		for _, h := range keys[start:end] { // keys is defined outside the function
 			for _, index := range otherIndeces[h] { // otherIndeces is defined outside the function
-				ptr = unsafe.Pointer(s.Data_[index])
+				ptr = unsafe.Pointer(s.data[index])
 				newHash = *(*int64)(unsafe.Pointer(&ptr)) + enchanter.HASH_MAGIC_NUMBER + (h << 13) + (h >> 4)
 				map_[newHash] = append(map_[newHash], index)
 			}
@@ -410,7 +417,7 @@ func (s Strings) GroupBy(Partition_ SeriesPartition) Series {
 				if s.IsNull(index) {
 					newHash = enchanter.HASH_MAGIC_NUMBER_NULL + (h << 13) + (h >> 4)
 				} else {
-					ptr = unsafe.Pointer(s.Data_[index])
+					ptr = unsafe.Pointer(s.data[index])
 					newHash = *(*int64)(unsafe.Pointer(&ptr)) + enchanter.HASH_MAGIC_NUMBER + (h << 13) + (h >> 4)
 				}
 				map_[newHash] = append(map_[newHash], index)
@@ -419,13 +426,13 @@ func (s Strings) GroupBy(Partition_ SeriesPartition) Series {
 	}
 
 	newPartition := SeriesStringPartition{
-		Partition_: __series_groupby(
+		partition: seriesGroupBy(
 			enchanter.THREADS_NUMBER, enchanter.MINIMUM_PARALLEL_SIZE_1, len(keys), s.HasNull(),
 			worker, workerNulls),
-		Ctx_: s.Ctx_,
+		ctx: s.ctx,
 	}
 
-	s.Partition_ = &newPartition
+	s.partition = &newPartition
 
 	return s
 }
@@ -433,61 +440,61 @@ func (s Strings) GroupBy(Partition_ SeriesPartition) Series {
 ////////////////////////			SORTING OPERATIONS
 
 func (s Strings) Less(i, j int) bool {
-	if s.IsNullable_ {
-		if s.NullMask_[i>>3]&(1<<uint(i%8)) > 0 {
+	if s.isNullable {
+		if s.nullMask[i>>3]&(1<<uint(i%8)) > 0 {
 			return false
 		}
-		if s.NullMask_[j>>3]&(1<<uint(j%8)) > 0 {
+		if s.nullMask[j>>3]&(1<<uint(j%8)) > 0 {
 			return true
 		}
 	}
 
-	return (*s.Data_[i]) < (*s.Data_[j])
+	return (*s.data[i]) < (*s.data[j])
 }
 
 func (s Strings) Equal(i, j int) bool {
-	if s.IsNullable_ {
-		if (s.NullMask_[i>>3] & (1 << uint(i%8))) > 0 {
-			return (s.NullMask_[j>>3] & (1 << uint(j%8))) > 0
+	if s.isNullable {
+		if (s.nullMask[i>>3] & (1 << uint(i%8))) > 0 {
+			return (s.nullMask[j>>3] & (1 << uint(j%8))) > 0
 		}
-		if (s.NullMask_[j>>3] & (1 << uint(j%8))) > 0 {
+		if (s.nullMask[j>>3] & (1 << uint(j%8))) > 0 {
 			return false
 		}
 	}
 
-	return (*s.Data_[i]) == (*s.Data_[j])
+	return (*s.data[i]) == (*s.data[j])
 }
 
 func (s Strings) Swap(i, j int) {
-	if s.IsNullable_ {
+	if s.isNullable {
 		// i is null, j is not null
-		if s.NullMask_[i>>3]&(1<<uint(i%8)) > 0 && s.NullMask_[j>>3]&(1<<uint(j%8)) == 0 {
-			s.NullMask_[i>>3] &= ^(1 << uint(i%8))
-			s.NullMask_[j>>3] |= 1 << uint(j%8)
+		if s.nullMask[i>>3]&(1<<uint(i%8)) > 0 && s.nullMask[j>>3]&(1<<uint(j%8)) == 0 {
+			s.nullMask[i>>3] &= ^(1 << uint(i%8))
+			s.nullMask[j>>3] |= 1 << uint(j%8)
 		} else
 
 		// i is not null, j is null
-		if s.NullMask_[i>>3]&(1<<uint(i%8)) == 0 && s.NullMask_[j>>3]&(1<<uint(j%8)) > 0 {
-			s.NullMask_[i>>3] |= 1 << uint(i%8)
-			s.NullMask_[j>>3] &= ^(1 << uint(j%8))
+		if s.nullMask[i>>3]&(1<<uint(i%8)) == 0 && s.nullMask[j>>3]&(1<<uint(j%8)) > 0 {
+			s.nullMask[i>>3] |= 1 << uint(i%8)
+			s.nullMask[j>>3] &= ^(1 << uint(j%8))
 		}
 	}
 
-	s.Data_[i], s.Data_[j] = s.Data_[j], s.Data_[i]
+	s.data[i], s.data[j] = s.data[j], s.data[i]
 }
 
 func (s Strings) Sort() Series {
-	if s.Sorted_ != enchanter.SORTED_ASC {
+	if s.sorted != enchanter.SORTED_ASC {
 		sort.Sort(s)
-		s.Sorted_ = enchanter.SORTED_ASC
+		s.sorted = enchanter.SORTED_ASC
 	}
 	return s
 }
 
 func (s Strings) SortRev() Series {
-	if s.Sorted_ != enchanter.SORTED_DESC {
+	if s.sorted != enchanter.SORTED_DESC {
 		sort.Sort(sort.Reverse(s))
-		s.Sorted_ = enchanter.SORTED_DESC
+		s.sorted = enchanter.SORTED_DESC
 	}
 	return s
 }
@@ -495,60 +502,60 @@ func (s Strings) SortRev() Series {
 ////////////////////////			STRING OPERATIONS
 
 func (s Strings) ToUpper() Series {
-	if s.Partition_ != nil {
+	if s.partition != nil {
 		return Errors{"Strings.ToUpper() not supported on grouped Series"}
 	}
 
-	for i := 0; i < len(s.Data_); i++ {
-		s.Data_[i] = s.Ctx_.StringPool.Put(strings.ToUpper(*s.Data_[i]))
+	for i := 0; i < len(s.data); i++ {
+		s.data[i] = s.ctx.StringPool.Put(strings.ToUpper(*s.data[i]))
 	}
 
 	return s
 }
 
 func (s Strings) ToLower() Series {
-	if s.Partition_ != nil {
+	if s.partition != nil {
 		return Errors{"Strings.ToLower() not supported on grouped Series"}
 	}
 
-	for i := 0; i < len(s.Data_); i++ {
-		s.Data_[i] = s.Ctx_.StringPool.Put(strings.ToLower(*s.Data_[i]))
+	for i := 0; i < len(s.data); i++ {
+		s.data[i] = s.ctx.StringPool.Put(strings.ToLower(*s.data[i]))
 	}
 
 	return s
 }
 
 func (s Strings) TrimSpace() Series {
-	if s.Partition_ != nil {
+	if s.partition != nil {
 		return Errors{"Strings.TrimSpace() not supported on grouped Series"}
 	}
 
-	for i := 0; i < len(s.Data_); i++ {
-		s.Data_[i] = s.Ctx_.StringPool.Put(strings.TrimSpace(*s.Data_[i]))
+	for i := 0; i < len(s.data); i++ {
+		s.data[i] = s.ctx.StringPool.Put(strings.TrimSpace(*s.data[i]))
 	}
 
 	return s
 }
 
 func (s Strings) Trim(cutset string) Series {
-	if s.Partition_ != nil {
+	if s.partition != nil {
 		return Errors{"Strings.Trim() not supported on grouped Series"}
 	}
 
-	for i := 0; i < len(s.Data_); i++ {
-		s.Data_[i] = s.Ctx_.StringPool.Put(strings.Trim(*s.Data_[i], cutset))
+	for i := 0; i < len(s.data); i++ {
+		s.data[i] = s.ctx.StringPool.Put(strings.Trim(*s.data[i], cutset))
 	}
 
 	return s
 }
 
 func (s Strings) Replace(old, new string, n int) Series {
-	if s.Partition_ != nil {
+	if s.partition != nil {
 		return Errors{"Strings.Replace() not supported on grouped Series"}
 	}
 
-	for i := 0; i < len(s.Data_); i++ {
-		s.Data_[i] = s.Ctx_.StringPool.Put(strings.Replace(*s.Data_[i], old, new, n))
+	for i := 0; i < len(s.data); i++ {
+		s.data[i] = s.ctx.StringPool.Put(strings.Replace(*s.data[i], old, new, n))
 	}
 
 	return s

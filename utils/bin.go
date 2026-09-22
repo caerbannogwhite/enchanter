@@ -151,3 +151,43 @@ func BinVecOrVV(a, b, res []uint8) {
 		res[i] = a[i] | b[i]
 	}
 }
+
+// This function computes the bitwise AND of two scalar binary vectors.
+// The result is stored in the third argument.
+func BinVecAndSS(a, b, res []uint8) {
+	res[0] = a[0] & b[0]
+}
+
+// This function computes the bitwise AND of a scalar and a vector binary
+// vector, broadcasting the scalar. The result is stored in the third
+// argument.
+func BinVecAndSV(a, b, res []uint8) {
+	if a[0] == 0 {
+		for i := range res {
+			res[i] = 0
+		}
+	} else {
+		copy(res, b)
+	}
+}
+
+// This function computes the bitwise AND of a vector and a scalar binary
+// vector, broadcasting the scalar. The result is stored in the third
+// argument.
+func BinVecAndVS(a, b, res []uint8) {
+	if b[0] == 0 {
+		for i := range res {
+			res[i] = 0
+		}
+	} else {
+		copy(res, a)
+	}
+}
+
+// This function computes the bitwise AND of two binary vectors.
+// The result is stored in the third argument.
+func BinVecAndVV(a, b, res []uint8) {
+	for i := range res {
+		res[i] = a[i] & b[i]
+	}
+}

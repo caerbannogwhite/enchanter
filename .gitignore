@@ -4,6 +4,9 @@
 /testdata/*.sas7bdat
 /testdata/*.XPT
 /testdata/*.csv
+# small committed fixtures (from kshedden/datareader, BSD-3-Clause)
+!/testdata/sas7bdat_test1.sas7bdat
+!/testdata/sas7bdat_test1_ref.csv
 /testdata/*.parquet
 /testdata/*.arrow
 # Go build artifacts

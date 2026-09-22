@@ -10,33 +10,33 @@ var integrationCtx = enchanter.NewContext()
 
 func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 	// Create employee dataframe
-	employees := NewBaseDataFrame(integrationCtx).
+	employees := NewDataFrame(integrationCtx).
 		AddSeriesFromInt64s("emp_id", []int64{1, 2, 3, 4, 5, 6}, nil, false).
 		AddSeriesFromStrings("name", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank"}, nil, false).
 		AddSeriesFromStrings("department", []string{"HR", "IT", "IT", "HR", "Finance", "IT"}, nil, false).
 		AddSeriesFromInt64s("manager_id", []int64{0, 1, 2, 1, 0, 2}, nil, false) // 0 means no manager
 
 	// Create salary dataframe
-	salaries := NewBaseDataFrame(integrationCtx).
+	salaries := NewDataFrame(integrationCtx).
 		AddSeriesFromInt64s("emp_id", []int64{1, 2, 3, 4, 5, 6, 7}, nil, false). // emp_id 7 doesn't exist in employees
 		AddSeriesFromFloat64s("salary", []float64{75000, 65000, 60000, 70000, 80000, 55000, 50000}, nil, false).
 		AddSeriesFromInt64s("year", []int64{2023, 2023, 2023, 2023, 2023, 2023, 2023}, nil, false)
 
 	// Create bonus dataframe
-	bonuses := NewBaseDataFrame(integrationCtx).
+	bonuses := NewDataFrame(integrationCtx).
 		AddSeriesFromInt64s("emp_id", []int64{1, 2, 4, 5}, nil, false). // Not all employees have bonuses
 		AddSeriesFromFloat64s("bonus", []float64{5000, 3000, 4000, 6000}, nil, false)
 
 	// Complex scenario: Join employees with salaries (inner join)
-	empSalaries := employees.Join(INNER_JOIN, salaries, "emp_id")
-	if empSalaries.GetError() != nil {
-		t.Fatal("Employee-Salary join failed:", empSalaries.GetError())
+	empSalaries := employees.Join(JoinInner, salaries, "emp_id")
+	if empSalaries.Err() != nil {
+		t.Fatal("Employee-Salary join failed:", empSalaries.Err())
 	}
 
 	// Then join with bonuses (left join to include employees without bonuses)
-	fullData := empSalaries.Join(LEFT_JOIN, bonuses, "emp_id")
-	if fullData.GetError() != nil {
-		t.Fatal("Full data join failed:", fullData.GetError())
+	fullData := empSalaries.Join(JoinLeft, bonuses, "emp_id")
+	if fullData.Err() != nil {
+		t.Fatal("Full data join failed:", fullData.Err())
 	}
 
 	// Now perform complex grouping: Group by department and calculate various metrics
@@ -50,8 +50,8 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 			Std("salary"),  // Salary standard deviation
 		).Run()
 
-	if departmentStats.GetError() != nil {
-		t.Fatal("Department statistics failed:", departmentStats.GetError())
+	if departmentStats.Err() != nil {
+		t.Fatal("Department statistics failed:", departmentStats.Err())
 	}
 
 	// Verify results
@@ -71,8 +71,8 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 
 	// Verify specific department statistics
 	for i := 0; i < departmentStats.NRows(); i++ {
-		dept := departmentStats.C("department").Get(i).(string)
-		count := departmentStats.C("n").Get(i).(int64)
+		dept := departmentStats.Col("department").Get(i).(string)
+		count := departmentStats.Col("n").Get(i).(int64)
 
 		switch dept {
 		case "IT":
@@ -92,9 +92,9 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 
 	// Test multiple join types in sequence
 	// Right join to see what salary records don't have employees
-	rightJoinResult := employees.Join(RIGHT_JOIN, salaries, "emp_id")
-	if rightJoinResult.GetError() != nil {
-		t.Fatal("Right join failed:", rightJoinResult.GetError())
+	rightJoinResult := employees.Join(JoinRight, salaries, "emp_id")
+	if rightJoinResult.Err() != nil {
+		t.Fatal("Right join failed:", rightJoinResult.Err())
 	}
 
 	// Should have 7 rows (all salary records)
@@ -103,9 +103,9 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 	}
 
 	// Outer join to see complete picture
-	outerJoinResult := employees.Join(OUTER_JOIN, salaries, "emp_id")
-	if outerJoinResult.GetError() != nil {
-		t.Fatal("Outer join failed:", outerJoinResult.GetError())
+	outerJoinResult := employees.Join(JoinOuter, salaries, "emp_id")
+	if outerJoinResult.Err() != nil {
+		t.Fatal("Outer join failed:", outerJoinResult.Err())
 	}
 
 	// Should have 7 rows (employees 1-6 match, salary record 7 is unmatched)
@@ -116,19 +116,19 @@ func TestIntegration_ComplexJoinAndGroupBy(t *testing.T) {
 
 func TestIntegration_ChainedOperations(t *testing.T) {
 	// Test a complex chain of operations
-	sales := NewBaseDataFrame(integrationCtx).
+	sales := NewDataFrame(integrationCtx).
 		AddSeriesFromStrings("region", []string{"North", "South", "East", "West", "North", "South"}, nil, false).
 		AddSeriesFromStrings("product", []string{"A", "B", "A", "C", "B", "A"}, nil, false).
 		AddSeriesFromFloat64s("revenue", []float64{1000, 1500, 800, 1200, 900, 1100}, nil, false).
 		AddSeriesFromInt64s("units", []int64{10, 15, 8, 12, 9, 11}, nil, false)
 
-	targets := NewBaseDataFrame(integrationCtx).
+	targets := NewDataFrame(integrationCtx).
 		AddSeriesFromStrings("region", []string{"North", "South", "East", "West"}, nil, false).
 		AddSeriesFromFloat64s("target", []float64{2000, 2500, 1000, 1500}, nil, false)
 
 	// Chain operations: Join -> Group -> Calculate metrics
 	result := sales.
-		Join(INNER_JOIN, targets, "region").
+		Join(JoinInner, targets, "region").
 		GroupBy("region").
 		Agg(
 			Sum("revenue"),
@@ -136,8 +136,8 @@ func TestIntegration_ChainedOperations(t *testing.T) {
 			Mean("target"), // Target should be same for all products in region
 		).Run()
 
-	if result.GetError() != nil {
-		t.Fatal("Chained operations failed:", result.GetError())
+	if result.Err() != nil {
+		t.Fatal("Chained operations failed:", result.Err())
 	}
 
 	if result.NRows() != 4 { // 4 regions
@@ -146,9 +146,9 @@ func TestIntegration_ChainedOperations(t *testing.T) {
 
 	// Verify that each region's data is correctly aggregated
 	for i := 0; i < result.NRows(); i++ {
-		region := result.C("region").Get(i).(string)
-		totalRevenue := result.C("sum(revenue)").Get(i).(float64)
-		target := result.C("mean(target)").Get(i).(float64)
+		region := result.Col("region").Get(i).(string)
+		totalRevenue := result.Col("sum(revenue)").Get(i).(float64)
+		target := result.Col("mean(target)").Get(i).(float64)
 
 		switch region {
 		case "North":
@@ -170,7 +170,7 @@ func TestIntegration_ChainedOperations(t *testing.T) {
 
 func TestIntegration_AllAggregationsWithComplexData(t *testing.T) {
 	// Test all aggregation functions work correctly together
-	data := NewBaseDataFrame(integrationCtx).
+	data := NewDataFrame(integrationCtx).
 		AddSeriesFromStrings("category", []string{"A", "A", "B", "B", "A", "C"}, nil, false).
 		AddSeriesFromFloat64s("value1", []float64{10.5, 20.3, 15.7, 25.1, 12.9, 30.0}, nil, false).
 		AddSeriesFromFloat64s("value2", []float64{100, 200, 150, 250, 120, 300}, nil, false).
@@ -189,8 +189,8 @@ func TestIntegration_AllAggregationsWithComplexData(t *testing.T) {
 			Mean("count_field"),
 		).Run()
 
-	if result.GetError() != nil {
-		t.Fatal("All aggregations failed:", result.GetError())
+	if result.Err() != nil {
+		t.Fatal("All aggregations failed:", result.Err())
 	}
 
 	expectedCols := []string{
@@ -207,11 +207,11 @@ func TestIntegration_AllAggregationsWithComplexData(t *testing.T) {
 
 	// Verify specific calculations for category A
 	for i := 0; i < result.NRows(); i++ {
-		category := result.C("category").Get(i).(string)
+		category := result.Col("category").Get(i).(string)
 		if category == "A" {
-			count := result.C("n").Get(i).(int64)
-			minVal := result.C("min(value1)").Get(i).(float64)
-			maxVal := result.C("max(value1)").Get(i).(float64)
+			count := result.Col("n").Get(i).(int64)
+			minVal := result.Col("min(value1)").Get(i).(float64)
+			maxVal := result.Col("max(value1)").Get(i).(float64)
 
 			if count != 3 { // 3 records for category A
 				t.Errorf("Category A: expected count 3, got %d", count)

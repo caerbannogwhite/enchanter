@@ -176,7 +176,7 @@ func NewSeries(data interface{}, nullMask []bool, makeCopy bool, memOpt bool, ct
 
 // Build an Error Series
 func NewSeriesError(err string) Errors {
-	return Errors{Msg_: err}
+	return Errors{msg: err}
 }
 
 // Build an NA Series
@@ -189,7 +189,7 @@ func NewSeriesNA(size int, ctx *enchanter.Context) NAs {
 		size = 0
 	}
 
-	return NAs{size: size, Ctx_: ctx}
+	return NAs{size: size, ctx: ctx}
 }
 
 // Build a Bool Series, if nullMask is nil then the series is not nullable
@@ -220,10 +220,10 @@ func NewSeriesBool(data []bool, nullMask []bool, makeCopy bool, ctx *enchanter.C
 	}
 
 	return Bools{
-		IsNullable_: isNullable,
-		Data_:       data,
-		NullMask_:   nullMask_,
-		Ctx_:        ctx,
+		isNullable: isNullable,
+		data:       data,
+		nullMask:   nullMask_,
+		ctx:        ctx,
 	}
 }
 
@@ -255,10 +255,10 @@ func NewSeriesInt(data []int, nullMask []bool, makeCopy bool, ctx *enchanter.Con
 	}
 
 	return Ints{
-		IsNullable_: isNullable,
-		Data_:       data,
-		NullMask_:   nullMask_,
-		Ctx_:        ctx,
+		isNullable: isNullable,
+		data:       data,
+		nullMask:   nullMask_,
+		ctx:        ctx,
 	}
 }
 
@@ -290,10 +290,10 @@ func NewSeriesInt64(data []int64, nullMask []bool, makeCopy bool, ctx *enchanter
 	}
 
 	return Int64s{
-		IsNullable_: isNullable,
-		Data_:       data,
-		NullMask_:   nullMask_,
-		Ctx_:        ctx,
+		isNullable: isNullable,
+		data:       data,
+		nullMask:   nullMask_,
+		ctx:        ctx,
 	}
 }
 
@@ -325,10 +325,10 @@ func NewSeriesFloat64(data []float64, nullMask []bool, makeCopy bool, ctx *encha
 	}
 
 	return Float64s{
-		IsNullable_: isNullable,
-		Data_:       data,
-		NullMask_:   nullMask_,
-		Ctx_:        ctx,
+		isNullable: isNullable,
+		data:       data,
+		nullMask:   nullMask_,
+		ctx:        ctx,
 	}
 }
 
@@ -369,10 +369,10 @@ func NewSeriesString(data []string, nullMask []bool, makeCopy bool, ctx *enchant
 	}
 
 	return Strings{
-		IsNullable_: isNullable,
-		Data_:       actualData,
-		NullMask_:   nullMask_,
-		Ctx_:        ctx,
+		isNullable: isNullable,
+		data:       actualData,
+		nullMask:   nullMask_,
+		ctx:        ctx,
 	}
 }
 
@@ -398,10 +398,10 @@ func NewSeriesStringFromPtrs(data []*string, nullMask []bool, makeCopy bool, ctx
 	}
 
 	return Strings{
-		IsNullable_: isNullable,
-		Data_:       data,
-		NullMask_:   nullMask_,
-		Ctx_:        ctx,
+		isNullable: isNullable,
+		data:       data,
+		nullMask:   nullMask_,
+		ctx:        ctx,
 	}
 }
 
@@ -433,11 +433,11 @@ func NewSeriesTime(data []time.Time, nullMask []bool, makeCopy bool, ctx *enchan
 	}
 
 	return Times{
-		IsNullable_: isNullable,
-		Data_:       data,
-		NullMask_:   nullMask_,
-		Ctx_:        ctx,
-		timeFormat:  ctx.GetDateTimeFormat(),
+		isNullable: isNullable,
+		data:       data,
+		nullMask:   nullMask_,
+		ctx:        ctx,
+		timeFormat: ctx.GetDateTimeFormat(),
 	}
 }
 
@@ -469,9 +469,9 @@ func NewSeriesDuration(data []time.Duration, nullMask []bool, makeCopy bool, ctx
 	}
 
 	return Durations{
-		IsNullable_: isNullable,
-		Data_:       data,
-		NullMask_:   nullMask_,
-		Ctx_:        ctx,
+		isNullable: isNullable,
+		data:       data,
+		nullMask:   nullMask_,
+		ctx:        ctx,
 	}
 }

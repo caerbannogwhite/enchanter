@@ -8,19 +8,18 @@ import (
 	"github.com/caerbannogwhite/enchanter"
 )
 
-func loadG1(b *testing.B, name string) BaseDataFrame {
+func loadG1(b *testing.B, name string) DataFrame {
 	p := filepath.Join("..", "testdata", name)
 	if _, err := os.Stat(p); err != nil {
 		b.Skipf("G1 fixture absent: %s", name)
 	}
 	f, _ := os.Open(p)
 	defer f.Close()
-	df := NewBaseDataFrame(enchanter.NewContext()).
-		FromCsv().SetDelimiter(',').SetNullValues(false).SetReader(f).Read()
-	if df.IsErrored() {
-		b.Skipf("load failed: %v", df.GetError())
+	df := ReadCsv(enchanter.NewContext()).SetDelimiter(',').SetNullValues(false).SetReader(f).Read()
+	if df.Err() != nil {
+		b.Skipf("load failed: %v", df.Err())
 	}
-	return df.(BaseDataFrame)
+	return df
 }
 
 func BenchmarkAgg_Q1_sum_v1_by_id1_1e7(b *testing.B) {

@@ -13,29 +13,29 @@ import (
 	"github.com/caerbannogwhite/enchanter/utils"
 )
 
-type BaseDataFramePartitionEntry struct {
+type DataFramePartitionEntry struct {
 	index     int
 	name      string
 	partition series.SeriesPartition
 }
 
-type BaseDataFrame struct {
+type DataFrame struct {
 	isGrouped    bool
 	err          error
 	names        []string
 	series       []series.Series
-	partitions   []BaseDataFramePartitionEntry
+	partitions   []DataFramePartitionEntry
 	groupByNames []string
 	sortParams   []SortParam
 	ctx          *enchanter.Context
 }
 
-func NewBaseDataFrame(ctx *enchanter.Context) DataFrame {
+func NewDataFrame(ctx *enchanter.Context) DataFrame {
 	if ctx == nil {
-		return BaseDataFrame{err: fmt.Errorf("NewBaseDataFrame: context is nil")}
+		return DataFrame{err: fmt.Errorf("NewDataFrame: context is nil")}
 	}
 
-	return BaseDataFrame{
+	return DataFrame{
 		series: make([]series.Series, 0),
 		ctx:    ctx,
 	}
@@ -43,18 +43,18 @@ func NewBaseDataFrame(ctx *enchanter.Context) DataFrame {
 
 ////////////////////////			BASIC ACCESSORS
 
-// GetContext returns the context of the dataframe.
-func (df BaseDataFrame) GetContext() *enchanter.Context {
+// Context returns the context of the dataframe.
+func (df DataFrame) Context() *enchanter.Context {
 	return df.ctx
 }
 
 // Names returns the names of the series in the dataframe.
-func (df BaseDataFrame) Names() []string {
+func (df DataFrame) Names() []string {
 	return df.names
 }
 
 // Types returns the types of the series in the dataframe.
-func (df BaseDataFrame) Types() []meta.BaseType {
+func (df DataFrame) Types() []meta.BaseType {
 	types := make([]meta.BaseType, len(df.series))
 	for i, series := range df.series {
 		types[i] = series.Type()
@@ -63,31 +63,31 @@ func (df BaseDataFrame) Types() []meta.BaseType {
 }
 
 // NCols returns the number of columns in the dataframe.
-func (df BaseDataFrame) NCols() int {
+func (df DataFrame) NCols() int {
 	return len(df.series)
 }
 
 // NRows returns the number of rows in the dataframe.
-func (df BaseDataFrame) NRows() int {
+func (df DataFrame) NRows() int {
 	if len(df.series) == 0 {
 		return 0
 	}
 	return df.series[0].Len()
 }
 
-func (df BaseDataFrame) IsErrored() bool {
-	return df.err != nil
-}
-
-func (df BaseDataFrame) IsGrouped() bool {
-	return df.isGrouped
-}
-
-func (df BaseDataFrame) GetError() error {
+// Err returns the error carried by the frame; nil when the frame is
+// healthy. Operations never panic: a failure travels with the returned
+// frame and is checked once at the end of a chain.
+func (df DataFrame) Err() error {
 	return df.err
 }
 
-func (df BaseDataFrame) GetSeriesIndex(name string) int {
+func (df DataFrame) IsGrouped() bool {
+	return df.isGrouped
+}
+
+// ColIndex returns the position of the named column, -1 when absent.
+func (df DataFrame) ColIndex(name string) int {
 	for i, name_ := range df.names {
 		if name_ == name {
 			return i
@@ -96,18 +96,18 @@ func (df BaseDataFrame) GetSeriesIndex(name string) int {
 	return -1
 }
 
-func (df BaseDataFrame) AddSeries(name string, series series.Series) DataFrame {
+func (df DataFrame) AddSeries(name string, series series.Series) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
 	if df.isGrouped {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeries: cannot add series to a grouped dataframe")
+		df.err = fmt.Errorf("DataFrame.AddSeries: cannot add series to a grouped dataframe")
 		return df
 	}
 
 	if df.NCols() > 0 && series.Len() != df.NRows() {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeries: series length (%d) does not match dataframe length (%d)", series.Len(), df.NRows())
+		df.err = fmt.Errorf("DataFrame.AddSeries: series length (%d) does not match dataframe length (%d)", series.Len(), df.NRows())
 		return df
 	}
 
@@ -117,150 +117,150 @@ func (df BaseDataFrame) AddSeries(name string, series series.Series) DataFrame {
 	return df
 }
 
-func (df BaseDataFrame) AddSeriesFromBools(name string, data []bool, nullMask []bool, makeCopy bool) DataFrame {
+func (df DataFrame) AddSeriesFromBools(name string, data []bool, nullMask []bool, makeCopy bool) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
 	if df.isGrouped {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromBools: cannot add series to a grouped dataframe")
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromBools: cannot add series to a grouped dataframe")
 		return df
 	}
 
 	if df.NCols() > 0 && len(data) != df.NRows() {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromBools: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromBools: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
 		return df
 	}
 
 	return df.AddSeries(name, series.NewSeriesBool(data, nullMask, makeCopy, df.ctx))
 }
 
-func (df BaseDataFrame) AddSeriesFromInts(name string, data []int, nullMask []bool, makeCopy bool) DataFrame {
+func (df DataFrame) AddSeriesFromInts(name string, data []int, nullMask []bool, makeCopy bool) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
 	if df.isGrouped {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromInts: cannot add series to a grouped dataframe")
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromInts: cannot add series to a grouped dataframe")
 		return df
 	}
 
 	if df.NCols() > 0 && len(data) != df.NRows() {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromInts: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromInts: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
 		return df
 	}
 
 	return df.AddSeries(name, series.NewSeriesInt(data, nullMask, makeCopy, df.ctx))
 }
 
-func (df BaseDataFrame) AddSeriesFromInt64s(name string, data []int64, nullMask []bool, makeCopy bool) DataFrame {
+func (df DataFrame) AddSeriesFromInt64s(name string, data []int64, nullMask []bool, makeCopy bool) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
 	if df.isGrouped {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromInt64s: cannot add series to a grouped dataframe")
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromInt64s: cannot add series to a grouped dataframe")
 		return df
 	}
 
 	if df.NCols() > 0 && len(data) != df.NRows() {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromInt64s: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromInt64s: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
 		return df
 	}
 
 	return df.AddSeries(name, series.NewSeriesInt64(data, nullMask, makeCopy, df.ctx))
 }
 
-func (df BaseDataFrame) AddSeriesFromFloat64s(name string, data []float64, nullMask []bool, makeCopy bool) DataFrame {
+func (df DataFrame) AddSeriesFromFloat64s(name string, data []float64, nullMask []bool, makeCopy bool) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
 	if df.isGrouped {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromFloat64s: cannot add series to a grouped dataframe")
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromFloat64s: cannot add series to a grouped dataframe")
 		return df
 	}
 
 	if df.NCols() > 0 && len(data) != df.NRows() {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromFloat64s: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromFloat64s: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
 		return df
 	}
 
 	return df.AddSeries(name, series.NewSeriesFloat64(data, nullMask, makeCopy, df.ctx))
 }
 
-func (df BaseDataFrame) AddSeriesFromStrings(name string, data []string, nullMask []bool, makeCopy bool) DataFrame {
+func (df DataFrame) AddSeriesFromStrings(name string, data []string, nullMask []bool, makeCopy bool) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
 	if df.isGrouped {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromStrings: cannot add series to a grouped dataframe")
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromStrings: cannot add series to a grouped dataframe")
 		return df
 	}
 
 	if df.NCols() > 0 && len(data) != df.NRows() {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromStrings: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromStrings: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
 		return df
 	}
 
 	return df.AddSeries(name, series.NewSeriesString(data, nullMask, makeCopy, df.ctx))
 }
 
-func (df BaseDataFrame) AddSeriesFromTimes(name string, data []time.Time, nullMask []bool, makeCopy bool) DataFrame {
+func (df DataFrame) AddSeriesFromTimes(name string, data []time.Time, nullMask []bool, makeCopy bool) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
 	if df.isGrouped {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromTimes: cannot add series to a grouped dataframe")
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromTimes: cannot add series to a grouped dataframe")
 		return df
 	}
 
 	if df.NCols() > 0 && len(data) != df.NRows() {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromTimes: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromTimes: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
 		return df
 	}
 
 	return df.AddSeries(name, series.NewSeriesTime(data, nullMask, makeCopy, df.ctx))
 }
 
-func (df BaseDataFrame) AddSeriesFromDurations(name string, data []time.Duration, nullMask []bool, makeCopy bool) DataFrame {
+func (df DataFrame) AddSeriesFromDurations(name string, data []time.Duration, nullMask []bool, makeCopy bool) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
 	if df.isGrouped {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromDurations: cannot add series to a grouped dataframe")
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromDurations: cannot add series to a grouped dataframe")
 		return df
 	}
 
 	if df.NCols() > 0 && len(data) != df.NRows() {
-		df.err = fmt.Errorf("BaseDataFrame.AddSeriesFromDurations: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
+		df.err = fmt.Errorf("DataFrame.AddSeriesFromDurations: series length (%d) does not match dataframe length (%d)", len(data), df.NRows())
 		return df
 	}
 
 	return df.AddSeries(name, series.NewSeriesDuration(data, nullMask, makeCopy, df.ctx))
 }
 
-func (df BaseDataFrame) Replace(name string, s series.Series) DataFrame {
+func (df DataFrame) Replace(name string, s series.Series) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
 	if df.isGrouped {
-		df.err = fmt.Errorf("BaseDataFrame.Replace: cannot replace series in a grouped dataframe")
+		df.err = fmt.Errorf("DataFrame.Replace: cannot replace series in a grouped dataframe")
 		return df
 	}
 
-	index := df.GetSeriesIndex(name)
+	index := df.ColIndex(name)
 	if index == -1 {
-		df.err = fmt.Errorf("BaseDataFrame.Replace: series \"%s\" not found", name)
+		df.err = fmt.Errorf("DataFrame.Replace: series \"%s\" not found", name)
 		return df
 	}
 
 	if s.Len() != df.NRows() {
-		df.err = fmt.Errorf("BaseDataFrame.Replace: series length (%d) does not match dataframe length (%d)", s.Len(), df.NRows())
+		df.err = fmt.Errorf("DataFrame.Replace: series length (%d) does not match dataframe length (%d)", s.Len(), df.NRows())
 		return df
 	}
 
@@ -268,20 +268,20 @@ func (df BaseDataFrame) Replace(name string, s series.Series) DataFrame {
 	return df
 }
 
-// Returns the column with the given name.
-func (df BaseDataFrame) C(name string) series.Series {
+// Col returns the column with the given name.
+func (df DataFrame) Col(name string) series.Series {
 	for i, name_ := range df.names {
 		if name_ == name {
 			return df.series[i]
 		}
 	}
 
-	return series.Errors{Msg_: fmt.Sprintf("BaseDataFrame.C: series \"%s\" not found", name)}
+	return series.NewSeriesError(fmt.Sprintf("DataFrame.C: series \"%s\" not found", name))
 }
 
 // Returns the series with the given name.
 // For internal use only: returns nil if the series is not found.
-func (df BaseDataFrame) __series(name string) series.Series {
+func (df DataFrame) seriesByName(name string) series.Series {
 	for i, name_ := range df.names {
 		if name_ == name {
 			return df.series[i]
@@ -291,45 +291,89 @@ func (df BaseDataFrame) __series(name string) series.Series {
 	return nil
 }
 
-// Returns the series at the given index.
-func (df BaseDataFrame) At(index int) series.Series {
+// ColAt returns the column at the given index.
+func (df DataFrame) ColAt(index int) series.Series {
 	if index < 0 || index >= len(df.series) {
-		return series.Errors{Msg_: fmt.Sprintf("BaseDataFrame.SeriesAt: index %d out of bounds", index)}
+		return series.NewSeriesError(fmt.Sprintf("DataFrame.ColAt: index %d out of bounds", index))
 	}
 	return df.series[index]
 }
 
-// Returns the series with the given name as a bool series.
-func (df BaseDataFrame) NameAt(index int) string {
+// Returns the name of the series at the given index, or the empty string
+// when the index is out of bounds.
+func (df DataFrame) NameAt(index int) string {
 	if index < 0 || index >= len(df.names) {
 		return ""
 	}
 	return df.names[index]
 }
 
-// Select returns a DataFrame holding the columns matched by selectors, in
-// selector order; a column matched by several selectors is kept once, at its
-// first match.
+// Select returns a DataFrame holding the named columns, in the order given.
+// Names are matched exactly; a name repeated in the argument list is kept once,
+// at its first position.
 //
-// Each selector is a regular expression, matched UNANCHORED against the column
-// name, so "Car" also selects a column named "CarOrigin". Anchor a selector to
-// match one column exactly:
+//	df.Select("Car", "Origin") // exactly those two columns
 //
-//	df.Select("^Car$", "^Origin$") // exactly those two columns
-//	df.Select("^EX.*1$", "_RAW")   // patterns
-//
-// An invalid regular expression leaves the returned DataFrame in an error
-// state.
-func (df BaseDataFrame) Select(selectors ...string) DataFrame {
+// It is an error to name a column the DataFrame does not have — a typo yields
+// an errored DataFrame rather than a silently missing column. Use
+// SelectMatching for pattern-based selection.
+func (df DataFrame) Select(names ...string) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
-	regexes := make([]*regexp.Regexp, len(selectors))
-	for i, selector := range selectors {
-		regex, err := regexp.Compile(selector)
+	have := make(map[string]bool, len(df.names))
+	for _, name := range df.names {
+		have[name] = true
+	}
+
+	taken := make(map[string]bool, len(names))
+	outNames := make([]string, 0, len(names))
+	seriesList := make([]series.Series, 0, len(names))
+
+	for _, name := range names {
+		if !have[name] {
+			df.err = fmt.Errorf("DataFrame.Select: column \"%s\" not found", name)
+			return df
+		}
+		if taken[name] {
+			continue
+		}
+		taken[name] = true
+		outNames = append(outNames, name)
+		seriesList = append(seriesList, df.Col(name))
+	}
+
+	return DataFrame{
+		names:  outNames,
+		series: seriesList,
+		ctx:    df.ctx,
+	}
+}
+
+// SelectMatching returns a DataFrame holding the columns matched by patterns,
+// in pattern order; a column matched by several patterns is kept once, at its
+// first match.
+//
+// Each pattern is a regular expression, matched UNANCHORED against the column
+// name, so "Car" also selects a column named "CarOrigin". Anchor a pattern to
+// pin it to a whole name:
+//
+//	df.SelectMatching("^EX.*1$", "_RAW")
+//
+// An invalid regular expression leaves the returned DataFrame in an error
+// state. A pattern that matches nothing contributes no columns and is not an
+// error, since a pattern is not a claim that a particular column exists.
+func (df DataFrame) SelectMatching(patterns ...string) DataFrame {
+	if df.err != nil {
+		return df
+	}
+
+	regexes := make([]*regexp.Regexp, len(patterns))
+	for i, pattern := range patterns {
+		regex, err := regexp.Compile(pattern)
 		if err != nil {
-			df.err = fmt.Errorf("BaseDataFrame.Select: invalid selector \"%s\"", selector)
+			df.err = fmt.Errorf("DataFrame.SelectMatching: invalid pattern \"%s\"", pattern)
 			return df
 		}
 		regexes[i] = regex
@@ -348,36 +392,38 @@ func (df BaseDataFrame) Select(selectors ...string) DataFrame {
 			if !selected[name] && regex.MatchString(name) {
 				selected[name] = true
 				names = append(names, name)
-				seriesList = append(seriesList, df.C(name))
+				seriesList = append(seriesList, df.Col(name))
 			}
 		}
 	}
 
-	return BaseDataFrame{
+	return DataFrame{
 		names:  names,
 		series: seriesList,
 		ctx:    df.ctx,
 	}
 }
 
-func (df BaseDataFrame) SelectAt(indices ...int) DataFrame {
+// SelectAt keeps the columns at the given indices, in the order given.
+// An index outside the frame is an error.
+func (df DataFrame) SelectAt(indices ...int) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
-	selected := NewBaseDataFrame(df.ctx)
+	selected := NewDataFrame(df.ctx)
 	for _, index := range indices {
 		if index < 0 || index >= len(df.series) {
-			selected.AddSeries(df.names[index], df.series[index])
-		} else {
-			return BaseDataFrame{err: fmt.Errorf("BaseDataFrame.SelectAt: index %d out of bounds", index)}
+			df.err = fmt.Errorf("DataFrame.SelectAt: index %d out of bounds", index)
+			return df
 		}
+		selected = selected.AddSeries(df.names[index], df.series[index])
 	}
 
 	return selected
 }
 
-func (df BaseDataFrame) Filter(mask any) DataFrame {
+func (df DataFrame) Filter(mask any) DataFrame {
 	if df.err != nil {
 		return df
 	}
@@ -390,13 +436,13 @@ func (df BaseDataFrame) Filter(mask any) DataFrame {
 		if mask, ok := mask.([]bool); ok {
 			maskSeries = series.NewSeriesBool(mask, nil, false, df.ctx)
 		} else {
-			df.err = fmt.Errorf("BaseDataFrame.Filter: mask is not a bool series")
+			df.err = fmt.Errorf("DataFrame.Filter: mask is not a bool series")
 			return df
 		}
 	}
 
 	if maskSeries.Len() != df.NRows() {
-		df.err = fmt.Errorf("BaseDataFrame.Filter: mask length (%d) does not match dataframe length (%d)", maskSeries.Len(), df.NRows())
+		df.err = fmt.Errorf("DataFrame.Filter: mask length (%d) does not match dataframe length (%d)", maskSeries.Len(), df.NRows())
 		return df
 	}
 
@@ -405,21 +451,21 @@ func (df BaseDataFrame) Filter(mask any) DataFrame {
 		seriesList = append(seriesList, series.Filter(maskSeries))
 	}
 
-	return BaseDataFrame{
+	return DataFrame{
 		names:  df.names,
 		series: seriesList,
 		ctx:    df.ctx,
 	}
 }
 
-func (df BaseDataFrame) GroupBy(by ...string) DataFrame {
+func (df DataFrame) GroupBy(by ...string) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
 	// Grouping an already grouped dataframe replaces the existing grouping.
 	if df.isGrouped {
-		df = df.Ungroup().(BaseDataFrame)
+		df = df.Ungroup()
 	}
 
 	// Check that all the group by columns exist
@@ -433,7 +479,7 @@ func (df BaseDataFrame) GroupBy(by ...string) DataFrame {
 		}
 
 		if !found {
-			df.err = fmt.Errorf("BaseDataFrame.GroupBy: column \"%s\" not found", name)
+			df.err = fmt.Errorf("DataFrame.GroupBy: column \"%s\" not found", name)
 			return df
 		}
 	}
@@ -449,32 +495,32 @@ func (df BaseDataFrame) GroupBy(by ...string) DataFrame {
 }
 
 // buildPartitions materializes the partition chain for the recorded
-// group-by columns (df.groupByNames). BaseDataFrame is passed by value, so
+// group-by columns (df.groupByNames). DataFrame is passed by value, so
 // there is nowhere durable to cache the result across calls; it is rebuilt
 // fresh every time. Only the legacy Join path calls this — the new Agg
 // engine (Task 8) reads the raw series directly and never needs it.
-func (df BaseDataFrame) buildPartitions() []BaseDataFramePartitionEntry {
-	partitions := make([]BaseDataFramePartitionEntry, len(df.groupByNames))
+func (df DataFrame) buildPartitions() []DataFramePartitionEntry {
+	partitions := make([]DataFramePartitionEntry, len(df.groupByNames))
 
 	for partitionsIndex, name := range df.groupByNames {
-		i := df.GetSeriesIndex(name)
+		i := df.ColIndex(name)
 		s := df.series[i]
 
 		// First partition: group the series
 		if partitionsIndex == 0 {
-			partitions[partitionsIndex] = BaseDataFramePartitionEntry{
+			partitions[partitionsIndex] = DataFramePartitionEntry{
 				index:     i,
 				name:      name,
-				partition: s.Group().GetPartition(),
+				partition: s.Group().Partition(),
 			}
 		} else
 
 		// Subsequent partitions: sub-group the series
 		{
-			partitions[partitionsIndex] = BaseDataFramePartitionEntry{
+			partitions[partitionsIndex] = DataFramePartitionEntry{
 				index:     i,
 				name:      name,
-				partition: s.GroupBy(partitions[partitionsIndex-1].partition).GetPartition(),
+				partition: s.GroupBy(partitions[partitionsIndex-1].partition).Partition(),
 			}
 		}
 	}
@@ -482,7 +528,7 @@ func (df BaseDataFrame) buildPartitions() []BaseDataFramePartitionEntry {
 	return partitions
 }
 
-func (df BaseDataFrame) Ungroup() DataFrame {
+func (df DataFrame) Ungroup() DataFrame {
 	if df.err != nil {
 		return df
 	}
@@ -493,7 +539,7 @@ func (df BaseDataFrame) Ungroup() DataFrame {
 	return df
 }
 
-func (df BaseDataFrame) getPartitions() []series.SeriesPartition {
+func (df DataFrame) getPartitions() []series.SeriesPartition {
 	if df.err != nil {
 		return nil
 	}
@@ -510,24 +556,32 @@ func (df BaseDataFrame) getPartitions() []series.SeriesPartition {
 	}
 }
 
-func (df BaseDataFrame) Join(how DataFrameJoinType, other DataFrame, on ...string) DataFrame {
+// Join joins the two frames on the given columns, or on every same-named
+// column when none are given. Null keys match null keys.
+//
+// The output row order is part of the contract. Rows follow the left
+// frame's row order, and a row with several matches produces consecutive
+// output rows, ordered by the right frame's rows. A right join follows
+// the right frame's row order instead. In an outer join the unmatched
+// right rows come last, in the right frame's row order.
+func (df DataFrame) Join(how JoinType, other DataFrame, on ...string) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
 	// CASE: the dataframes have different contexts
-	if df.ctx != other.GetContext() {
-		df.err = fmt.Errorf("BaseDataFrame.Join: dataframes have different contexts")
+	if df.ctx != other.Context() {
+		df.err = fmt.Errorf("DataFrame.Join: dataframes have different contexts")
 		return df
 	}
 
 	if df.isGrouped {
-		df.err = fmt.Errorf("BaseDataFrame.Join: cannot join a grouped dataframe")
+		df.err = fmt.Errorf("DataFrame.Join: cannot join a grouped dataframe")
 		return df
 	}
 
 	if other.IsGrouped() {
-		df.err = fmt.Errorf("BaseDataFrame.Join: cannot join with a grouped dataframe")
+		df.err = fmt.Errorf("DataFrame.Join: cannot join with a grouped dataframe")
 		return df
 	}
 
@@ -548,27 +602,27 @@ func (df BaseDataFrame) Join(how DataFrameJoinType, other DataFrame, on ...strin
 			}
 		}
 		if !found {
-			df.err = fmt.Errorf("BaseDataFrame.Join: column \"%s\" not found in left dataframe", name)
+			df.err = fmt.Errorf("DataFrame.Join: column \"%s\" not found in left dataframe", name)
 			return df
 		}
 
 		// Series B
 		found = false
 		otherNames := other.Names()
-		for idx, series := range other.(BaseDataFrame).series {
+		for idx, series := range other.series {
 			if idx < len(otherNames) && otherNames[idx] == name {
 				found = true
 
 				// CHECK: the types must match
 				if types[len(types)-1] != series.Type() {
-					df.err = fmt.Errorf("BaseDataFrame.Join: columns \"%s\" have different types", name)
+					df.err = fmt.Errorf("DataFrame.Join: columns \"%s\" have different types", name)
 					return df
 				}
 				break
 			}
 		}
 		if !found {
-			df.err = fmt.Errorf("BaseDataFrame.Join: column \"%s\" not found in right dataframe", name)
+			df.err = fmt.Errorf("DataFrame.Join: column \"%s\" not found in right dataframe", name)
 			return df
 		}
 	}
@@ -576,7 +630,7 @@ func (df BaseDataFrame) Join(how DataFrameJoinType, other DataFrame, on ...strin
 	// CASE: on is empty -> use all columns with the same name
 	if len(on) == 0 {
 		for _, name := range df.Names() {
-			if other.GetSeriesIndex(name) != -1 {
+			if other.ColIndex(name) != -1 {
 				on = append(on, name)
 			}
 		}
@@ -584,21 +638,21 @@ func (df BaseDataFrame) Join(how DataFrameJoinType, other DataFrame, on ...strin
 
 	// CASE: on is still empty -> error
 	if len(on) == 0 {
-		df.err = fmt.Errorf("BaseDataFrame.Join: no columns to join on")
+		df.err = fmt.Errorf("DataFrame.Join: no columns to join on")
 		return df
 	}
 
 	// CHECK: all columns in on must have the same type
 	for _, name := range on {
-		if df.C(name).Type() != other.C(name).Type() {
-			df.err = fmt.Errorf("BaseDataFrame.Join: columns \"%s\" have different types", name)
+		if df.Col(name).Type() != other.Col(name).Type() {
+			df.err = fmt.Errorf("DataFrame.Join: columns \"%s\" have different types", name)
 			return df
 		}
 	}
 
 	// Group the dataframes by the join columns
-	dfGrouped := df.GroupBy(on...).(BaseDataFrame)
-	otherGrouped := other.GroupBy(on...).(BaseDataFrame)
+	dfGrouped := df.GroupBy(on...)
+	otherGrouped := other.GroupBy(on...)
 
 	colsDiffA := make([]string, 0)
 	colsDiffB := make([]string, 0)
@@ -641,7 +695,7 @@ func (df BaseDataFrame) Join(how DataFrameJoinType, other DataFrame, on ...strin
 		}
 	}
 
-	joined := NewBaseDataFrame(df.ctx)
+	joined := NewDataFrame(df.ctx)
 
 	pA := dfGrouped.getPartitions()
 	pB := otherGrouped.getPartitions()
@@ -694,336 +748,221 @@ func (df BaseDataFrame) Join(how DataFrameJoinType, other DataFrame, on ...strin
 		j++
 	}
 
+	// Materialize the matching row pairs. The grouping code assigns group
+	// ids in no useful order, so every output segment is sorted by row
+	// index: the promised row order does not depend on grouping internals.
+	type pair struct{ a, b int }
+
+	matched := make([]pair, 0)
+	for _, key := range keysIntersection {
+		for _, indexA := range mapA[key] {
+			for _, indexB := range mapB[key] {
+				matched = append(matched, pair{indexA, indexB})
+			}
+		}
+	}
+
+	aOnly := make([]int, 0)
+	for _, key := range keysAOnly {
+		aOnly = append(aOnly, mapA[key]...)
+	}
+	sort.Ints(aOnly)
+
+	bOnly := make([]int, 0)
+	for _, key := range keysBOnly {
+		bOnly = append(bOnly, mapB[key]...)
+	}
+	sort.Ints(bOnly)
+
+	byLeftRow := func(p []pair) {
+		sort.Slice(p, func(i, j int) bool {
+			if p[i].a != p[j].a {
+				return p[i].a < p[j].a
+			}
+			return p[i].b < p[j].b
+		})
+	}
+
+	// indexB is -1 where a left row has no match; indexA is -1 where a
+	// right row has none.
+	var pairs []pair
 	switch how {
-	case INNER_JOIN:
-		// Get indices of the intersection
-		indicesA := make([]int, 0, len(keysIntersection))
-		indicesB := make([]int, 0, len(keysIntersection))
+	case JoinInner:
+		pairs = matched
+		byLeftRow(pairs)
 
-		for _, key := range keysIntersection {
-			for _, indexA := range mapA[key] {
-				for _, indexB := range mapB[key] {
-					indicesA = append(indicesA, indexA)
-					indicesB = append(indicesB, indexB)
-				}
+	case JoinLeft:
+		pairs = matched
+		for _, a := range aOnly {
+			pairs = append(pairs, pair{a, -1})
+		}
+		byLeftRow(pairs)
+
+	case JoinRight:
+		pairs = matched
+		for _, b := range bOnly {
+			pairs = append(pairs, pair{-1, b})
+		}
+		sort.Slice(pairs, func(i, j int) bool {
+			if pairs[i].b != pairs[j].b {
+				return pairs[i].b < pairs[j].b
 			}
+			return pairs[i].a < pairs[j].a
+		})
+
+	case JoinOuter:
+		pairs = matched
+		for _, a := range aOnly {
+			pairs = append(pairs, pair{a, -1})
 		}
-
-		// Join columns
-		for i, name := range on {
-			joined = joined.AddSeries(name, dfGrouped.C(on[i]).Filter(indicesA))
+		byLeftRow(pairs)
+		for _, b := range bOnly {
+			pairs = append(pairs, pair{-1, b})
 		}
+	}
 
-		// A columns
-		var ser_ series.Series
-		for _, name := range colsDiffA {
-			ser_ = df.C(name).Filter(indicesA)
-			if commonCols[name] {
-				name += "_x"
-			}
-			joined = joined.AddSeries(name, ser_)
+	indicesA := make([]int, len(pairs))
+	indicesB := make([]int, len(pairs))
+	for i, p := range pairs {
+		indicesA[i] = p.a
+		indicesB[i] = p.b
+	}
+
+	// Join columns: the key values come from the side that has every row.
+	// An outer join has no such side, so the left-ordered part comes from
+	// the left frame and the unmatched right rows at the tail from the
+	// right frame.
+	for _, name := range on {
+		var keyCol series.Series
+		switch how {
+		case JoinRight:
+			keyCol = other.Col(name).TakeIndices(indicesB)
+		case JoinOuter:
+			cut := len(pairs) - len(bOnly)
+			keyCol = df.Col(name).TakeIndices(indicesA[:cut]).
+				Append(other.Col(name).TakeIndices(indicesB[cut:]))
+		default:
+			keyCol = df.Col(name).TakeIndices(indicesA)
 		}
+		joined = joined.AddSeries(name, keyCol)
+	}
 
-		// B columns
-		for _, name := range colsDiffB {
-			ser_ = other.C(name).Filter(indicesB)
-			if commonCols[name] {
-				name += "_y"
-			}
-			joined = joined.AddSeries(name, ser_.Filter(indicesB))
+	// The remaining left columns, null where the row exists only in the
+	// right frame.
+	for _, name := range colsDiffA {
+		ser_ := joinGather(df.Col(name), indicesA, df.ctx)
+		if commonCols[name] {
+			name += "_x"
 		}
+		joined = joined.AddSeries(name, ser_)
+	}
 
-	case LEFT_JOIN:
-		indicesA := make([]int, 0, len(keysA))
-		indicesB := make([]int, 0, len(keysIntersection))
-
-		for _, key := range keysAOnly {
-			indicesA = append(indicesA, mapA[key]...)
+	// The remaining right columns, null where the row exists only in the
+	// left frame.
+	for _, name := range colsDiffB {
+		ser_ := joinGather(other.Col(name), indicesB, df.ctx)
+		if commonCols[name] {
+			name += "_y"
 		}
-
-		for _, key := range keysIntersection {
-			for _, indexA := range mapA[key] {
-				for _, indexB := range mapB[key] {
-					indicesA = append(indicesA, indexA)
-					indicesB = append(indicesB, indexB)
-				}
-			}
-		}
-
-		// Join columns
-		for i, name := range on {
-			joined = joined.AddSeries(name, dfGrouped.C(on[i]).Filter(indicesA))
-		}
-
-		// A columns
-		var ser_ series.Series
-		for _, name := range colsDiffA {
-			ser_ = df.C(name).Filter(indicesA)
-			if commonCols[name] {
-				name += "_x"
-			}
-			joined = joined.AddSeries(name, ser_)
-		}
-
-		padBlen := len(indicesA) - len(indicesB)
-		nullMask := make([]bool, padBlen)
-		for i := range nullMask {
-			nullMask[i] = true
-		}
-
-		// B columns
-		for _, name := range colsDiffB {
-			ser_ = other.C(name).Filter(indicesB)
-			switch ser_.Type() {
-			case meta.BoolType:
-				ser_ = series.NewSeriesBool(make([]bool, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-
-			case meta.IntType:
-				ser_ = series.NewSeriesInt(make([]int, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-
-			case meta.Int64Type:
-				ser_ = series.NewSeriesInt64(make([]int64, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-
-			case meta.Float64Type:
-				ser_ = series.NewSeriesFloat64(make([]float64, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-
-			case meta.StringType:
-				ser_ = series.NewSeriesString(make([]string, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-
-			case meta.TimeType:
-				ser_ = series.NewSeriesTime(make([]time.Time, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-
-			case meta.DurationType:
-				ser_ = series.NewSeriesDuration(make([]time.Duration, padBlen), nullMask, false, df.ctx).
-					Append(ser_)
-			}
-
-			if commonCols[name] {
-				name += "_y"
-			}
-			joined = joined.AddSeries(name, ser_)
-		}
-
-	case RIGHT_JOIN:
-		indicesA := make([]int, 0, len(keysIntersection))
-		indicesB := make([]int, 0, len(keysB))
-
-		for _, key := range keysIntersection {
-			for _, indexA := range mapA[key] {
-				for _, indexB := range mapB[key] {
-					indicesA = append(indicesA, indexA)
-					indicesB = append(indicesB, indexB)
-				}
-			}
-		}
-
-		for _, key := range keysBOnly {
-			indicesB = append(indicesB, mapB[key]...)
-		}
-
-		// Join columns
-		for i, name := range on {
-			joined = joined.AddSeries(name, otherGrouped.C(on[i]).Filter(indicesB))
-		}
-
-		padAlen := len(indicesB) - len(indicesA)
-		nullMask := make([]bool, padAlen)
-		for i := range nullMask {
-			nullMask[i] = true
-		}
-
-		// A columns
-		var ser_ series.Series
-		for _, name := range colsDiffA {
-			ser_ = df.C(name).Filter(indicesA)
-			switch ser_.Type() {
-			case meta.BoolType:
-				ser_ = ser_.(series.Bools).Append(series.NewSeriesBool(make([]bool, padAlen), nullMask, false, df.ctx))
-
-			case meta.IntType:
-				ser_ = ser_.(series.Ints).Append(series.NewSeriesInt(make([]int, padAlen), nullMask, false, df.ctx))
-
-			case meta.Int64Type:
-				ser_ = ser_.(series.Int64s).Append(series.NewSeriesInt64(make([]int64, padAlen), nullMask, false, df.ctx))
-
-			case meta.Float64Type:
-				ser_ = ser_.(series.Float64s).Append(series.NewSeriesFloat64(make([]float64, padAlen), nullMask, false, df.ctx))
-
-			case meta.StringType:
-				ser_ = ser_.(series.Strings).Append(series.NewSeriesString(make([]string, padAlen), nullMask, false, df.ctx))
-
-			case meta.TimeType:
-				ser_ = ser_.(series.Times).Append(series.NewSeriesTime(make([]time.Time, padAlen), nullMask, false, df.ctx))
-
-			case meta.DurationType:
-				ser_ = ser_.(series.Durations).Append(series.NewSeriesDuration(make([]time.Duration, padAlen), nullMask, false, df.ctx))
-			}
-
-			if commonCols[name] {
-				name += "_x"
-			}
-			joined = joined.AddSeries(name, ser_)
-		}
-
-		// B columns
-		for _, name := range colsDiffB {
-			ser_ = other.C(name).Filter(indicesB)
-			if commonCols[name] {
-				name += "_y"
-			}
-			joined = joined.AddSeries(name, ser_)
-		}
-
-	case OUTER_JOIN:
-		indicesA := make([]int, 0, len(keysA))
-		indicesB := make([]int, 0, len(keysB))
-
-		padAlen := 0
-		padBlen := 0
-
-		for _, key := range keysAOnly {
-			indicesA = append(indicesA, mapA[key]...)
-			padBlen += len(mapA[key])
-		}
-
-		intersectionLen := 0
-		for _, key := range keysIntersection {
-			for _, indexA := range mapA[key] {
-				for _, indexB := range mapB[key] {
-					indicesA = append(indicesA, indexA)
-					indicesB = append(indicesB, indexB)
-					intersectionLen++
-				}
-			}
-		}
-
-		for _, key := range keysBOnly {
-			indicesB = append(indicesB, mapB[key]...)
-			padAlen += len(mapB[key])
-		}
-
-		// Join columns
-		indicesBOnly := indicesB[intersectionLen:]
-		for i, name := range on {
-			joined = joined.AddSeries(name,
-				dfGrouped.C(on[i]).
-					Filter(indicesA).Append(
-					otherGrouped.C(on[i]).
-						Filter(indicesBOnly)))
-		}
-
-		nullMaskA := make([]bool, padAlen)
-		for i := range nullMaskA {
-			nullMaskA[i] = true
-		}
-
-		nullMaskB := make([]bool, padBlen)
-		for i := range nullMaskB {
-			nullMaskB[i] = true
-		}
-
-		// A columns
-		var ser_ series.Series
-		for _, name := range colsDiffA {
-			ser_ = df.C(name).Filter(indicesA)
-			switch ser_.Type() {
-			case meta.BoolType:
-				ser_ = ser_.(series.Bools).Append(series.NewSeriesBool(make([]bool, padAlen), nullMaskA, false, df.ctx))
-
-			case meta.IntType:
-				ser_ = ser_.(series.Ints).Append(series.NewSeriesInt(make([]int, padAlen), nullMaskA, false, df.ctx))
-
-			case meta.Int64Type:
-				ser_ = ser_.(series.Int64s).Append(series.NewSeriesInt64(make([]int64, padAlen), nullMaskA, false, df.ctx))
-
-			case meta.Float64Type:
-				ser_ = ser_.(series.Float64s).Append(series.NewSeriesFloat64(make([]float64, padAlen), nullMaskA, false, df.ctx))
-
-			case meta.StringType:
-				ser_ = ser_.(series.Strings).Append(series.NewSeriesString(make([]string, padAlen), nullMaskA, false, df.ctx))
-
-			case meta.TimeType:
-				ser_ = ser_.(series.Times).Append(series.NewSeriesTime(make([]time.Time, padAlen), nullMaskA, false, df.ctx))
-
-			case meta.DurationType:
-				ser_ = ser_.(series.Durations).Append(series.NewSeriesDuration(make([]time.Duration, padAlen), nullMaskA, false, df.ctx))
-			}
-
-			if commonCols[name] {
-				name += "_x"
-			}
-			joined = joined.AddSeries(name, ser_)
-		}
-
-		// B columns
-		for _, name := range colsDiffB {
-			ser_ = other.C(name).Filter(indicesB)
-			switch ser_.Type() {
-			case meta.BoolType:
-				ser_ = series.NewSeriesBool(make([]bool, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-
-			case meta.IntType:
-				ser_ = series.NewSeriesInt(make([]int, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-
-			case meta.Int64Type:
-				ser_ = series.NewSeriesInt64(make([]int64, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-
-			case meta.Float64Type:
-				ser_ = series.NewSeriesFloat64(make([]float64, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-
-			case meta.StringType:
-				ser_ = series.NewSeriesString(make([]string, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-
-			case meta.TimeType:
-				ser_ = series.NewSeriesTime(make([]time.Time, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-
-			case meta.DurationType:
-				ser_ = series.NewSeriesDuration(make([]time.Duration, padBlen), nullMaskB, false, df.ctx).
-					Append(ser_)
-			}
-
-			if commonCols[name] {
-				name += "_y"
-			}
-			joined = joined.AddSeries(name, ser_)
-		}
+		joined = joined.AddSeries(name, ser_)
 	}
 
 	return joined
 }
 
-func (df BaseDataFrame) Take(params ...int) DataFrame {
+// allNullSeries builds a series of the given type whose elements are all
+// null.
+func allNullSeries(t meta.BaseType, size int, ctx *enchanter.Context) series.Series {
+	mask := make([]bool, size)
+	for i := range mask {
+		mask[i] = true
+	}
+	switch t {
+	case meta.BoolType:
+		return series.NewSeriesBool(make([]bool, size), mask, false, ctx)
+	case meta.IntType:
+		return series.NewSeriesInt(make([]int, size), mask, false, ctx)
+	case meta.Int64Type:
+		return series.NewSeriesInt64(make([]int64, size), mask, false, ctx)
+	case meta.Float64Type:
+		return series.NewSeriesFloat64(make([]float64, size), mask, false, ctx)
+	case meta.StringType:
+		return series.NewSeriesString(make([]string, size), mask, false, ctx)
+	case meta.TimeType:
+		return series.NewSeriesTime(make([]time.Time, size), mask, false, ctx)
+	case meta.DurationType:
+		return series.NewSeriesDuration(make([]time.Duration, size), mask, false, ctx)
+	}
+	return series.NewSeriesError(fmt.Sprintf("allNullSeries: unsupported type %v", t))
+}
+
+// joinGather returns the elements of s at the given indices, in order,
+// where index -1 produces a null element. One null element is put in
+// front of a fresh copy of the series, so index v gathers as v+1 and -1
+// lands on the null.
+func joinGather(s series.Series, indices []int, ctx *enchanter.Context) series.Series {
+	hasNull := false
+	for _, v := range indices {
+		if v == -1 {
+			hasNull = true
+			break
+		}
+	}
+	if !hasNull {
+		return s.TakeIndices(indices)
+	}
+
+	ext := allNullSeries(s.Type(), 1, ctx).Append(s)
+	safe := make([]int, len(indices))
+	for i, v := range indices {
+		safe[i] = v + 1
+	}
+	return ext.TakeIndices(safe)
+}
+
+// Slice returns the rows in the half-open interval [start, end).
+func (df DataFrame) Slice(start, end int) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
-	indices, err := series.SeriesTakePreprocess("BaseDataFrame", df.NRows(), params...)
-	if err != nil {
-		df.err = err
+	if start < 0 || end < start || end > df.NRows() {
+		df.err = fmt.Errorf("DataFrame.Slice: invalid interval [%d, %d) for a frame of %d rows", start, end, df.NRows())
 		return df
 	}
 
-	taken := NewBaseDataFrame(df.ctx)
-	for idx, series := range df.series {
-		taken = taken.AddSeries(df.names[idx], series.FilterIntSlice(indices, false))
+	indices := make([]int, end-start)
+	for i := range indices {
+		indices[i] = start + i
+	}
+	return df.takeIndices(indices)
+}
+
+// TakeIndices returns the rows at the given indices, in the given
+// order. An index may repeat.
+func (df DataFrame) TakeIndices(indices []int) DataFrame {
+	if df.err != nil {
+		return df
 	}
 
+	for _, v := range indices {
+		if v < 0 || v >= df.NRows() {
+			df.err = fmt.Errorf("DataFrame.TakeIndices: index %d is out of range", v)
+			return df
+		}
+	}
+	return df.takeIndices(indices)
+}
+
+func (df DataFrame) takeIndices(indices []int) DataFrame {
+	taken := NewDataFrame(df.ctx)
+	for idx, series := range df.series {
+		taken = taken.AddSeries(df.names[idx], series.TakeIndices(indices))
+	}
 	return taken
 }
 
-func (df BaseDataFrame) Len() int {
+func (df DataFrame) Len() int {
 	if df.err != nil || len(df.series) < 1 {
 		return 0
 	}
@@ -1031,29 +970,39 @@ func (df BaseDataFrame) Len() int {
 	return df.series[0].Len()
 }
 
-func (df BaseDataFrame) Less(i, j int) bool {
+// seriesSorter is the sorting surface the dataframe needs from a series.
+// Every concrete series type implements these methods; they are not part
+// of the public Series interface.
+type seriesSorter interface {
+	Less(i, j int) bool
+	Equal(i, j int) bool
+	Swap(i, j int)
+}
+
+func (df DataFrame) Less(i, j int) bool {
 	for _, param := range df.sortParams {
-		if !param._series.Equal(i, j) {
-			return (param.asc && param._series.Less(i, j)) || (!param.asc && param._series.Less(j, i))
+		s := param._series.(seriesSorter)
+		if !s.Equal(i, j) {
+			return (param.asc && s.Less(i, j)) || (!param.asc && s.Less(j, i))
 		}
 	}
 
 	return false
 }
 
-func (df BaseDataFrame) Swap(i, j int) {
+func (df DataFrame) Swap(i, j int) {
 	for _, series := range df.series {
-		series.Swap(i, j)
+		series.(seriesSorter).Swap(i, j)
 	}
 }
 
-func (df BaseDataFrame) OrderBy(params ...SortParam) DataFrame {
+func (df DataFrame) OrderBy(params ...SortParam) DataFrame {
 	if df.err != nil {
 		return df
 	}
 
 	if df.isGrouped {
-		df.err = fmt.Errorf("BaseDataFrame.OrderBy: cannot order grouped DataFrame")
+		df.err = fmt.Errorf("DataFrame.OrderBy: cannot order grouped DataFrame")
 		return df
 	}
 
@@ -1061,15 +1010,15 @@ func (df BaseDataFrame) OrderBy(params ...SortParam) DataFrame {
 	paramNames := make(map[string]bool)
 	for i, param := range params {
 		if paramNames[param.name] {
-			df.err = fmt.Errorf("BaseDataFrame.OrderBy: series names must be unique")
+			df.err = fmt.Errorf("DataFrame.OrderBy: series names must be unique")
 			return df
 		}
 		paramNames[param.name] = true
 
-		if series := df.__series(param.name); series != nil {
+		if series := df.seriesByName(param.name); series != nil {
 			params[i]._series = series
 		} else {
-			df.err = fmt.Errorf("BaseDataFrame.OrderBy: series \"%s\" not found", param.name)
+			df.err = fmt.Errorf("DataFrame.OrderBy: series \"%s\" not found", param.name)
 			return df
 		}
 	}
@@ -1083,28 +1032,28 @@ func (df BaseDataFrame) OrderBy(params ...SortParam) DataFrame {
 
 ////////////////////////			SUMMARY
 
-func (df BaseDataFrame) Agg(aggregators ...aggregator) aggregatorBuilder {
+func (df DataFrame) Agg(aggregators ...aggregator) aggregatorBuilder {
 	return aggregatorBuilder{df, true, aggregators}
 }
 
 // buildGroupKeyCols returns the group-by columns, in the order recorded by
 // GroupBy (df.groupByNames), for the aggregation engine (agg_engine.go) to
 // key its groups on.
-func (df BaseDataFrame) buildGroupKeyCols() []series.Series {
+func (df DataFrame) buildGroupKeyCols() []series.Series {
 	keyCols := make([]series.Series, len(df.groupByNames))
 	for i, name := range df.groupByNames {
-		keyCols[i] = df.series[df.GetSeriesIndex(name)]
+		keyCols[i] = df.series[df.ColIndex(name)]
 	}
 	return keyCols
 }
 
 ////////////////////////			PRINTING
 
-func (df BaseDataFrame) Describe() string {
+func (df DataFrame) Describe() string {
 	return ""
 }
 
-func (df BaseDataFrame) Records(header bool) [][]string {
+func (df DataFrame) Records(header bool) [][]string {
 	var out [][]string
 	if header {
 		out = make([][]string, df.NRows()+1)
@@ -1133,7 +1082,7 @@ func (df BaseDataFrame) Records(header bool) [][]string {
 }
 
 // Pretty print the dataframe.
-func (df BaseDataFrame) PPrint(params PPrintParams) DataFrame {
+func (df DataFrame) PPrint(params PPrintParams) DataFrame {
 	if df.err != nil {
 		fmt.Println(df.err)
 		return df
@@ -1156,9 +1105,9 @@ func (df BaseDataFrame) PPrint(params PPrintParams) DataFrame {
 	// print the shape
 	buffer += params.indent
 	if params.useLipGloss {
-		buffer += params.styleTypes.Render(fmt.Sprintf("  BaseDataFrame: %d rows, %d columns", df.NRows(), df.NCols()))
+		buffer += params.styleTypes.Render(fmt.Sprintf("  DataFrame: %d rows, %d columns", df.NRows(), df.NCols()))
 	} else {
-		buffer += fmt.Sprintf("  BaseDataFrame: %d rows, %d columns", df.NRows(), df.NCols())
+		buffer += fmt.Sprintf("  DataFrame: %d rows, %d columns", df.NRows(), df.NCols())
 	}
 	buffer += "\n"
 

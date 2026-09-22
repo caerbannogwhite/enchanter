@@ -12,7 +12,7 @@ import (
 
 func TestArrowSchema(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeriesFromFloat64s("price", []float64{1.1, 2.2, 3.3}, nil, false).
 		AddSeriesFromInts("qty", []int{10, 20, 30}, nil, false).
 		AddSeriesFromStrings("name", []string{"a", "b", "c"}, nil, false)
@@ -50,7 +50,7 @@ func TestArrowSchema(t *testing.T) {
 
 func TestToArrowRecord(t *testing.T) {
 	ctx := enchanter.NewContext()
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeriesFromFloat64s("x", []float64{1.0, 2.0, 3.0}, nil, false).
 		AddSeriesFromInt64s("y", []int64{10, 20, 30}, nil, false)
 
@@ -75,7 +75,7 @@ func TestToArrowRecord(t *testing.T) {
 	}
 }
 
-func TestNewBaseDataFrameFromArrowRecord(t *testing.T) {
+func TestNewDataFrameFromArrowRecord(t *testing.T) {
 	ctx := enchanter.NewContext()
 	alloc := memory.DefaultAllocator
 
@@ -101,9 +101,9 @@ func TestNewBaseDataFrameFromArrowRecord(t *testing.T) {
 	rec := array.NewRecordBatch(schema, []arrow.Array{fArr, sArr}, 2)
 	defer rec.Release()
 
-	df := NewBaseDataFrameFromArrowRecord(rec, ctx)
-	if df.IsErrored() {
-		t.Fatal(df.GetError())
+	df := NewDataFrameFromArrowRecord(rec, ctx)
+	if df.Err() != nil {
+		t.Fatal(df.Err())
 	}
 	if df.NCols() != 2 {
 		t.Fatalf("expected 2 cols, got %d", df.NCols())
@@ -126,7 +126,7 @@ func TestNewBaseDataFrameFromArrowRecord(t *testing.T) {
 	}
 
 	// Check nullable string column
-	s := df.C("b")
+	s := df.Col("b")
 	if !s.IsNullable() {
 		t.Error("col 'b' should be nullable")
 	}
@@ -139,7 +139,7 @@ func TestArrowRecordRoundTrip(t *testing.T) {
 	ctx := enchanter.NewContext()
 
 	// Build a DataFrame
-	df := NewBaseDataFrame(ctx).
+	df := NewDataFrame(ctx).
 		AddSeriesFromFloat64s("x", []float64{1.5, 2.5}, nil, false).
 		AddSeriesFromInts("y", []int{10, 20}, nil, false).
 		AddSeriesFromBools("z", []bool{true, false}, nil, false)
@@ -149,9 +149,9 @@ func TestArrowRecordRoundTrip(t *testing.T) {
 	defer rec.Release()
 
 	// Convert back to DataFrame
-	df2 := NewBaseDataFrameFromArrowRecord(rec, ctx)
-	if df2.IsErrored() {
-		t.Fatal(df2.GetError())
+	df2 := NewDataFrameFromArrowRecord(rec, ctx)
+	if df2.Err() != nil {
+		t.Fatal(df2.Err())
 	}
 
 	if df2.NCols() != 3 {

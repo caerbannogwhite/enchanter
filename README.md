@@ -48,8 +48,7 @@ Ursula,27,65.0,f,Business,4
 Charlie,33,60.0,t,Business,2
 Megan,26,55.0,F,IT,3`
 
-	dataframe.NewBaseDataFrame(enchanter.NewContext()).
-		FromCsv().
+	dataframe.ReadCsv(enchanter.NewContext()).
 		SetReader(strings.NewReader(data1)).
 		Read().
 		Select("department", "age", "weight", "junior").
@@ -59,7 +58,7 @@ Megan,26,55.0,F,IT,3`
 		PPrint(dataframe.NewPPrintParams().SetUseLipGloss(true))
 }
 
-//   BaseDataFrame: 3 rows, 5 columns
+//   DataFrame: 3 rows, 5 columns
 // ╭────────────┬──────────┬─────────────┬──────────────┬───────╮
 // │ department │ min(age) │ max(weight) │ mean(junior) │ n     │
 // ├────────────┼──────────┼─────────────┼──────────────┼───────┤
@@ -86,16 +85,15 @@ documentation on [pkg.go.dev](https://pkg.go.dev/github.com/caerbannogwhite/ench
 | JSON                |  ✅  |  ✅   | record-oriented                          |
 | HTML                |  ✅  |  ✅   | tables                                   |
 | Markdown            |  ✅  |  ✅   | tables                                   |
-| SAS7BDAT            |  🚧  |   —   | header parsing only; data reading planned |
+| SAS7BDAT            |  ✅  |   —   | read-only, via kshedden/datareader        |
 
 All readers and writers share the same builder style:
 
 ```go
 // Parquet round trip: types and nulls survive, unlike CSV.
-err := df.ToParquet().SetPath("people.parquet").Write()
+err := df.WriteParquet().SetPath("people.parquet").Write()
 
-df2 := dataframe.NewBaseDataFrame(ctx).
-	FromParquet().
+df2 := dataframe.ReadParquet(ctx).
 	SetPath("people.parquet").
 	Read()
 ```
@@ -112,7 +110,7 @@ Arrow (DuckDB, Polars, pandas, DataFusion, Spark, ...):
 rec := df.ToArrowRecord() // freshly built, owned by the record
 defer rec.Release()       // optional under the default GC-backed allocator
 
-df2 := dataframe.NewBaseDataFrameFromArrowRecord(rec, ctx)
+df2 := dataframe.NewDataFrameFromArrowRecord(rec, ctx)
 ```
 
 Conversion notes:
@@ -149,27 +147,38 @@ Not implemented (would be added on demand): narrower integers (`Int8/16/32`),
 
 **Series** carry element-wise arithmetic (`Add`, `Sub`, `Mul`, `Div`, `Mod`,
 `Exp`, `Neg`), comparison (`Eq`, `Ne`, `Lt`, `Le`, `Gt`, `Ge`), and boolean
-(`And`, `Or`, `Not`) operators, plus `Filter` (by a `[]bool` / `[]int` or a
-`Bools` / `Ints` series), null-aware `Group` / `SubGroup` and `Sort` /
-`SortRev`, and `Map`, `Take`, `Cast`, `Append`.
+(`And`, `Or`, `Not`) operators, plus `Coalesce` (fill nulls from another
+series or a scalar), `Filter` (by a `[]bool` / `[]int` or a `Bools` / `Ints`
+series), null-aware `Group` / `SubGroup` and `Sort` / `SortRev`, and `Map`,
+`Slice`, `TakeIndices`, `Cast`, `Append`.
+
+Operators propagate NA: an operation with an NA operand yields NA, so
+`x + NA` is NA, as in SQL. `Coalesce` is the deliberate exception, since it
+exists to replace nulls.
 
 **DataFrame**
 
 | Operation            | Status | Notes                                    |
 | -------------------- | :----: | ---------------------------------------- |
-| Select               |   ✅   | regex selectors; `^name$` for exact      |
+| Select               |   ✅   | exact names; `SelectMatching` for regex  |
 | Filter               |   ✅   | by a `Bools` series                      |
 | GroupBy + Agg        |   ✅   | null-aware group keys                    |
 | Join                 |   ✅   | inner / left / right / outer, null-aware |
 | OrderBy              |   ✅   | multi-key, ascending / descending        |
-| Take                 |   ✅   |                                          |
+| Slice / TakeIndices  |   ✅   |                                          |
 | Pivot (longer/wider) |   🚧   | in progress on `dev-pivot`               |
 | Map                  |   ❌   | planned                                  |
 | Stack / Append       |   ❌   | planned                                  |
 
-`Select` takes **regular expressions**, matched unanchored against the column
-names — so `Select("Car")` also selects a column named `CarOrigin`. Anchor a
-selector, `Select("^Car$")`, to match one column exactly.
+`Select` takes **exact column names**, in the order given; naming a column that
+does not exist is an error rather than a silently missing column. Pattern
+selection lives in `SelectMatching`, which takes regular expressions matched
+unanchored — so `SelectMatching("Car")` also selects `CarOrigin`.
+
+`Join` output row order is part of the contract: rows follow the left frame's
+row order (a right join follows the right frame), a row with several matches
+produces consecutive rows ordered by the other frame, and an outer join puts
+the unmatched right rows last.
 
 **Aggregations** (via `Agg`): `Count`, `Sum`, `Mean`, `Min`, `Max`, `Std`,
 `Variance`, `Median`, `Quantile`, `Any`, and `All` are all supported, with
@@ -209,36 +218,77 @@ columns only match plain Go slices, and arrow-go has no grouped-aggregation
 kernels, so Arrow stays an interop layer (Parquet, IPC, ecosystem handoff). See
 the [storage measurement](docs/superpowers/specs/2026-08-08-arrow-native-storage-migration.md).
 
-**0.4.0 — make it fast** (current). The performance headline, validated by a
-[spike](benchmarking/README.md):
+**0.4.0 — make it fast**. The performance headline, validated by a
+[spike](benchmarking/README.md): single-pass, parallel hash aggregation for
+`GroupBy().Agg()` — on the h2oai-style Q1 sum-by-id benchmark (1e7 rows) it
+went from ~142ms to ~31ms, beating Polars' ~43ms. The remaining performance
+items moved to 0.6.0.
 
-- [x] Single-pass, parallel hash aggregation for `GroupBy().Agg()` — shipped;
-      on the h2oai-style Q1 sum-by-id benchmark (1e7 rows) it went from ~142ms
-      to ~31ms, beating Polars' ~43ms.
+**0.5.0 — stabilize for 1.0** (current; breaking changes, batched together):
+
+- [x] Public API sealed: the internal series fields (`Data_`, `NullMask_`,
+      `IsNullable_`, ...) are unexported. `Data()` and the typed accessors
+      (`Float64s()`, `Bools()`, ...) are documented views of the backing
+      storage; `Strings` gains `Interned()` for the raw pool pointers and
+      every type gains `PackedNullMask()` for engines that walk the
+      bit-packed mask. `FilterIntSlice` and its bounds-check toggle leave
+      the interface; `TakeIndices` is the validated public path.
+- [x] Broaden test coverage: join order and null-key contracts, dataframe
+      `Slice` / `TakeIndices` / `SelectAt` (fixing SelectAt, whose inverted
+      bounds check made it always fail), a CSV write/read round trip, the
+      data-view contracts, and NA propagation across operators and operand
+      orders (fixing `x - NA`, which errored while `NA - x` was NA).
+- [x] `Select` split into an exact-name `Select` and a pattern-matching
+      `SelectMatching`, so a plain column name can no longer silently
+      over-select (`"Car"` used to also match `"CarOrigin"`).
+- [x] SAS7BDAT: decided — reading is delegated to
+      [kshedden/datareader](https://github.com/kshedden/datareader)
+      (BSD-3-Clause) rather than finishing the bespoke parser, verified
+      against that project's reference data; there is no write path (use XPT
+      to hand data to SAS).
+- [x] Internal naming: the legacy `__gdl_` / leading-double-underscore helper
+      names (Gandalff-era, pre-rename) are retired for idiomatic Go unexported
+      names.
+- [x] Generated `*_ops.go` readability: the length×nullability `if` nesting is
+      flattened — nullability is resolved at run time by a shared null-mask
+      helper and the length cases are a flat `switch` — shrinking the emitted
+      operator code from ~44k to ~13k lines with byte-identical behavior.
+- [x] `Coalesce` on every series type: fill null elements from another series
+      or a scalar; a result element is null only when both operands are null
+      there.
+- [x] API reshape from the interface review: the one-implementation
+      `DataFrame` interface is collapsed into the concrete type
+      (`NewDataFrame`); `IsError`/`GetError`/`IsErrored` become the standard
+      `Err() error`; the `Get` accessor prefix is dropped (`Context`,
+      `Partition`, `NullMask`, `ColIndex`); `IsSorted` becomes `SortOrder`;
+      the sort internals (`Less`, `Equal`, `Swap`) leave the `Series`
+      interface; `Not` works on every series type; the join constants are
+      `JoinInner` / `JoinLeft` / `JoinRight` / `JoinOuter` on `JoinType`;
+      the undocumented variadic `Take` is replaced by `Slice(start, end)`
+      and `TakeIndices(indices)`; the column accessors are `Col`, `ColAt`,
+      `NameAt`, `ColIndex`; reading starts from package-level constructors
+      (`dataframe.ReadCsv(ctx)`, `ReadParquet`, ...) and writing from
+      `WriteCsv`, `WriteParquet`, ..., with the builder types exported;
+      the dead `SeriesNumeric` interface is deleted; NA propagation now
+      holds for every operator (`String + NA` no longer concatenates and
+      `Bool OR NA` no longer copies values — both yield NA); the join row
+      order is deterministic and documented.
+
+**0.6.0 — make it faster** (the performance items deferred from 0.4.0 and
+0.5.0, every one benchmark-gated):
+
 - [ ] Fused combinators for element-wise op chains (no intermediate arrays).
 - [ ] Benchmark-regression tracking so the gains don't rot.
+- [ ] Column-major / tiled aggregation loop experiment
+      ([#20](https://github.com/caerbannogwhite/enchanter/issues/20)): hoist
+      the per-aggregator dispatch out of the row loop; needs a
+      multi-aggregate benchmark first, and lands only if wide queries win
+      with no single-aggregate regression.
+- [ ] Generics to collapse the generated per-type code — *spike-gated* (only
+      if it measurably shrinks the code without regressing speed).
 
-**0.5.0 — stabilize for 1.0** (breaking changes, batched together):
-
-- [ ] Public API: hide internal fields (`Data_`, `NullMask_`), standardize the
-      reader constructors.
-- [ ] `Select`: decide whether to split the regex behavior into an explicit
-      pattern API (exact `Select` plus a `SelectMatching`), so that a plain
-      column name cannot silently over-select (`"Car"` also matches
-      `"CarOrigin"`). Documented as-is in 0.4.1.
-- [ ] Generics to collapse the generated per-type code — *spike-gated* (only if
-      it measurably shrinks the code without regressing speed).
-- [ ] Broaden test coverage; decide SAS7BDAT
-      ([format notes](https://cran.r-project.org/web/packages/sas7bdat/vignettes/sas7bdat.pdf)) —
-      finish the data path or drop it.
-- [ ] Internal naming: retire the legacy `__gdl_` / leading-double-underscore
-      helper names (Gandalff-era, pre-rename) for idiomatic Go unexported names.
-- [ ] Generated `*_ops.go` readability: flatten the length×nullability `if`
-      nesting via a generator-template refactor (the operand dispatch is already a
-      type-switch, so the win is the template, not the emitted files) — likely
-      folded into the fused-combinators work.
-
-**1.0 — commit** to the stable API.
+**1.0 — commit** to the stable API. The gate: the mutation and ownership
+contract of every Series method written down and tested.
 
 Parking lot (unversioned, picked up as they fit): dictionary-encoded (factor)
 strings; pivot longer/wider (in progress on `dev-pivot`); custom aggregators
@@ -255,6 +305,7 @@ Built with:
 - [arrow-go](https://github.com/apache/arrow-go)
 - [xslx](https://github.com/tealeg/xlsx/tree/master)
 - [lipgloss](https://github.com/charmbracelet/lipgloss)
+- [datareader](https://github.com/kshedden/datareader) (SAS7BDAT reading)
 
 ### License
 

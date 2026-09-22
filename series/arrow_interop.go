@@ -44,10 +44,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Bools{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.Int64:
@@ -58,10 +58,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Int64s{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.Int32:
@@ -72,10 +72,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Ints{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.Int16:
@@ -86,10 +86,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Ints{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.Int8:
@@ -100,10 +100,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Ints{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.Uint64:
@@ -114,10 +114,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Int64s{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.Uint32:
@@ -128,10 +128,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Int64s{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.Uint16:
@@ -142,10 +142,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Ints{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.Uint8:
@@ -156,10 +156,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Ints{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.Float32:
@@ -170,10 +170,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Float64s{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.Float64:
@@ -184,10 +184,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Float64s{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.String:
@@ -200,10 +200,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Strings{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.LargeString:
@@ -216,10 +216,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Strings{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.Timestamp:
@@ -231,11 +231,11 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Times{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
-			timeFormat:  ctx.GetDateTimeFormat(),
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
+			timeFormat: ctx.GetDateTimeFormat(),
 		}
 
 	case *array.Duration:
@@ -247,10 +247,10 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Durations{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
 		}
 
 	case *array.Date32:
@@ -261,11 +261,11 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Times{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
-			timeFormat:  ctx.GetDateTimeFormat(),
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
+			timeFormat: ctx.GetDateTimeFormat(),
 		}
 
 	case *array.Date64:
@@ -276,11 +276,11 @@ func ArrowArrayToSeries(arr arrow.Array, ctx *enchanter.Context) Series {
 			}
 		}
 		return Times{
-			IsNullable_: isNullable,
-			Data_:       data,
-			NullMask_:   nullMask,
-			Ctx_:        ctx,
-			timeFormat:  ctx.GetDateTimeFormat(),
+			isNullable: isNullable,
+			data:       data,
+			nullMask:   nullMask,
+			ctx:        ctx,
+			timeFormat: ctx.GetDateTimeFormat(),
 		}
 
 	case *array.Null:

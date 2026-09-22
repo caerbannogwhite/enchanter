@@ -39,18 +39,18 @@ import (
 
 var (
 	loadMu sync.Mutex
-	loaded = map[string]dataframe.DataFrame{}
+	loaded = map[string]*dataframe.DataFrame{}
 	pkgCtx *enchanter.Context
 )
 
-func readG1(ctx *enchanter.Context, name string) dataframe.DataFrame {
+func readG1(ctx *enchanter.Context, name string) *dataframe.DataFrame {
 	f, err := os.OpenFile(filepath.Join("..", "..", "testdata", name), os.O_RDONLY, 0666)
 	if err != nil {
 		return nil
 	}
 	defer f.Close()
-	return dataframe.NewBaseDataFrame(ctx).
-		FromCsv().SetDelimiter(',').SetNullValues(false).SetReader(f).Read()
+	df := dataframe.ReadCsv(ctx).SetDelimiter(',').SetNullValues(false).SetReader(f).Read()
+	return &df
 }
 
 func getG1(tb testing.TB, name string) dataframe.DataFrame {
@@ -63,25 +63,25 @@ func getG1(tb testing.TB, name string) dataframe.DataFrame {
 		if d == nil {
 			tb.Skipf("G1 data not available: %s", name)
 		}
-		return d
+		return *d
 	}
 	d := readG1(pkgCtx, name)
 	loaded[name] = d
-	if d == nil || d.IsErrored() {
+	if d == nil || d.Err() != nil {
 		tb.Skipf("G1 data not available: %s", name)
 	}
-	return d
+	return *d
 }
 
 // cols extracts the raw interned key slice (id1) and value slice (v1).
 func cols(df dataframe.DataFrame) (keys []*string, vals []int64) {
-	keys = df.C("id1").(series.Strings).Data_
-	switch v := df.C("v1").(type) {
+	keys = df.Col("id1").(series.Strings).Interned()
+	switch v := df.Col("v1").(type) {
 	case series.Int64s:
-		vals = v.Data_
+		vals = v.Int64s()
 	case series.Ints:
-		vals = make([]int64, len(v.Data_))
-		for i, x := range v.Data_ {
+		vals = make([]int64, len(v.Ints()))
+		for i, x := range v.Ints() {
 			vals[i] = int64(x)
 		}
 	}

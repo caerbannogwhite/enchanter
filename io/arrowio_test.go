@@ -64,20 +64,20 @@ func TestArrowIPCRoundTrip(t *testing.T) {
 
 	// Check float values
 	f64 := iod2.Series[0].(series.Float64s)
-	if f64.Data_[0] != 1.5 || f64.Data_[1] != 2.5 || f64.Data_[2] != 3.5 {
-		t.Errorf("col 0 values mismatch: %v", f64.Data_)
+	if f64.Float64s()[0] != 1.5 || f64.Float64s()[1] != 2.5 || f64.Float64s()[2] != 3.5 {
+		t.Errorf("col 0 values mismatch: %v", f64.Float64s())
 	}
 
 	// Check int values
 	i64 := iod2.Series[1].(series.Int64s)
-	if i64.Data_[0] != 100 || i64.Data_[1] != 200 || i64.Data_[2] != 300 {
-		t.Errorf("col 1 values mismatch: %v", i64.Data_)
+	if i64.Int64s()[0] != 100 || i64.Int64s()[1] != 200 || i64.Int64s()[2] != 300 {
+		t.Errorf("col 1 values mismatch: %v", i64.Int64s())
 	}
 
 	// Check bool values
 	bools := iod2.Series[2].(series.Bools)
-	if bools.Data_[0] != true || bools.Data_[1] != false || bools.Data_[2] != true {
-		t.Errorf("col 2 values mismatch: %v", bools.Data_)
+	if bools.Bools()[0] != true || bools.Bools()[1] != false || bools.Bools()[2] != true {
+		t.Errorf("col 2 values mismatch: %v", bools.Bools())
 	}
 }
 
@@ -138,7 +138,7 @@ func TestArrowIPCRoundTripStrings(t *testing.T) {
 	}
 
 	s := iod2.Series[0].(series.Strings)
-	if *s.Data_[0] != "hello" || *s.Data_[1] != "world" || *s.Data_[2] != "test" {
+	if *s.Interned()[0] != "hello" || *s.Interned()[1] != "world" || *s.Interned()[2] != "test" {
 		t.Errorf("string values mismatch")
 	}
 }

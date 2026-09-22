@@ -90,12 +90,11 @@ const (
 	SYMBOL_IN    = "in"
 	SYMBOL_REV   = "rev"
 
-	SYMBOL_INDEXING  = "@"
-	SYMBOL_FUNC_CALL = "$"
-	SYMBOL_RANGE     = ".."
-	SYMBOL_COLON     = ":"
-	SYMBOL_LBRACE    = "{"
-	SYMBOL_RBRACE    = "}"
+	SYMBOL_INDEXING = "@"
+	SYMBOL_RANGE    = ".."
+	SYMBOL_COLON    = ":"
+	SYMBOL_LBRACE   = "{"
+	SYMBOL_RBRACE   = "}"
 
 	SYMBOL_BINARY_MUL      = "*"
 	SYMBOL_BINARY_DIV      = "/"

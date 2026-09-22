@@ -31,8 +31,8 @@ func TestArrowInteropNoLeaks(t *testing.T) {
 		arr := s.ArrowArray()
 		got := ArrowArrayToSeries(arr, ctx)
 		arr.Release()
-		if got.IsError() {
-			t.Fatal(got.GetError())
+		if got.Err() != nil {
+			t.Fatal(got.Err())
 		}
 	}
 

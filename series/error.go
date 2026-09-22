@@ -1,6 +1,8 @@
 package series
 
 import (
+	"errors"
+
 	"github.com/apache/arrow-go/v18/arrow"
 	"github.com/caerbannogwhite/enchanter"
 	"github.com/caerbannogwhite/enchanter/meta"
@@ -8,11 +10,11 @@ import (
 
 // Dummy series for error handling.
 type Errors struct {
-	Msg_ string
+	msg string
 }
 
 // Return the context of the series.
-func (s Errors) GetContext() *enchanter.Context {
+func (s Errors) Context() *enchanter.Context {
 	return nil
 }
 
@@ -31,18 +33,14 @@ func (s Errors) IsNullable() bool {
 	return false
 }
 
-func (s Errors) IsSorted() enchanter.SeriesSortOrder {
+func (s Errors) SortOrder() enchanter.SeriesSortOrder {
 	return enchanter.SORTED_NONE
 }
 
-// Returns if the series is error.
-func (s Errors) IsError() bool {
-	return true
-}
-
-// Returns the error message of the series.
-func (s Errors) GetError() string {
-	return s.Msg_
+// Err returns the error carried by the series, built from the stored
+// message on each call.
+func (s Errors) Err() error {
+	return errors.New(s.msg)
 }
 
 // Makes the series nullable.
@@ -81,7 +79,7 @@ func (s Errors) IsNull(i int) bool {
 }
 
 // Returns the null mask of the series.
-func (s Errors) GetNullMask() []bool {
+func (s Errors) NullMask() []bool {
 	return []bool{}
 }
 
@@ -104,8 +102,13 @@ func (s Errors) Set(i int, v any) Series {
 	return s
 }
 
-// Take the elements according to the given interval.
-func (s Errors) Take(params ...int) Series {
+// Slice on an errored series keeps the error.
+func (s Errors) Slice(start, end int) Series {
+	return s
+}
+
+// TakeIndices on an errored series keeps the error.
+func (s Errors) TakeIndices(indices []int) Series {
 	return s
 }
 
@@ -128,7 +131,7 @@ func (s Errors) DataAsNullable() any {
 
 // Returns the data of the series as a slice of strings.
 func (s Errors) DataAsString() []string {
-	return []string{s.Msg_}
+	return []string{s.msg}
 }
 
 // Casts the series to a given type.
@@ -149,7 +152,7 @@ func (s Errors) Filter(mask any) Series {
 	return s
 }
 
-func (s Errors) FilterIntSlice(mask []int, check bool) Series {
+func (s Errors) filterIntSlice(mask []int, check bool) Series {
 	return s
 }
 
@@ -174,7 +177,7 @@ func (s Errors) UnGroup() Series {
 	return s
 }
 
-func (s Errors) GetPartition() SeriesPartition {
+func (s Errors) Partition() SeriesPartition {
 	return nil
 }
 
@@ -204,6 +207,16 @@ func (s Errors) And(other any) Series {
 }
 
 func (s Errors) Or(other any) Series {
+	return s
+}
+
+// Coalesce on an errored series keeps the error.
+func (s Errors) Coalesce(other any) Series {
+	return s
+}
+
+// Not on an errored series keeps the error.
+func (s Errors) Not() Series {
 	return s
 }
 

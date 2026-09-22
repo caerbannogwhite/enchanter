@@ -14,7 +14,7 @@ type Series interface {
 	// Basic accessors.
 
 	// Return the context of the series.
-	GetContext() *enchanter.Context
+	Context() *enchanter.Context
 	// Return the number of elements in the series.
 	Len() int
 	// Return the type of the series.
@@ -25,12 +25,11 @@ type Series interface {
 	IsGrouped() bool
 	// Return if the series admits null values.
 	IsNullable() bool
-	// Return if the series is sorted.
-	IsSorted() enchanter.SeriesSortOrder
-	// Return if the series is error.
-	IsError() bool
-	// Return the error message of the series.
-	GetError() string
+	// SortOrder reports whether and how the series is sorted.
+	SortOrder() enchanter.SeriesSortOrder
+	// Err returns the error carried by the series; nil when the series is
+	// healthy. Only the Errors type carries one.
+	Err() error
 
 	// Nullability operations.
 
@@ -40,8 +39,10 @@ type Series interface {
 	NullCount() int
 	// Return if the element at index i is null.
 	IsNull(i int) bool
-	// Return the null mask of the series.
-	GetNullMask() []bool
+	// NullMask returns the null positions as a freshly built []bool. The
+	// mask is stored bit-packed, so every call allocates and walks the
+	// series: this is not a cheap getter.
+	NullMask() []bool
 	// Set the null mask of the series.
 	SetNullMask(mask []bool) Series
 	// Make the series nullable.
@@ -55,8 +56,11 @@ type Series interface {
 	GetAsString(i int) string
 	// Set the element at index i.
 	Set(i int, v any) Series
-	// Take the elements according to the given interval.
-	Take(params ...int) Series
+	// Slice returns the elements in the half-open interval [start, end).
+	Slice(start, end int) Series
+	// TakeIndices returns the elements at the given indices, in the
+	// given order. An index may repeat.
+	TakeIndices(indices []int) Series
 
 	// Append elements to the series.
 	// Value can be a single value, slice of values,
@@ -65,7 +69,9 @@ type Series interface {
 
 	// All-data accessors.
 
-	// Return the actual data of the series.
+	// Data returns the series values as a slice: the backing storage (a
+	// view, not a copy) for every type except Strings, which builds a
+	// fresh []string holding the NA text at null positions.
 	Data() any
 	// Return the nullable data of the series.
 	DataAsNullable() any
@@ -74,7 +80,7 @@ type Series interface {
 
 	// Cast the series to a given type.
 	Cast(t meta.BaseType) Series
-	// Copie the series.
+	// Copy the series.
 	Copy() Series
 
 	// Series operations.
@@ -82,7 +88,6 @@ type Series interface {
 	// Filter out the elements by the given mask.
 	// Mask can be a bool series, a slice of bools or a slice of ints.
 	Filter(mask any) Series
-	FilterIntSlice(mask []int, check bool) Series
 
 	// Apply the given function to each element of the series.
 	Map(f enchanter.MapFunc) Series
@@ -94,12 +99,7 @@ type Series interface {
 	UnGroup() Series
 
 	// Get the partition of the series.
-	GetPartition() SeriesPartition
-
-	// Sort Interface.
-	Less(i, j int) bool
-	Equal(i, j int) bool
-	Swap(i, j int)
+	Partition() SeriesPartition
 
 	// Sort the elements of the series.
 	Sort() Series
@@ -108,6 +108,14 @@ type Series interface {
 	// Boolean operations.
 	And(other any) Series
 	Or(other any) Series
+
+	// Not negates a boolean series element-wise. Only Bools and NAs
+	// support it; every other type returns an error series.
+	Not() Series
+
+	// Coalesce fills the null elements with the corresponding elements of
+	// other. A result element is null only when both operands are null there.
+	Coalesce(other any) Series
 
 	// Arithmetic operations.
 	Mul(other any) Series
@@ -128,27 +136,6 @@ type Series interface {
 	// Arrow interop.
 	// Return the underlying Arrow array. May build it lazily from Go slices.
 	ArrowArray() arrow.Array
-}
-
-type SeriesNumeric interface {
-	Series
-
-	// Return the minimum value of the series.
-	Min() any
-	// Return the maximum value of the series.
-	Max() any
-	// Return the sum of the values of the series.
-	Sum() any
-	// Return the mean of the values of the series.
-	Mean() any
-	// Return the median of the values of the series.
-	Median() any
-	// Return the variance of the values of the series.
-	Variance() any
-	// Return the standard deviation of the values of the series.
-	StdDev() any
-	// Return the quantile of the values of the series.
-	Quantile(q any) any
 }
 
 type SeriesPartition interface {

@@ -9,15 +9,15 @@ import (
 
 func TestGroupByIsLazyButJoinStillWorks(t *testing.T) {
 	ctx := enchanter.NewContext()
-	a := NewBaseDataFrame(ctx).
+	a := NewDataFrame(ctx).
 		AddSeries("k", series.NewSeriesString([]string{"x", "y"}, nil, false, ctx)).
 		AddSeries("va", series.NewSeriesInt64([]int64{1, 2}, nil, false, ctx))
-	b := NewBaseDataFrame(ctx).
+	b := NewDataFrame(ctx).
 		AddSeries("k", series.NewSeriesString([]string{"y", "z"}, nil, false, ctx)).
 		AddSeries("vb", series.NewSeriesInt64([]int64{3, 4}, nil, false, ctx))
 
 	// GroupBy no longer eagerly builds partitions
-	g := a.GroupBy("k").(BaseDataFrame)
+	g := a.GroupBy("k")
 	if !g.isGrouped {
 		t.Fatalf("expected isGrouped")
 	}
@@ -26,9 +26,9 @@ func TestGroupByIsLazyButJoinStillWorks(t *testing.T) {
 	}
 
 	// Join still produces the inner match on k=y
-	j := a.Join(INNER_JOIN, b, "k")
-	if j.IsErrored() {
-		t.Fatalf("join errored: %v", j.GetError())
+	j := a.Join(JoinInner, b, "k")
+	if j.Err() != nil {
+		t.Fatalf("join errored: %v", j.Err())
 	}
 	if j.NRows() != 1 {
 		t.Fatalf("inner join rows = %d, want 1", j.NRows())

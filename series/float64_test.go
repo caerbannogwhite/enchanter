@@ -41,9 +41,9 @@ func Test_SeriesFloat64_Base(t *testing.T) {
 	}
 
 	// Check the null mask.
-	for i, v := range s.GetNullMask() {
+	for i, v := range s.NullMask() {
 		if v != mask[i] {
-			t.Errorf("Expected nullMask of []bool{false, false, false, false, true, false, true, false, false, true}, got %v", s.GetNullMask())
+			t.Errorf("Expected nullMask of []bool{false, false, false, false, true, false, true, false, false, true}, got %v", s.NullMask())
 		}
 	}
 
@@ -181,7 +181,7 @@ func Test_SeriesFloat64_Append(t *testing.T) {
 	}
 
 	// Check the null mask.
-	for i, v := range result.GetNullMask() {
+	for i, v := range result.NullMask() {
 		if i < 10 {
 			if v != maskA[i] {
 				t.Errorf("Expected nullMask %t, got %t at index %d", maskA[i], v, i)
@@ -234,8 +234,8 @@ func Test_SeriesFloat64_Append(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		s = s.Append(na).(Float64s)
-		if !utils.CheckEqSlice(s.GetNullMask()[s.Len()-10:], na.GetNullMask(), nil, "Float64s.Append") {
-			t.Errorf("Expected %v, got %v at index %d", na.GetNullMask(), s.GetNullMask()[s.Len()-10:], i)
+		if !utils.CheckEqSlice(s.NullMask()[s.Len()-10:], na.NullMask(), nil, "Float64s.Append") {
+			t.Errorf("Expected %v, got %v at index %d", na.NullMask(), s.NullMask()[s.Len()-10:], i)
 		}
 	}
 
@@ -265,8 +265,8 @@ func Test_SeriesFloat64_Append(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		s = s.Append(b).(Float64s)
-		if !utils.CheckEqSlice(s.GetNullMask()[s.Len()-10:], b.GetNullMask(), nil, "Float64s.Append") {
-			t.Errorf("Expected %v, got %v at index %d", b.GetNullMask(), s.GetNullMask()[s.Len()-10:], i)
+		if !utils.CheckEqSlice(s.NullMask()[s.Len()-10:], b.NullMask(), nil, "Float64s.Append") {
+			t.Errorf("Expected %v, got %v at index %d", b.NullMask(), s.NullMask()[s.Len()-10:], i)
 		}
 	}
 }
@@ -291,7 +291,7 @@ func Test_SeriesFloat64_Cast(t *testing.T) {
 	}
 
 	// Check the null mask.
-	for i, v := range resBool.GetNullMask() {
+	for i, v := range resBool.NullMask() {
 		if v != mask[i] {
 			t.Errorf("Expected nullMask of %t, got %t at index %d", mask[i], v, i)
 		}
@@ -308,7 +308,7 @@ func Test_SeriesFloat64_Cast(t *testing.T) {
 	}
 
 	// Check the null mask.
-	for i, v := range resInt.GetNullMask() {
+	for i, v := range resInt.NullMask() {
 		if v != mask[i] {
 			t.Errorf("Expected nullMask of %t, got %t at index %d", mask[i], v, i)
 		}
@@ -325,7 +325,7 @@ func Test_SeriesFloat64_Cast(t *testing.T) {
 	}
 
 	// Check the null mask.
-	for i, v := range resInt64.GetNullMask() {
+	for i, v := range resInt64.NullMask() {
 		if v != mask[i] {
 			t.Errorf("Expected nullMask of %t, got %t at index %d", mask[i], v, i)
 		}
@@ -344,7 +344,7 @@ func Test_SeriesFloat64_Cast(t *testing.T) {
 	}
 
 	// Check the null mask.
-	for i, v := range resString.GetNullMask() {
+	for i, v := range resString.NullMask() {
 		if v != mask[i] {
 			t.Errorf("Expected nullMask of %t, got %t at index %d", mask[i], v, i)
 		}
@@ -354,7 +354,7 @@ func Test_SeriesFloat64_Cast(t *testing.T) {
 	castError := s.Cast(meta.ErrorType)
 
 	// Check the message.
-	if castError.(Errors).Msg_ != "Float64s.Cast: invalid type Error" {
+	if castError.(Errors).msg != "Float64s.Cast: invalid type Error" {
 		t.Errorf("Expected error, got %v", castError)
 	}
 }
@@ -390,7 +390,7 @@ func Test_SeriesFloat64_Filter(t *testing.T) {
 	}
 
 	// Check the null mask.
-	for i, v := range filtered.GetNullMask() {
+	for i, v := range filtered.NullMask() {
 		if v != resultMask[i] {
 			t.Errorf("Expected nullMask of %v, got %v at index %d", resultMask[i], v, i)
 		}
@@ -413,7 +413,7 @@ func Test_SeriesFloat64_Filter(t *testing.T) {
 	}
 
 	// Check the null mask.
-	for i, v := range filtered.GetNullMask() {
+	for i, v := range filtered.NullMask() {
 		if v != resultMask[i] {
 			t.Errorf("Expected nullMask of %v, got %v at index %d", resultMask[i], v, i)
 		}
@@ -436,7 +436,7 @@ func Test_SeriesFloat64_Filter(t *testing.T) {
 	}
 
 	// Check the null mask.
-	for i, v := range filtered.GetNullMask() {
+	for i, v := range filtered.NullMask() {
 		if v != resultMask[i] {
 			t.Errorf("Expected nullMask of %v, got %v at index %d", resultMask[i], v, i)
 		}
@@ -447,7 +447,7 @@ func Test_SeriesFloat64_Filter(t *testing.T) {
 	// try to filter by a series with a different length.
 	filtered = filtered.Filter(filterMask)
 
-	if e, ok := filtered.(Errors); !ok || e.GetError() != "Float64s.Filter: mask length (20) does not match series length (14)" {
+	if e, ok := filtered.(Errors); !ok || e.Err().Error() != "Float64s.Filter: mask length (20) does not match series length (14)" {
 		t.Errorf("Expected Errors, got %v", filtered)
 	}
 
@@ -481,7 +481,7 @@ func Test_SeriesFloat64_Filter(t *testing.T) {
 	}
 
 	// Check the null mask.
-	for i, v := range filtered.GetNullMask() {
+	for i, v := range filtered.NullMask() {
 		if v != true {
 			t.Errorf("Expected nullMask of %v, got %v at index %d", true, v, i)
 		}
@@ -504,7 +504,7 @@ func Test_SeriesFloat64_Filter(t *testing.T) {
 	}
 
 	// Check the null mask.
-	for i, v := range filtered.GetNullMask() {
+	for i, v := range filtered.NullMask() {
 		if v != true {
 			t.Errorf("Expected nullMask of %v, got %v at index %d", true, v, i)
 		}
@@ -608,7 +608,7 @@ func Test_SeriesFloat64_Group(t *testing.T) {
 	s1 := NewSeriesFloat64(data1, data1Mask, true, ctx).
 		Group()
 
-	p1 := s1.GetPartition().GetMap()
+	p1 := s1.Partition().GetMap()
 	if len(p1) != 2 {
 		t.Errorf("Expected 2 groups, got %d", len(p1))
 	}
@@ -623,9 +623,9 @@ func Test_SeriesFloat64_Group(t *testing.T) {
 
 	// Test 2
 	s2 := NewSeriesFloat64(data2, data2Mask, true, ctx).
-		GroupBy(s1.GetPartition())
+		GroupBy(s1.Partition())
 
-	p2 := s2.GetPartition().GetMap()
+	p2 := s2.Partition().GetMap()
 	if len(p2) != 6 {
 		t.Errorf("Expected 6 groups, got %d", len(p2))
 	}
@@ -644,9 +644,9 @@ func Test_SeriesFloat64_Group(t *testing.T) {
 
 	// Test 3
 	s3 := NewSeriesFloat64(data3, data3Mask, true, ctx).
-		GroupBy(s2.GetPartition())
+		GroupBy(s2.Partition())
 
-	p3 := s3.GetPartition().GetMap()
+	p3 := s3.Partition().GetMap()
 	if len(p3) != 8 {
 		t.Errorf("Expected 8 groups, got %d", len(p3))
 	}
@@ -665,9 +665,9 @@ func Test_SeriesFloat64_Group(t *testing.T) {
 		t.Errorf("Expected partition map of %v, got %v", partMap, p3)
 	}
 
-	// debugPrintPartition(s1.GetPartition(), s1)
-	// debugPrintPartition(s2.GetPartition(), s1, s2)
-	// debugPrintPartition(s3.GetPartition(), s1, s2, s3)
+	// debugPrintPartition(s1.Partition(), s1)
+	// debugPrintPartition(s2.Partition(), s1, s2)
+	// debugPrintPartition(s3.Partition(), s1, s2, s3)
 }
 
 func Test_SeriesFloat64_Sort(t *testing.T) {
@@ -700,8 +700,8 @@ func Test_SeriesFloat64_Sort(t *testing.T) {
 
 	// Check the null mask.
 	expectedMask := []bool{false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, true, true, true}
-	if !utils.CheckEqSliceBool(sorted.GetNullMask(), expectedMask, nil, "") {
-		t.Errorf("Float64s.Sort() failed, expecting %v, got %v", expectedMask, sorted.GetNullMask())
+	if !utils.CheckEqSliceBool(sorted.NullMask(), expectedMask, nil, "") {
+		t.Errorf("Float64s.Sort() failed, expecting %v, got %v", expectedMask, sorted.NullMask())
 	}
 }
 
@@ -737,10 +737,10 @@ func Test_SeriesFloat64_Arithmetic_Mul(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Mul(boolv).Data().([]float64), []float64{2, 0, 2, 0, 2, 0, 2, 2, 0, 0}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64s.Mul(bools_).GetNullMask(), []bool{true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64s.Mul(bools_).NullMask(), []bool{true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64s.Mul(boolv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64s.Mul(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
 
@@ -751,10 +751,10 @@ func Test_SeriesFloat64_Arithmetic_Mul(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Mul(i32v).Data().([]float64), []float64{2, 4, 6, 8, 10, 12, 14, 16, 18, 20}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64s.Mul(i32s_).GetNullMask(), []bool{true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64s.Mul(i32s_).NullMask(), []bool{true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64s.Mul(i32v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64s.Mul(i32v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
 
@@ -765,10 +765,10 @@ func Test_SeriesFloat64_Arithmetic_Mul(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Mul(i64v).Data().([]float64), []float64{2, 4, 6, 8, 10, 12, 14, 16, 18, 20}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64s.Mul(i64s_).GetNullMask(), []bool{true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64s.Mul(i64s_).NullMask(), []bool{true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64s.Mul(i64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64s.Mul(i64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
 
@@ -779,10 +779,10 @@ func Test_SeriesFloat64_Arithmetic_Mul(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Mul(f64v).Data().([]float64), []float64{2, 4, 6, 8, 10, 12, 14, 16, 18, 20}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64s.Mul(f64s_).GetNullMask(), []bool{true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64s.Mul(f64s_).NullMask(), []bool{true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64s.Mul(f64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64s.Mul(f64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
 
@@ -793,10 +793,10 @@ func Test_SeriesFloat64_Arithmetic_Mul(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Mul(boolv).Data().([]float64), []float64{1, 0, 3, 0, 5, 0, 7, 8, 0, 0}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64v.Mul(bools_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64v.Mul(bools_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64v.Mul(boolv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64v.Mul(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
 
@@ -807,10 +807,10 @@ func Test_SeriesFloat64_Arithmetic_Mul(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Mul(i32v).Data().([]float64), []float64{1, 4, 9, 16, 25, 36, 49, 64, 81, 100}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64v.Mul(i32s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64v.Mul(i32s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64v.Mul(i32v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64v.Mul(i32v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
 
@@ -821,10 +821,10 @@ func Test_SeriesFloat64_Arithmetic_Mul(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Mul(i64v).Data().([]float64), []float64{1, 4, 9, 16, 25, 36, 49, 64, 81, 100}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64v.Mul(i64s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64v.Mul(i64s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64v.Mul(i64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64v.Mul(i64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
 
@@ -835,10 +835,10 @@ func Test_SeriesFloat64_Arithmetic_Mul(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Mul(f64v).Data().([]float64), []float64{1, 4, 9, 16, 25, 36, 49, 64, 81, 100}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64v.Mul(f64s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64v.Mul(f64s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
-	if !utils.CheckEqSlice(f64v.Mul(f64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
+	if !utils.CheckEqSlice(f64v.Mul(f64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mul") {
 		t.Errorf("Error in Float64 Mul")
 	}
 }
@@ -875,10 +875,10 @@ func Test_SeriesFloat64_Arithmetic_Div(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Div(boolv).Data().([]float64), []float64{2, math.Inf(1), 2, math.Inf(1), 2, math.Inf(1), 2, 2, math.Inf(1), math.Inf(1)}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64s.Div(bools_).GetNullMask(), []bool{true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64s.Div(bools_).NullMask(), []bool{true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64s.Div(boolv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64s.Div(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
 
@@ -889,10 +889,10 @@ func Test_SeriesFloat64_Arithmetic_Div(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Div(i32v).Data().([]float64), []float64{2, 1, 2.0 / 3, 0.5, 0.4, 1.0 / 3, 2.0 / 7, 0.25, 2.0 / 9, 0.2}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64s.Div(i32s_).GetNullMask(), []bool{true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64s.Div(i32s_).NullMask(), []bool{true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64s.Div(i32v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64s.Div(i32v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
 
@@ -903,10 +903,10 @@ func Test_SeriesFloat64_Arithmetic_Div(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Div(i64v).Data().([]float64), []float64{2, 1, 2.0 / 3, 0.5, 0.4, 1.0 / 3, 2.0 / 7, 0.25, 2.0 / 9, 0.2}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64s.Div(i64s_).GetNullMask(), []bool{true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64s.Div(i64s_).NullMask(), []bool{true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64s.Div(i64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64s.Div(i64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
 
@@ -917,10 +917,10 @@ func Test_SeriesFloat64_Arithmetic_Div(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Div(f64v).Data().([]float64), []float64{2, 1, 2.0 / 3, 0.5, 0.4, 1.0 / 3, 2.0 / 7, 0.25, 2.0 / 9, 0.2}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64s.Div(f64s_).GetNullMask(), []bool{true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64s.Div(f64s_).NullMask(), []bool{true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64s.Div(f64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64s.Div(f64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
 
@@ -931,10 +931,10 @@ func Test_SeriesFloat64_Arithmetic_Div(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Div(boolv).Data().([]float64), []float64{1, math.Inf(1), 3, math.Inf(1), 5, math.Inf(1), 7, 8, math.Inf(1), math.Inf(1)}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64v.Div(bools_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64v.Div(bools_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64v.Div(boolv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64v.Div(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
 
@@ -945,10 +945,10 @@ func Test_SeriesFloat64_Arithmetic_Div(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Div(i32v).Data().([]float64), []float64{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64v.Div(i32s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64v.Div(i32s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64v.Div(i32v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64v.Div(i32v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
 
@@ -959,10 +959,10 @@ func Test_SeriesFloat64_Arithmetic_Div(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Div(i64v).Data().([]float64), []float64{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64v.Div(i64s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64v.Div(i64s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64v.Div(i64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64v.Div(i64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
 
@@ -973,10 +973,10 @@ func Test_SeriesFloat64_Arithmetic_Div(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Div(f64v).Data().([]float64), []float64{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64v.Div(f64s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64v.Div(f64s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
-	if !utils.CheckEqSlice(f64v.Div(f64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
+	if !utils.CheckEqSlice(f64v.Div(f64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Div") {
 		t.Errorf("Error in Float64 Div")
 	}
 }
@@ -1013,10 +1013,10 @@ func Test_SeriesFloat64_Arithmetic_Mod(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Mod(boolv).Data().([]float64), []float64{0, math.NaN(), 0, math.NaN(), 0, math.NaN(), 0, 0, math.NaN(), math.NaN()}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64s.Mod(bools_).GetNullMask(), []bool{true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64s.Mod(bools_).NullMask(), []bool{true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64s.Mod(boolv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64s.Mod(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
 
@@ -1027,10 +1027,10 @@ func Test_SeriesFloat64_Arithmetic_Mod(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Mod(i32v).Data().([]float64), []float64{0, 0, 2, 2, 2, 2, 2, 2, 2, 2}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64s.Mod(i32s_).GetNullMask(), []bool{true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64s.Mod(i32s_).NullMask(), []bool{true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64s.Mod(i32v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64s.Mod(i32v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
 
@@ -1041,10 +1041,10 @@ func Test_SeriesFloat64_Arithmetic_Mod(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Mod(i64v).Data().([]float64), []float64{0, 0, 2, 2, 2, 2, 2, 2, 2, 2}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64s.Mod(i64s_).GetNullMask(), []bool{true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64s.Mod(i64s_).NullMask(), []bool{true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64s.Mod(i64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64s.Mod(i64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
 
@@ -1055,10 +1055,10 @@ func Test_SeriesFloat64_Arithmetic_Mod(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Mod(f64v).Data().([]float64), []float64{0, 0, 2, 2, 2, 2, 2, 2, 2, 2}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64s.Mod(f64s_).GetNullMask(), []bool{true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64s.Mod(f64s_).NullMask(), []bool{true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64s.Mod(f64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64s.Mod(f64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
 
@@ -1069,10 +1069,10 @@ func Test_SeriesFloat64_Arithmetic_Mod(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Mod(boolv).Data().([]float64), []float64{0, math.NaN(), 0, math.NaN(), 0, math.NaN(), 0, 0, math.NaN(), math.NaN()}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64v.Mod(bools_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64v.Mod(bools_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64v.Mod(boolv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64v.Mod(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
 
@@ -1083,10 +1083,10 @@ func Test_SeriesFloat64_Arithmetic_Mod(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Mod(i32v).Data().([]float64), []float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64v.Mod(i32s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64v.Mod(i32s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64v.Mod(i32v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64v.Mod(i32v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
 
@@ -1097,10 +1097,10 @@ func Test_SeriesFloat64_Arithmetic_Mod(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Mod(i64v).Data().([]float64), []float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64v.Mod(i64s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64v.Mod(i64s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64v.Mod(i64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64v.Mod(i64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
 
@@ -1111,10 +1111,10 @@ func Test_SeriesFloat64_Arithmetic_Mod(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Mod(f64v).Data().([]float64), []float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64v.Mod(f64s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64v.Mod(f64s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
-	if !utils.CheckEqSlice(f64v.Mod(f64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
+	if !utils.CheckEqSlice(f64v.Mod(f64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Mod") {
 		t.Errorf("Error in Float64 Mod")
 	}
 }
@@ -1151,10 +1151,10 @@ func Test_SeriesFloat64_Arithmetic_Exp(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Exp(boolv).Data().([]float64), []float64{2, 1, 2, 1, 2, 1, 2, 2, 1, 1}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64s.Exp(bools_).GetNullMask(), []bool{true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64s.Exp(bools_).NullMask(), []bool{true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64s.Exp(boolv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64s.Exp(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
 
@@ -1165,10 +1165,10 @@ func Test_SeriesFloat64_Arithmetic_Exp(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Exp(i32v).Data().([]float64), []float64{2, 4, 8, 16, 32, 64, 128, 256, 512, 1024}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64s.Exp(i32s_).GetNullMask(), []bool{true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64s.Exp(i32s_).NullMask(), []bool{true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64s.Exp(i32v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64s.Exp(i32v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
 
@@ -1179,10 +1179,10 @@ func Test_SeriesFloat64_Arithmetic_Exp(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Exp(i64v).Data().([]float64), []float64{2, 4, 8, 16, 32, 64, 128, 256, 512, 1024}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64s.Exp(i64s_).GetNullMask(), []bool{true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64s.Exp(i64s_).NullMask(), []bool{true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64s.Exp(i64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64s.Exp(i64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
 
@@ -1193,10 +1193,10 @@ func Test_SeriesFloat64_Arithmetic_Exp(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Exp(f64v).Data().([]float64), []float64{2, 4, 8, 16, 32, 64, 128, 256, 512, 1024}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64s.Exp(f64s_).GetNullMask(), []bool{true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64s.Exp(f64s_).NullMask(), []bool{true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64s.Exp(f64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64s.Exp(f64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
 
@@ -1207,10 +1207,10 @@ func Test_SeriesFloat64_Arithmetic_Exp(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Exp(boolv).Data().([]float64), []float64{1, 1, 3, 1, 5, 1, 7, 8, 1, 1}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64v.Exp(bools_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64v.Exp(bools_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64v.Exp(boolv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64v.Exp(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
 
@@ -1221,10 +1221,10 @@ func Test_SeriesFloat64_Arithmetic_Exp(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Exp(i32v).Data().([]float64), []float64{1, 4, 27, 256, 3125, 46656, 823543, 16777216, 387420489, 10000000000}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64v.Exp(i32s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64v.Exp(i32s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64v.Exp(i32v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64v.Exp(i32v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
 
@@ -1235,10 +1235,10 @@ func Test_SeriesFloat64_Arithmetic_Exp(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Exp(i64v).Data().([]float64), []float64{1, 4, 27, 256, 3125, 46656, 823543, 16777216, 387420489, 10000000000}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64v.Exp(i64s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64v.Exp(i64s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64v.Exp(i64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64v.Exp(i64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
 
@@ -1249,10 +1249,10 @@ func Test_SeriesFloat64_Arithmetic_Exp(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Exp(f64v).Data().([]float64), []float64{1, 4, 27, 256, 3125, 46656, 823543, 16777216, 387420489, 10000000000}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64v.Exp(f64s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64v.Exp(f64s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
-	if !utils.CheckEqSlice(f64v.Exp(f64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
+	if !utils.CheckEqSlice(f64v.Exp(f64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Exp") {
 		t.Errorf("Error in Float64 Exp")
 	}
 }
@@ -1295,10 +1295,10 @@ func Test_SeriesFloat64_Arithmetic_Add(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Add(boolv).Data().([]float64), []float64{3, 2, 3, 2, 3, 2, 3, 3, 2, 2}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64s.Add(bools_).GetNullMask(), []bool{true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64s.Add(bools_).NullMask(), []bool{true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64s.Add(boolv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64s.Add(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
 
@@ -1309,10 +1309,10 @@ func Test_SeriesFloat64_Arithmetic_Add(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Add(i32v).Data().([]float64), []float64{3, 4, 5, 6, 7, 8, 9, 10, 11, 12}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64s.Add(i32s_).GetNullMask(), []bool{true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64s.Add(i32s_).NullMask(), []bool{true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64s.Add(i32v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64s.Add(i32v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
 
@@ -1323,10 +1323,10 @@ func Test_SeriesFloat64_Arithmetic_Add(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Add(i64v).Data().([]float64), []float64{3, 4, 5, 6, 7, 8, 9, 10, 11, 12}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64s.Add(i64s_).GetNullMask(), []bool{true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64s.Add(i64s_).NullMask(), []bool{true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64s.Add(i64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64s.Add(i64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
 
@@ -1337,10 +1337,10 @@ func Test_SeriesFloat64_Arithmetic_Add(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Add(f64v).Data().([]float64), []float64{3, 4, 5, 6, 7, 8, 9, 10, 11, 12}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64s.Add(f64s_).GetNullMask(), []bool{true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64s.Add(f64s_).NullMask(), []bool{true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64s.Add(f64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64s.Add(f64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
 
@@ -1351,10 +1351,10 @@ func Test_SeriesFloat64_Arithmetic_Add(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Add(sv).Data().([]string), []string{"21", "22", "23", "24", "25", "26", "27", "28", "29", "210"}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64s.Add(ss_).GetNullMask(), []bool{true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64s.Add(ss_).NullMask(), []bool{true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64s.Add(sv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64s.Add(sv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
 
@@ -1365,10 +1365,10 @@ func Test_SeriesFloat64_Arithmetic_Add(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Add(boolv).Data().([]float64), []float64{2, 2, 4, 4, 6, 6, 8, 9, 9, 10}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64v.Add(bools_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64v.Add(bools_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64v.Add(boolv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64v.Add(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
 
@@ -1379,10 +1379,10 @@ func Test_SeriesFloat64_Arithmetic_Add(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Add(i32v).Data().([]float64), []float64{2, 4, 6, 8, 10, 12, 14, 16, 18, 20}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64v.Add(i32s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64v.Add(i32s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64v.Add(i32v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64v.Add(i32v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
 
@@ -1393,10 +1393,10 @@ func Test_SeriesFloat64_Arithmetic_Add(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Add(i64v).Data().([]float64), []float64{2, 4, 6, 8, 10, 12, 14, 16, 18, 20}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64v.Add(i64s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64v.Add(i64s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64v.Add(i64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64v.Add(i64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
 
@@ -1407,10 +1407,10 @@ func Test_SeriesFloat64_Arithmetic_Add(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Add(f64v).Data().([]float64), []float64{2, 4, 6, 8, 10, 12, 14, 16, 18, 20}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64v.Add(f64s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64v.Add(f64s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64v.Add(f64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64v.Add(f64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
 
@@ -1421,10 +1421,10 @@ func Test_SeriesFloat64_Arithmetic_Add(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Add(sv).Data().([]string), []string{"11", "22", "33", "44", "55", "66", "77", "88", "99", "1010"}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64v.Add(ss_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64v.Add(ss_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
-	if !utils.CheckEqSlice(f64v.Add(sv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
+	if !utils.CheckEqSlice(f64v.Add(sv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Add") {
 		t.Errorf("Error in Float64 Add")
 	}
 }
@@ -1461,10 +1461,10 @@ func Test_SeriesFloat64_Arithmetic_Sub(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Sub(boolv).Data().([]float64), []float64{1, 2, 1, 2, 1, 2, 1, 1, 2, 2}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64s.Sub(bools_).GetNullMask(), []bool{true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64s.Sub(bools_).NullMask(), []bool{true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64s.Sub(boolv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64s.Sub(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
 
@@ -1475,10 +1475,10 @@ func Test_SeriesFloat64_Arithmetic_Sub(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Sub(i32v).Data().([]float64), []float64{1, 0, -1, -2, -3, -4, -5, -6, -7, -8}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64s.Sub(i32s_).GetNullMask(), []bool{true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64s.Sub(i32s_).NullMask(), []bool{true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64s.Sub(i32v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64s.Sub(i32v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
 
@@ -1489,10 +1489,10 @@ func Test_SeriesFloat64_Arithmetic_Sub(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Sub(i64v).Data().([]float64), []float64{1, 0, -1, -2, -3, -4, -5, -6, -7, -8}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64s.Sub(i64s_).GetNullMask(), []bool{true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64s.Sub(i64s_).NullMask(), []bool{true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64s.Sub(i64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64s.Sub(i64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
 
@@ -1503,10 +1503,10 @@ func Test_SeriesFloat64_Arithmetic_Sub(t *testing.T) {
 	if !utils.CheckEqSlice(f64s.Sub(f64v).Data().([]float64), []float64{1, 0, -1, -2, -3, -4, -5, -6, -7, -8}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64s.Sub(f64s_).GetNullMask(), []bool{true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64s.Sub(f64s_).NullMask(), []bool{true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64s.Sub(f64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64s.Sub(f64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
 
@@ -1517,10 +1517,10 @@ func Test_SeriesFloat64_Arithmetic_Sub(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Sub(boolv).Data().([]float64), []float64{0, 2, 2, 4, 4, 6, 6, 7, 9, 10}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64v.Sub(bools_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64v.Sub(bools_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64v.Sub(boolv_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64v.Sub(boolv_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
 
@@ -1531,10 +1531,10 @@ func Test_SeriesFloat64_Arithmetic_Sub(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Sub(i32v).Data().([]float64), []float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64v.Sub(i32s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64v.Sub(i32s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64v.Sub(i32v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64v.Sub(i32v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
 
@@ -1545,10 +1545,10 @@ func Test_SeriesFloat64_Arithmetic_Sub(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Sub(i64v).Data().([]float64), []float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64v.Sub(i64s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64v.Sub(i64s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64v.Sub(i64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64v.Sub(i64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
 
@@ -1559,10 +1559,10 @@ func Test_SeriesFloat64_Arithmetic_Sub(t *testing.T) {
 	if !utils.CheckEqSlice(f64v.Sub(f64v).Data().([]float64), []float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64v.Sub(f64s_).GetNullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64v.Sub(f64s_).NullMask(), []bool{true, true, true, true, true, true, true, true, true, true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
-	if !utils.CheckEqSlice(f64v.Sub(f64v_).GetNullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
+	if !utils.CheckEqSlice(f64v.Sub(f64v_).NullMask(), []bool{false, true, false, true, false, true, false, true, false, true}, nil, "Float64 Sub") {
 		t.Errorf("Error in Float64 Sub")
 	}
 }
@@ -1667,7 +1667,7 @@ func Test_SeriesFloat64_Logical_Gt(t *testing.T) {
 
 	res = f64s.Gt(i32s_)
 	if res.IsNull(0) == false {
-		t.Errorf("Expected %v, got %v", []bool{true}, res.GetNullMask())
+		t.Errorf("Expected %v, got %v", []bool{true}, res.NullMask())
 	}
 
 	res = f64s.Gt(i32v)
@@ -1677,7 +1677,7 @@ func Test_SeriesFloat64_Logical_Gt(t *testing.T) {
 
 	res = f64s.Gt(i32v_)
 	if res.IsNull(0) == false || res.IsNull(1) == false || res.IsNull(2) == true {
-		t.Errorf("Expected %v, got %v", []bool{false, false, true}, res.GetNullMask())
+		t.Errorf("Expected %v, got %v", []bool{false, false, true}, res.NullMask())
 	}
 
 	// scalar | int64
@@ -1688,7 +1688,7 @@ func Test_SeriesFloat64_Logical_Gt(t *testing.T) {
 
 	res = f64s.Gt(i64s_)
 	if res.IsNull(0) == false {
-		t.Errorf("Expected %v, got %v", []bool{true}, res.GetNullMask())
+		t.Errorf("Expected %v, got %v", []bool{true}, res.NullMask())
 	}
 
 	res = f64s.Gt(i64v)
@@ -1698,7 +1698,7 @@ func Test_SeriesFloat64_Logical_Gt(t *testing.T) {
 
 	res = f64s.Gt(i64v_)
 	if res.IsNull(0) == false || res.IsNull(1) == false || res.IsNull(2) == true {
-		t.Errorf("Expected %v, got %v", []bool{false, false, true}, res.GetNullMask())
+		t.Errorf("Expected %v, got %v", []bool{false, false, true}, res.NullMask())
 	}
 
 	// scalar | float64
@@ -1709,7 +1709,7 @@ func Test_SeriesFloat64_Logical_Gt(t *testing.T) {
 
 	res = f64s.Gt(f64s_)
 	if res.IsNull(0) == false {
-		t.Errorf("Expected %v, got %v", []bool{true}, res.GetNullMask())
+		t.Errorf("Expected %v, got %v", []bool{true}, res.NullMask())
 	}
 
 	res = f64s.Gt(f64v)
@@ -1719,7 +1719,7 @@ func Test_SeriesFloat64_Logical_Gt(t *testing.T) {
 
 	res = f64s.Gt(f64v_)
 	if res.IsNull(0) == false || res.IsNull(1) == false || res.IsNull(2) == true {
-		t.Errorf("Expected %v, got %v", []bool{false, false, true}, res.GetNullMask())
+		t.Errorf("Expected %v, got %v", []bool{false, false, true}, res.NullMask())
 	}
 
 	// vector | int
@@ -1730,7 +1730,7 @@ func Test_SeriesFloat64_Logical_Gt(t *testing.T) {
 
 	res = f64v.Gt(i32s_)
 	if res.IsNull(0) == false || res.IsNull(1) == false || res.IsNull(2) == false {
-		t.Errorf("Expected %v, got %v", []bool{true, true, false}, res.GetNullMask())
+		t.Errorf("Expected %v, got %v", []bool{true, true, false}, res.NullMask())
 	}
 
 	res = f64v.Gt(i32v)
@@ -1740,7 +1740,7 @@ func Test_SeriesFloat64_Logical_Gt(t *testing.T) {
 
 	res = f64v.Gt(i32v_)
 	if res.IsNull(0) == false || res.IsNull(1) == false || res.IsNull(2) == true {
-		t.Errorf("Expected %v, got %v", []bool{false, false, true}, res.GetNullMask())
+		t.Errorf("Expected %v, got %v", []bool{false, false, true}, res.NullMask())
 	}
 
 	// vector | int64
@@ -1751,7 +1751,7 @@ func Test_SeriesFloat64_Logical_Gt(t *testing.T) {
 
 	res = f64v.Gt(i64s_)
 	if res.IsNull(0) == false || res.IsNull(1) == false || res.IsNull(2) == false {
-		t.Errorf("Expected %v, got %v", []bool{true, true, false}, res.GetNullMask())
+		t.Errorf("Expected %v, got %v", []bool{true, true, false}, res.NullMask())
 	}
 
 	res = f64v.Gt(i64v)
@@ -1761,7 +1761,7 @@ func Test_SeriesFloat64_Logical_Gt(t *testing.T) {
 
 	res = f64v.Gt(i64v_)
 	if res.IsNull(0) == false || res.IsNull(1) == false || res.IsNull(2) == true {
-		t.Errorf("Expected %v, got %v", []bool{false, false, true}, res.GetNullMask())
+		t.Errorf("Expected %v, got %v", []bool{false, false, true}, res.NullMask())
 	}
 
 	// vector | float64
@@ -1772,7 +1772,7 @@ func Test_SeriesFloat64_Logical_Gt(t *testing.T) {
 
 	res = f64v.Gt(f64s_)
 	if res.IsNull(0) == false || res.IsNull(1) == false || res.IsNull(2) == false {
-		t.Errorf("Expected %v, got %v", []bool{true, true, false}, res.GetNullMask())
+		t.Errorf("Expected %v, got %v", []bool{true, true, false}, res.NullMask())
 	}
 
 	res = f64v.Gt(f64v)
@@ -1782,7 +1782,7 @@ func Test_SeriesFloat64_Logical_Gt(t *testing.T) {
 
 	res = f64v.Gt(f64v_)
 	if res.IsNull(0) == false || res.IsNull(1) == false || res.IsNull(2) == true {
-		t.Errorf("Expected %v, got %v", []bool{false, false, true}, res.GetNullMask())
+		t.Errorf("Expected %v, got %v", []bool{false, false, true}, res.NullMask())
 	}
 }
 

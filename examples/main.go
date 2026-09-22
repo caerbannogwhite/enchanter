@@ -38,8 +38,7 @@ Operations,5,250000
 var ctx = enchanter.NewContext()
 
 func Example01() {
-	dataframe.NewBaseDataFrame(ctx).
-		FromCsv().
+	dataframe.ReadCsv(ctx).
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -68,15 +67,13 @@ func Example01() {
 }
 
 func Example02() {
-	employees := dataframe.NewBaseDataFrame(ctx).
-		FromCsv().
+	employees := dataframe.ReadCsv(ctx).
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
 		SetHeader(true).
 		Read()
 
-	departments := dataframe.NewBaseDataFrame(ctx).
-		FromCsv().
+	departments := dataframe.ReadCsv(ctx).
 		SetReader(strings.NewReader(data2)).
 		SetDelimiter(',').
 		SetHeader(true).
@@ -84,22 +81,21 @@ func Example02() {
 
 	departments.PPrint(dataframe.NewPPrintParams())
 
-	employees.Join(dataframe.LEFT_JOIN, departments, "department").
+	employees.Join(dataframe.JoinLeft, departments, "department").
 		PPrint(dataframe.NewPPrintParams())
 }
 
 func Example03() {
-	df := dataframe.NewBaseDataFrame(ctx).
-		FromCsv().
+	df := dataframe.ReadCsv(ctx).
 		SetReader(strings.NewReader(data1)).
 		SetDelimiter(',').
 		SetHeader(true).
 		Read()
 
 	df.Filter(
-		df.C("age").Ge(30).
-			And(df.C("junior").
-				Or(df.C("department").Eq("Business")))).
+		df.Col("age").Ge(30).
+			And(df.Col("junior").
+				Or(df.Col("department").Eq("Business")))).
 		PPrint(dataframe.NewPPrintParams())
 }
 
@@ -124,42 +120,39 @@ a,b
 
 	ppp := dataframe.NewPPrintParams()
 
-	dfX := dataframe.NewBaseDataFrame(ctx).
-		FromCsv().
+	dfX := dataframe.ReadCsv(ctx).
 		SetReader(strings.NewReader(x)).
 		SetDelimiter(',').
 		SetHeader(true).
 		Read()
 
-	dfY := dataframe.NewBaseDataFrame(ctx).
-		FromCsv().
+	dfY := dataframe.ReadCsv(ctx).
 		SetReader(strings.NewReader(y)).
 		SetDelimiter(',').
 		SetHeader(true).
 		Read()
 
-	dfX.Join(dataframe.INNER_JOIN, dfY, "a", "b").
+	dfX.Join(dataframe.JoinInner, dfY, "a", "b").
 		PPrint(ppp)
 
-	dfX.Join(dataframe.LEFT_JOIN, dfY, "a", "b").
+	dfX.Join(dataframe.JoinLeft, dfY, "a", "b").
 		PPrint(ppp)
 
-	dfX.Join(dataframe.RIGHT_JOIN, dfY, "a", "b").
+	dfX.Join(dataframe.JoinRight, dfY, "a", "b").
 		PPrint(ppp)
 
-	dfX.Join(dataframe.OUTER_JOIN, dfY, "a", "b").
+	dfX.Join(dataframe.JoinOuter, dfY, "a", "b").
 		PPrint(ppp)
 }
 
 func Example05() {
-	dataframe.NewBaseDataFrame(ctx).
-		FromXpt().
+	dataframe.ReadXpt(ctx).
 		SetPath("../testdata/CDBRFS90.XPT").
 		// SetPath("../testdata/xpt_test_mixed.xpt").
 		SetVersion(io.XPT_VERSION_9).
 		// SetMaxObservations(10).
 		Read().
-		Take(100).
+		Slice(0, 100).
 
 		// to SAS XPT
 		// ToXpt().
@@ -197,8 +190,7 @@ func Example05() {
 }
 
 func Example06() {
-	df := dataframe.NewBaseDataFrame(ctx).
-		FromCsv().
+	df := dataframe.ReadCsv(ctx).
 		SetNullValues(true).
 		// SetRows(20).
 		SetPath(filepath.Join("..", "testdata", "G1_1e4_1e2_10_0.csv")).
@@ -212,7 +204,7 @@ func Example06() {
 		Run().
 		PPrint(dataframe.NewPPrintParams().SetNRows(10).SetUseLipGloss(true))
 
-	fmt.Println(df.Agg(dataframe.Sum("sum(v1)")).Run().C("sum(sum(v1))"))
+	fmt.Println(df.Agg(dataframe.Sum("sum(v1)")).Run().Col("sum(sum(v1))"))
 }
 
 func main() {
