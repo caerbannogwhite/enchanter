@@ -180,7 +180,12 @@ func (s Strings) Append(v any) Series {
 
 	case NAs:
 		s.isNullable, s.nullMask = utils.MergeNullMasks(len(s.data), s.isNullable, s.nullMask, v.Len(), true, utils.BinVecInit(v.Len(), true))
-		s.data = append(s.data, make([]*string, v.Len())...)
+		// Null string elements hold the interned NA text by convention;
+		// a nil pointer here crashes the first operator that reads it.
+		na := s.ctx.StringPool.Put(enchanter.NA_TEXT)
+		for i := 0; i < v.Len(); i++ {
+			s.data = append(s.data, na)
+		}
 
 	case string:
 		s.data = append(s.data, s.ctx.StringPool.Put(v))

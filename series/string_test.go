@@ -1003,3 +1003,30 @@ func Test_SeriesString_Logical_Gt(t *testing.T) {
 func Test_SeriesString_Logical_Ge(t *testing.T) {
 	// TODO: add tests for all types
 }
+
+// Appending NAs to Strings must fill the interned NA text, not nil
+// pointers: every string operator dereferences the data uncheckedly by
+// the NA-text convention.
+func Test_SeriesString_AppendNAs(t *testing.T) {
+	s := NewSeriesString([]string{"a"}, nil, true, ctx).Append(NewSeriesNA(2, ctx))
+	if s.Len() != 3 || s.IsNull(0) || !s.IsNull(1) || !s.IsNull(2) {
+		t.Fatalf("expected [a null null], got len %d", s.Len())
+	}
+	for _, p := range s.(Strings).Interned() {
+		if p == nil {
+			t.Fatal("appended null slots must hold the interned NA text, not nil")
+		}
+	}
+
+	// The concatenation that used to crash on the nil pointers.
+	res := s.Add("f")
+	if res.Err() != nil {
+		t.Fatal(res.Err())
+	}
+	if res.Get(0).(string) != "af" {
+		t.Errorf("value: expected af, got %v", res.Get(0))
+	}
+	if !res.IsNull(1) || !res.IsNull(2) {
+		t.Error("nulls must stay null through the concatenation")
+	}
+}

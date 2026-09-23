@@ -76,6 +76,7 @@ const (
 	TERM_DURATION_MINUTE
 	TERM_DURATION_HOUR
 	TERM_DURATION_DAY
+	TERM_DURATION_WEEK
 	TERM_DURATION_MONTH
 	TERM_DURATION_YEAR
 	TERM_LIST
@@ -123,6 +124,7 @@ const (
 	SYMBOL_DURATION_MINUTE_SHORT      = "m"
 	SYMBOL_DURATION_HOUR_SHORT        = "h"
 	SYMBOL_DURATION_DAY_SHORT         = "d"
+	SYMBOL_DURATION_WEEK_SHORT        = "w"
 	SYMBOL_DURATION_MONTH_SHORT       = "M"
 	SYMBOL_DURATION_YEAR_SHORT        = "y"
 	SYMBOL_DURATION_MICROSECOND       = "microseconds"
@@ -131,6 +133,7 @@ const (
 	SYMBOL_DURATION_MINUTE            = "minutes"
 	SYMBOL_DURATION_HOUR              = "hours"
 	SYMBOL_DURATION_DAY               = "days"
+	SYMBOL_DURATION_WEEK              = "weeks"
 	SYMBOL_DURATION_MONTH             = "months"
 	SYMBOL_DURATION_YEAR              = "years"
 )
