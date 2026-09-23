@@ -466,10 +466,17 @@ func (s NAs) Cast(t meta.BaseType) Series {
 		}
 
 	case meta.StringType:
+		// Null string elements hold the interned NA text by convention;
+		// nil pointers crash the generated operators.
+		data := make([]*string, s.size)
+		na := s.ctx.StringPool.Put(enchanter.NA_TEXT)
+		for i := range data {
+			data[i] = na
+		}
 		return Strings{
 			isNullable: true,
 			sorted:     enchanter.SORTED_NONE,
-			data:       make([]*string, s.size),
+			data:       data,
 			nullMask:   utils.BinVecInit(s.size, true),
 			partition:  nil,
 			ctx:        s.ctx,

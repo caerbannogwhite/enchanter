@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/caerbannogwhite/enchanter"
+	"github.com/caerbannogwhite/enchanter/meta"
 	"github.com/caerbannogwhite/enchanter/utils"
 )
 
@@ -455,5 +456,31 @@ func Test_SeriesNA_Boolean_Or(t *testing.T) {
 	}
 	if res, ok := nav.Or(boolv_).(NAs); !ok || res.Len() != 10 {
 		t.Errorf("Expected NAs of length 10, got %v", res)
+	}
+}
+
+// Casting NAs to Strings must fill the interned NA text, not nil
+// pointers: the generated operators dereference the data uncheckedly by
+// the NA-text convention. This is the path a mixed list like
+// ['a', na] takes downstream, where the na element is cast to the list
+// type before it is appended.
+func Test_SeriesNA_CastToStrings(t *testing.T) {
+	c := NewSeriesNA(2, ctx).Cast(meta.StringType)
+	for _, p := range c.(Strings).Interned() {
+		if p == nil {
+			t.Fatal("cast null slots must hold the interned NA text, not nil")
+		}
+	}
+
+	s := NewSeriesString([]string{"a"}, nil, true, ctx).Append(c)
+	res := s.Add("f")
+	if res.Err() != nil {
+		t.Fatal(res.Err())
+	}
+	if res.Get(0).(string) != "af" {
+		t.Errorf("value: expected af, got %v", res.Get(0))
+	}
+	if !res.IsNull(1) || !res.IsNull(2) {
+		t.Error("nulls must stay null through the concatenation")
 	}
 }
