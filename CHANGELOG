@@ -1,3 +1,10 @@
+v0.5.2: fifth-fish
+ - [BugFix] NAs.Cast to the string type filled the data with nil pointers, the same convention violation v0.5.1 fixed in Append, one call further down; a mixed list such as ['a', na] in downstream preludio crashed on it. An audit found no further nil builders in the series package
+
+v0.5.1: frank-was-just-asking
+ - [BugFix] Strings.Append(NAs) filled the appended data with nil pointers instead of the interned NA text; the first operator to read them crashed (found through preludio, where ['a', na] + 'f' took down the VM)
+ - [Feature] meta gains the week duration term and symbols (TERM_DURATION_WEEK, weeks/w); the vocabulary jumped from day to month and a downstream week literal compiled to no instruction
+
 v0.5.0: the-others
  - [Changed] The one-implementation DataFrame interface is collapsed into the concrete type: NewDataFrame, NewDataFrameFromArrowRecord
  - [Changed] Error accessors are the standard Err() error on Series and DataFrame (replacing IsError/GetError/IsErrored)
