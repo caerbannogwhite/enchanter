@@ -1,3 +1,11 @@
+v0.5.4: yeah
+ - [BugFix] StringFormatter.Compute panicked on a single pushed value (the percentile index came out at -1), so rendering any one-row frame with a string column crashed
+ - [BugFix] A null in a string column was not padded to the column width and made its row shorter than the table
+ - [BugFix] An empty frame rendered as nothing when lipgloss was on: the rendered text was discarded
+ - [BugFix] Integer columns printed with the float formatter's adaptive decimals: a cylinder count came out as 4.000, a row count as 73.0. Integer columns format with zero decimal digits now
+ - [BugFix] Duration columns rendered every value as the NA text: the numeric formatter ignores time.Duration. Durations render as their text form (1h0m0s) through the string formatter
+ - [Improved] The table shape line uses the singular: "1 row, 1 column"
+
 v0.5.3: was-he
  - [Feature] DataFrame.Table(params) returns the rendered text table as a string; PPrint prints exactly that text and its output is unchanged. An errored frame renders its error text, an empty frame renders the empty-frame notice
 
