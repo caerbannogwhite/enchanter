@@ -3,6 +3,7 @@ package dataframe
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/caerbannogwhite/enchanter"
 )
@@ -36,12 +37,34 @@ func TestDataFrame_Table(t *testing.T) {
 }
 
 // A one-row string column used to panic inside the string formatter's
-// width computation.
+// width computation. The shape line uses the singular.
 func TestDataFrame_Table_OneRow(t *testing.T) {
 	ctx := enchanter.NewContext()
 	df := NewDataFrame(ctx).AddSeriesFromStrings("s", []string{"only"}, nil, false)
-	if out := df.Table(NewPPrintParams()); !strings.Contains(out, "only") {
-		t.Errorf("table must contain the value, got:\n%s", out)
+	out := df.Table(NewPPrintParams())
+	for _, want := range []string{"only", "1 row, 1 column"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("table must contain %q, got:\n%s", want, out)
+		}
+	}
+}
+
+// Integer columns print whole numbers, and duration columns print the Go
+// duration text. Integers used to grow adaptive decimals ("4.000") and
+// every duration rendered as the NA text.
+func TestDataFrame_Table_IntsAndDurations(t *testing.T) {
+	ctx := enchanter.NewContext()
+	df := NewDataFrame(ctx).
+		AddSeriesFromInt64s("n", []int64{4, 81, 1875}, nil, false).
+		AddSeriesFromDurations("d", []time.Duration{time.Hour, time.Minute, time.Second}, nil, false)
+	out := df.Table(NewPPrintParams())
+	for _, want := range []string{" 4 ", " 81 ", " 1875 ", "1h0m0s", "1m0s", "1s"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("table must contain %q, got:\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "4.000") {
+		t.Errorf("integers must not grow decimals, got:\n%s", out)
 	}
 }
 

@@ -1103,11 +1103,20 @@ func (df DataFrame) Table(params PPrintParams) string {
 	}
 
 	// print the shape
+	rowsWord := "rows"
+	if df.NRows() == 1 {
+		rowsWord = "row"
+	}
+	colsWord := "columns"
+	if df.NCols() == 1 {
+		colsWord = "column"
+	}
+	shape := fmt.Sprintf("  DataFrame: %d %s, %d %s", df.NRows(), rowsWord, df.NCols(), colsWord)
 	buffer += params.indent
 	if params.useLipGloss {
-		buffer += params.styleTypes.Render(fmt.Sprintf("  DataFrame: %d rows, %d columns", df.NRows(), df.NCols()))
+		buffer += params.styleTypes.Render(shape)
 	} else {
-		buffer += fmt.Sprintf("  DataFrame: %d rows, %d columns", df.NRows(), df.NCols())
+		buffer += shape
 	}
 	buffer += "\n"
 
@@ -1165,10 +1174,20 @@ func (df DataFrame) Table(params PPrintParams) string {
 	formatters := make([]formatter.Formatter, nColsOut)
 	for i := 0; i < nColsOut; i++ {
 		switch df.series[i].Type() {
-		case meta.BoolType, meta.StringType, meta.TimeType:
+		// Durations render as their text form: the numeric formatter has no
+		// notion of them and used to print every one as the NA text.
+		case meta.BoolType, meta.StringType, meta.TimeType, meta.DurationType:
 			formatters[i] = formatter.NewStringFormatter().
 				SetUseLipGloss(params.useLipGloss)
-		case meta.IntType, meta.Int64Type, meta.Float64Type, meta.DurationType:
+		// Integer columns print whole numbers; the adaptive decimal digits
+		// are for floats.
+		case meta.IntType, meta.Int64Type:
+			formatters[i] = formatter.NewNumericFormatter().
+				SetUseLipGloss(params.useLipGloss).
+				SetNaText(df.ctx.GetNaText()).
+				SetTruncateOutput(true).
+				SetDecimalDigits(0)
+		case meta.Float64Type:
 			formatters[i] = formatter.NewNumericFormatter().
 				SetUseLipGloss(params.useLipGloss).
 				SetNaText(df.ctx.GetNaText()).
@@ -1243,12 +1262,12 @@ func (df DataFrame) Table(params PPrintParams) string {
 			}
 
 		case series.Durations:
-			for _, v := range s.Data().([]time.Duration)[:nRowsOut] {
+			for _, v := range s.DataAsString()[:nRowsOut] {
 				formatters[i].Push(v)
 			}
 
 			if addTail {
-				for _, v := range s.Data().([]time.Duration)[df.NRows()-params.tailLen:] {
+				for _, v := range s.DataAsString()[df.NRows()-params.tailLen:] {
 					formatters[i].Push(v)
 				}
 			}
@@ -1351,7 +1370,7 @@ func (df DataFrame) Table(params PPrintParams) string {
 			case series.Times:
 				buffer += fmt.Sprintf(" %s ", formatters[j].Format(widths[j], s.GetAsString(i), s.IsNull(i))) + "│"
 			case series.Durations:
-				buffer += fmt.Sprintf(" %s ", formatters[j].Format(widths[j], s.Get(i), s.IsNull(i))) + "│"
+				buffer += fmt.Sprintf(" %s ", formatters[j].Format(widths[j], s.GetAsString(i), s.IsNull(i))) + "│"
 			}
 		}
 		buffer += "\n"
