@@ -1,3 +1,6 @@
+v0.5.3: was-he
+ - [Feature] DataFrame.Table(params) returns the rendered text table as a string; PPrint prints exactly that text and its output is unchanged. An errored frame renders its error text, an empty frame renders the empty-frame notice
+
 v0.5.2: fifth-fish
  - [BugFix] NAs.Cast to the string type filled the data with nil pointers, the same convention violation v0.5.1 fixed in Append, one call further down; a mixed list such as ['a', na] in downstream preludio crashed on it. An audit found no further nil builders in the series package
 
