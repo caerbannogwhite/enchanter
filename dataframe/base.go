@@ -1095,7 +1095,7 @@ func (df DataFrame) Table(params PPrintParams) string {
 	if df.NRows() == 0 {
 		buffer += params.indent
 		if params.useLipGloss {
-			params.styleNames.Render("  Empty DataFrame\n")
+			buffer += params.styleNames.Render("  Empty DataFrame") + "\n"
 		} else {
 			buffer += "  Empty DataFrame\n"
 		}

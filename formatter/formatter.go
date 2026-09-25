@@ -308,6 +308,7 @@ type StringFormatter struct {
 	lengths     []int
 
 	styleString lipgloss.Style
+	styleNa     lipgloss.Style
 }
 
 func NewStringFormatter() *StringFormatter {
@@ -315,6 +316,7 @@ func NewStringFormatter() *StringFormatter {
 		useLipGloss: false,
 		lengths:     make([]int, 0),
 		styleString: lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#98AFC7")),
+		styleNa:     lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#c00020")),
 	}
 }
 
@@ -323,9 +325,16 @@ func (f *StringFormatter) SetUseLipGloss(useLipGloss bool) *StringFormatter {
 	return f
 }
 
+// Compute sets the column width to the 80th-percentile string length, so a
+// few long outliers get truncated instead of widening the whole column.
 func (f *StringFormatter) Compute() {
+	if len(f.lengths) == 0 {
+		f.maxWidth = 0
+		return
+	}
 	sort.IntSlice(f.lengths).Sort()
-	f.maxWidth = f.lengths[int(math.Floor(0.8*float64(len(f.lengths))))-1]
+	idx := max(int(math.Floor(0.8*float64(len(f.lengths))))-1, 0)
+	f.maxWidth = f.lengths[idx]
 }
 
 func (f *StringFormatter) GetMaxWidth() int {
@@ -347,7 +356,10 @@ func (f *StringFormatter) Format(width int, val any, isNa bool) string {
 			return fmt.Sprintf("%-*s", width, utils.Truncate(s, width))
 		}
 	}
-	return enchanter.NA_TEXT
+	if f.useLipGloss {
+		return f.styleNa.Render(fmt.Sprintf("%-*s", width, utils.Truncate(enchanter.NA_TEXT, width)))
+	}
+	return fmt.Sprintf("%-*s", width, utils.Truncate(enchanter.NA_TEXT, width))
 }
 
 func toPrintable(s string) string {
