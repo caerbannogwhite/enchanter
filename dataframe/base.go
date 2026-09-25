@@ -1081,11 +1081,12 @@ func (df DataFrame) Records(header bool) [][]string {
 	return out
 }
 
-// Pretty print the dataframe.
-func (df DataFrame) PPrint(params PPrintParams) DataFrame {
+// Table renders the dataframe as a text table and returns it. PPrint
+// prints exactly this string; Table exists so a REPL or a log can place
+// the rendering itself.
+func (df DataFrame) Table(params PPrintParams) string {
 	if df.err != nil {
-		fmt.Println(df.err)
-		return df
+		return df.err.Error()
 	}
 
 	buffer := ""
@@ -1098,8 +1099,7 @@ func (df DataFrame) PPrint(params PPrintParams) DataFrame {
 		} else {
 			buffer += "  Empty DataFrame\n"
 		}
-		fmt.Println(buffer)
-		return df
+		return buffer
 	}
 
 	// print the shape
@@ -1409,7 +1409,11 @@ func (df DataFrame) PPrint(params PPrintParams) DataFrame {
 		}
 	}
 
-	fmt.Println(buffer)
+	return buffer
+}
 
+// Pretty print the dataframe.
+func (df DataFrame) PPrint(params PPrintParams) DataFrame {
+	fmt.Println(df.Table(params))
 	return df
 }
