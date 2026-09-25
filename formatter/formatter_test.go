@@ -1,32 +1,42 @@
 package formatter
 
 import (
+	"strings"
 	"testing"
+
+	"github.com/caerbannogwhite/enchanter"
 )
 
-func Test_Format_01(t *testing.T) {
+// A single pushed string used to panic in Compute: the 80th-percentile
+// index came out at -1.
+func Test_StringFormatter_SingleValue(t *testing.T) {
+	f := NewStringFormatter()
+	f.Push("only")
+	f.Compute()
+	if f.GetMaxWidth() != 4 {
+		t.Errorf("width: expected 4, got %d", f.GetMaxWidth())
+	}
+}
 
-	// row1 := []float64{1, 1.1, -1.1, 0.0, math.NaN()}
-	// row2 := []float64{16e62, 16e-64, -999, 999, 0}
-	// row3 := []float64{1.0000000000000001e+09, 1.000000000000001e+09, 1.00000000000001e+09, 1.0000000000001e+09, math.NaN()}
-	// row4 := []float64{1.1e-05, 1.2e-05, 1.3e-05, 1.4e-05, 1.5e-05}
-	// row5 := []float64{1.1e-08, 1.2e-08, 1.3e-08, 1.4e-08, 1.5e-08}
-	// row6 := []float64{-100, -10, -1, 0, 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, math.Inf(1), math.Inf(-1), math.NaN()}
+// No pushed values must not panic either.
+func Test_StringFormatter_NoValues(t *testing.T) {
+	f := NewStringFormatter()
+	f.Compute()
+	if f.GetMaxWidth() != 0 {
+		t.Errorf("width: expected 0, got %d", f.GetMaxWidth())
+	}
+}
 
-	// f := NewNumericFormatter()
-	// for _, row := range [][]float64{row1, row2, row3, row4, row5} {
-	// 	for _, num := range row {
-	// 		f.Push(num)
-	// 	}
-	// }
-
-	// f = NewNumericFormatter().SetUseLipGloss(true)
-	// for _, num := range row6 {
-	// 	f.Push(num)
-	// }
-
-	// for _, num := range row6 {
-	// 	fmt.Println(f.Format(num))
-	// }
-
+// A null element must be padded to the requested width like any value,
+// otherwise the table row comes out shorter than its column.
+func Test_StringFormatter_NaPadded(t *testing.T) {
+	f := NewStringFormatter()
+	want := enchanter.NA_TEXT + strings.Repeat(" ", 8-len(enchanter.NA_TEXT))
+	if out := f.Format(8, "x", true); out != want {
+		t.Errorf("NA cell: expected %q, got %q", want, out)
+	}
+	// A non-string value renders as a null too.
+	if out := f.Format(8, nil, false); out != want {
+		t.Errorf("non-string cell: expected %q, got %q", want, out)
+	}
 }
